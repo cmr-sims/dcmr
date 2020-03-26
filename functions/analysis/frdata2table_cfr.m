@@ -12,8 +12,8 @@ times(times == 0) = NaN;
 data.rec.onset = times / 1000;
 
 % run the conversion
-extra = {'session', 'listtype', 'category', 'resp', 'rt'};
-names = {'', 'list_type', '', 'response', 'response_time'};
+extra = {'itemno', 'session', 'listtype', 'category', 'resp', 'rt'};
+names = {'item_number', '', 'list_type', '', 'response', 'response_time'};
 if isfield(data, 'fam')
     data = rmfield(data, 'fam');
 end
