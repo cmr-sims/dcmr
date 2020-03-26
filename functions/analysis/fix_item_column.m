@@ -1,7 +1,7 @@
-function fixed = fix_item_column(tab, verbose)
+function tab = fix_item_column(tab, verbose)
 %FIX_ITEM_COLUMN   Deal with missing words in the item column.
 %
-%  fixed = fix_item_column(tab, verbose)
+%  tab = fix_item_column(tab, verbose)
 
 if nargin < 2
     verbose = 0;
