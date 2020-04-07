@@ -32,7 +32,7 @@ a = gca;
 set(a, 'XLim', [.5 1], 'XTick', .5:.1:1, ...
        'YLim', [0 .2], 'YTick', 0:.05:.2)
 xlabel('semantic similarity')
-ylabel('conditional response probability')
+ylabel('conditional response prob.')
 box off
 font_prop = {'FontSize' 28 'FontWeight' 'normal' ...
              'FontName' 'Helvetica'};
