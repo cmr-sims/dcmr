@@ -68,6 +68,21 @@ def main(csv_file, out_dir, sim_file=None, bin_file=None):
     kwargs = {'height': 4}
     subj_kwargs = {'col': 'subject', 'col_wrap': 5, 'height': 3}
 
+    # category crp
+    categories = mixed['category'].cat.categories
+    cat_crp = [fr.category_crp(mixed, 'category', test_key='category',
+                               test=lambda x, y: x == category)
+               for category in categories]
+    crp = pd.concat(cat_crp, keys=categories, axis=0)
+    crp.index = crp.index.set_names('category', level=0)
+    g = fr.plot_swarm_error(crp, x='category', y='prob', swarm_color=[.8] * 3,
+                            **kwargs)
+    g.set_xlabels('')
+    g.set_ylabels('P(within)')
+    g.set(ylim=(0, 1))
+    g.ax.tick_params(axis='x', labelsize='large')
+    g.savefig(os.path.join(out_dir, 'p_within.pdf'))
+
     if sim_file is not None:
         semantic_crp_plots(mixed, sim_file, out_dir,
                            kwargs, subj_kwargs, bin_file=bin_file)
