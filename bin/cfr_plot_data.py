@@ -32,6 +32,26 @@ def semantic_crp_plots(data, sim_file, out_dir, kwargs, subj_kwargs,
     g = fr.plot_distance_crp(crp, min_samples=10, **subj_kwargs)
     g.savefig(os.path.join(out_dir, 'sem_crp_subject.pdf'))
 
+    # within category
+    crp = fr.distance_crp(data, 'item_index', sim['similarity'],
+                          edges, centers, test_key='category',
+                          test=lambda x, y: x == y)
+    g = fr.plot_distance_crp(crp, min_samples=10, **kwargs)
+    g.savefig(os.path.join(out_dir, 'sem_crp_within.pdf'))
+
+    g = fr.plot_distance_crp(crp, min_samples=10, **subj_kwargs)
+    g.savefig(os.path.join(out_dir, 'sem_crp_within_subject.pdf'))
+
+    # across category
+    crp = fr.distance_crp(data, 'item_index', sim['similarity'],
+                          edges, centers, test_key='category',
+                          test=lambda x, y: x != y)
+    g = fr.plot_distance_crp(crp, min_samples=10, **kwargs)
+    g.savefig(os.path.join(out_dir, 'sem_crp_across.pdf'))
+
+    g = fr.plot_distance_crp(crp, min_samples=10, **subj_kwargs)
+    g.savefig(os.path.join(out_dir, 'sem_crp_across_subject.pdf'))
+
 
 def main(csv_file, out_dir, sim_file=None, bin_file=None):
 
