@@ -1,6 +1,8 @@
 """Analyze free recall data."""
 
 import os
+import numpy as np
+from scipy import io
 import pandas as pd
 from psifr import fr
 
@@ -26,3 +28,27 @@ def read_free_recall(csv_file):
     merged = fr.merge_lists(study, recall, list_keys=list_keys,
                             study_keys=['category'])
     return merged
+
+
+def read_similarity(sim_file):
+    """Read pairwise similarity values from a standard MAT-file."""
+
+    mat = io.loadmat(sim_file)
+    item = [i[0] for i in mat['item'][0]]
+    index = mat['item_index'][0]
+    similarity = mat['pair_similarity']
+    sim = {'item': item, 'index': index, 'similarity': similarity}
+    return sim
+
+
+def set_item_index(data, items):
+    """Set item index based on a pool."""
+
+    data_index = np.empty(data.shape[0])
+    data_index.fill(np.nan)
+    for idx, item in enumerate(items):
+        match = data['item'] == item
+        if match.any():
+            data_index[match.to_numpy()] = idx
+    data.loc[:, 'item_index'] = data_index
+    return data

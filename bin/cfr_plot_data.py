@@ -4,12 +4,36 @@
 
 import os
 import argparse
+import numpy as np
 import pandas as pd
 from psifr import fr
 from cfr import task
 
 
-def main(csv_file, out_dir):
+def semantic_crp_plots(data, sim_file, out_dir, kwargs, subj_kwargs,
+                       bin_file=None):
+    """Make semantic crp plots."""
+
+    # read pool information
+    sim = task.read_similarity(sim_file)
+    data = task.set_item_index(data, sim['item'])
+    if bin_file is None:
+        edges = np.arange(0, 1.01, .05)
+        centers = None
+    else:
+        raise ValueError('Reading bin files currently unsupported.')
+
+    # semantic crps
+    crp = fr.distance_crp(data, 'item_index', sim['similarity'],
+                          edges, centers)
+    g = fr.plot_distance_crp(crp, min_samples=10, **kwargs)
+    g.savefig(os.path.join(out_dir, 'sem_crp.pdf'))
+
+    g = fr.plot_distance_crp(crp, min_samples=10, **subj_kwargs)
+    g.savefig(os.path.join(out_dir, 'sem_crp_subject.pdf'))
+
+
+def main(csv_file, out_dir, sim_file=None, bin_file=None):
 
     data = task.read_free_recall(csv_file)
 
@@ -17,12 +41,16 @@ def main(csv_file, out_dir):
         os.makedirs(out_dir)
 
     if 'list_type' in data:
-        mixed = data.query('list_type == "mixed"')
+        mixed = data.query('list_type == "mixed"').copy()
     else:
         mixed = data
 
     kwargs = {'height': 4}
     subj_kwargs = {'col': 'subject', 'col_wrap': 5, 'height': 3}
+
+    if sim_file is not None:
+        semantic_crp_plots(mixed, sim_file, out_dir,
+                           kwargs, subj_kwargs, bin_file=bin_file)
 
     # spc
     recall = fr.spc(mixed)
@@ -84,7 +112,9 @@ def main(csv_file, out_dir):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('csv_file')
-    parser.add_argument('out_dir')
+    parser.add_argument('csv_file', help="csv file with free recall data")
+    parser.add_argument('out_dir', help="directory to save figures")
+    parser.add_argument('--similarity', '-s',
+                        help="MAT-file with similarity matrix")
     args = parser.parse_args()
-    main(args.csv_file, args.out_dir)
+    main(args.csv_file, args.out_dir, args.similarity)
