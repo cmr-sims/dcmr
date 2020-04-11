@@ -10,22 +10,17 @@ from psifr import fr
 from cfr import task
 
 
-def semantic_crp_plots(data, sim_file, out_dir, kwargs, subj_kwargs,
-                       bin_file=None):
+def semantic_crp_plots(data, sim_file, out_dir, kwargs, subj_kwargs):
     """Make semantic crp plots."""
 
     # read pool information
     sim = task.read_similarity(sim_file)
     data = task.set_item_index(data, sim['item'])
-    if bin_file is None:
-        edges = np.arange(0, 1.01, .05)
-        centers = None
-    else:
-        raise ValueError('Reading bin files currently unsupported.')
+
+    edges = np.arange(0, 1.01, .05)
 
     # semantic crps
-    crp = fr.distance_crp(data, 'item_index', sim['similarity'],
-                          edges, centers)
+    crp = fr.distance_crp(data, 'item_index', sim['similarity'], edges)
     g = fr.plot_distance_crp(crp, min_samples=10, **kwargs)
     g.savefig(os.path.join(out_dir, 'sem_crp.pdf'))
 
@@ -34,7 +29,7 @@ def semantic_crp_plots(data, sim_file, out_dir, kwargs, subj_kwargs,
 
     # within category
     crp = fr.distance_crp(data, 'item_index', sim['similarity'],
-                          edges, centers, test_key='category',
+                          edges, test_key='category',
                           test=lambda x, y: x == y)
     g = fr.plot_distance_crp(crp, min_samples=10, **kwargs)
     g.savefig(os.path.join(out_dir, 'sem_crp_within.pdf'))
@@ -44,7 +39,7 @@ def semantic_crp_plots(data, sim_file, out_dir, kwargs, subj_kwargs,
 
     # across category
     crp = fr.distance_crp(data, 'item_index', sim['similarity'],
-                          edges, centers, test_key='category',
+                          edges, test_key='category',
                           test=lambda x, y: x != y)
     g = fr.plot_distance_crp(crp, min_samples=10, **kwargs)
     g.savefig(os.path.join(out_dir, 'sem_crp_across.pdf'))
@@ -53,9 +48,12 @@ def semantic_crp_plots(data, sim_file, out_dir, kwargs, subj_kwargs,
     g.savefig(os.path.join(out_dir, 'sem_crp_across_subject.pdf'))
 
 
-def main(csv_file, out_dir, sim_file=None, bin_file=None):
+def main(csv_file, out_dir, sim_file=None, query=None):
 
     data = task.read_free_recall(csv_file)
+
+    if query is not None:
+        data = data.query(query).copy()
 
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
@@ -84,8 +82,7 @@ def main(csv_file, out_dir, sim_file=None, bin_file=None):
     g.savefig(os.path.join(out_dir, 'p_within.pdf'))
 
     if sim_file is not None:
-        semantic_crp_plots(mixed, sim_file, out_dir,
-                           kwargs, subj_kwargs, bin_file=bin_file)
+        semantic_crp_plots(mixed, sim_file, out_dir, kwargs, subj_kwargs)
 
     # spc
     recall = fr.spc(mixed)
@@ -151,5 +148,7 @@ if __name__ == '__main__':
     parser.add_argument('out_dir', help="directory to save figures")
     parser.add_argument('--similarity', '-s',
                         help="MAT-file with similarity matrix")
+    parser.add_argument('--query', '-q',
+                        help="query filter to apply before plotting")
     args = parser.parse_args()
-    main(args.csv_file, args.out_dir, args.similarity)
+    main(args.csv_file, args.out_dir, args.similarity, args.query)
