@@ -1,6 +1,8 @@
 
 % SMP testing out the semantic CRP code
 
+% partner script is in cdcat_analysis/cdcatmr/beh_recall/scripts/run_sem_crp_cdcatmr.m
+
 % addpath(genpath('~/Science/GitHub/EMBAM'))
 % addpath('~/Science/GitHub/tcm/util');
 % init_cfr
