@@ -1,4 +1,4 @@
-function files = get_exp_info_cfrl(experiment, res_dir, check)
+function files = get_exp_info_cfrl(experiment, proj_dir, res_dir, check)
 %GET_EXP_INFO_CFRL   Get files needed to run a simulation of an experiment.
 %
 %  files = get_exp_info_cfrl(experiment, res_dir)
@@ -8,15 +8,16 @@ function files = get_exp_info_cfrl(experiment, res_dir, check)
 %      Base results directory. Results for individual experiments
 %      will be saved here.
 
-if nargin < 3
+if nargin < 4
     check = false;
 end
 if nargin < 2
-    res_dir = '';
+  proj_dir = '';
+  res_dir = '';
 end
 
 % assume all data is stored within the code project
-proj_dir = fileparts(mfilename('fullpath'));
+% proj_dir = fileparts(mfilename('fullpath'));
 
 sem_exp = experiment;
 if isempty(res_dir)
