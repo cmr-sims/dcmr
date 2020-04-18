@@ -5,7 +5,7 @@ function run_accre_search(type)
 % type = 'hybrid_fit';
 
 
-switch type:
+switch type
   case 'basic_fits'
     % combinations of different components of context
     fits = {'local' 'cat' 'wikiw2v' ...
