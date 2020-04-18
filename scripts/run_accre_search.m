@@ -25,7 +25,7 @@ switch type
   case 'hybrid_fit'
     
     % custom version with semantic cuing AND distributed context
-    fits = {'hybrid_cd_loc_cat_qi'};
+    fits = {'hybrid_dc_loc_cat_qi'};
     experiments = {'cfr'};
     flags = '-t 06:00:00 --mem=12gb --cpus-per-task=12';
     jobs = {};
