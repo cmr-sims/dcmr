@@ -1,6 +1,8 @@
 
 
 % combinations of different components of context
+% this ran successfully, but didn't save results to work, so
+% results must be dug out of Job18--Job27
 fits = {'local' 'cat' 'wikiw2v' ...
         'local_cat' 'local_wikiw2v' 'cat_wikiw2v' ...
         'local_cat_wikiw2v'};
@@ -16,3 +18,4 @@ for i = 1:n_rep
 end
 
 % custom version with semantic cuing AND distributed context
+% may have to work backwards to make sure w_cf_pre is used properly
