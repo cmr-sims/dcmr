@@ -4,7 +4,6 @@ function run_accre_search(type)
 % type = 'basic_fits';
 % type = 'hybrid_fit';
 
-
 switch type
   case 'basic_fits'
     % combinations of different components of context
