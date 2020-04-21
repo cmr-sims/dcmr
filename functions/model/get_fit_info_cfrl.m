@@ -35,6 +35,8 @@ switch fit
     model_type = 'tcm_dc_loc_wikiw2v_qi';
   case 'hybrid_wikiw2v'
     model_type = 'tcm_dc_loc_wikiw2v';
+  case 'hybrid_dc_loc_cat_qi'
+    model_type = 'tcm_dc_loc_cat_qi';
   case 'full_wikiw2v'
     model_type = 'tcm_dc_loc_cat_wikiw2v';
   case 'local'
