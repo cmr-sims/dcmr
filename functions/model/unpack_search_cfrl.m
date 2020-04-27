@@ -17,7 +17,8 @@ for i = 1:length(res)
     param = propval(fixed, param, 'strict', false);
     
     % set derived parameters
-    simdef = sim_def_cfrl(experiment, fit);
+    simdef = sim_def_cfrl(experiment, fit, res(i).run_opt.proj_dir, ...
+                          res(i).run_opt.res_dir);
     pool = load(simdef.pool_file);
     param = prep_param_cfrl(param, simdef, pool.category);
     param = check_param_cfrl(param);

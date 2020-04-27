@@ -15,6 +15,13 @@ function res = indiv_search_cfrl(experiment, fit, varargin)
 %      Results of the parameter search.
 %
 %  OPTIONS:
+%  proj_dir - string - ''
+%      Base path for the cmr_cfr project, allows the code to find
+%      the data files.
+%
+%  res_dir - string - ''
+%      Path specifying where to save results files.
+%
 %  f_logl - function_handle - @logl_mex_tcm
 %      Handle to function to evaluate likelihood, of the form:
 %          logl = f_logl(param, data)
@@ -55,6 +62,8 @@ def.n_workers = 1;
 def.search_type = 'de';
 def.subject = [];
 def.verbose = 2;
+def.proj_dir = '';
+def.res_dir = '';
 run_opt = propval(varargin, def);
 
 if run_opt.n_workers > 1 && isempty(gcp('nocreate'))
@@ -62,7 +71,7 @@ if run_opt.n_workers > 1 && isempty(gcp('nocreate'))
 end
 
 % get parameters of the model and data to fit
-simdef = sim_def_cfrl(experiment, fit);
+simdef = sim_def_cfrl(experiment, fit, run_opt.proj_dir, run_opt.res_dir);
 
 % search settings
 init = cat(1, simdef.param_info.init)';

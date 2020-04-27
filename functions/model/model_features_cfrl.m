@@ -9,6 +9,8 @@ function opt = model_features_cfrl(model_type)
 opt.sem_model = '';
 
 if namecheck({'_qc' '_qi' '_qic'}, model_type)
+    % smp: added to allow hybrid with sem cuing but not sem_vec
+    opt.sem_model = 'wikiw2v';
     opt.qsem = true;
 else
     opt.qsem = false;
