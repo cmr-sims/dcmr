@@ -7,6 +7,32 @@ import pandas as pd
 from psifr import fr
 
 
+def block_fields(study):
+    """Add fields labeling category blocks."""
+    # add label to study events indicating the block
+    list_category = study.groupby(['subject', 'list'])['category']
+    study.loc[:, 'block'] = list_category.transform(fr.block_index)
+
+    # get the number of blocks for each study list
+    n_block = study.groupby(['subject', 'list'])['block'].max()
+    n_block.name = 'n_block'
+
+    # merge the n_block field
+    study = pd.merge(study, n_block, left_on=['subject', 'list'],
+                     right_on=['subject', 'list'], how='outer')
+
+    # block position
+    study.loc[:, 'block_pos'] = study.groupby(['subject', 'list', 'block'])[
+                                    'position'].cumcount() + 1
+
+    # block length
+    block_len = study.groupby(['subject', 'list', 'block'])['block_pos'].max()
+    block_len.name = 'block_len'
+    study = pd.merge(study, block_len, left_on=['subject', 'list', 'block'],
+                     right_on=['subject', 'list', 'block'], how='outer')
+    return study
+
+
 def read_free_recall(csv_file):
     """Read and score free recall data."""
 
@@ -17,6 +43,7 @@ def read_free_recall(csv_file):
     data.category.cat.as_ordered(inplace=True)
 
     study = data.query('trial_type == "study"').copy()
+    study = block_fields(study)
     recall = data.query('trial_type == "recall"').copy()
 
     # additional fields
@@ -25,8 +52,9 @@ def read_free_recall(csv_file):
     for field in fields:
         if field in data:
             list_keys += [field]
+    study_keys = ['category', 'block', 'n_block', 'block_pos', 'block_len']
     merged = fr.merge_lists(study, recall, list_keys=list_keys,
-                            study_keys=['category'])
+                            study_keys=study_keys)
     return merged
 
 
