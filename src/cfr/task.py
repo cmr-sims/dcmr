@@ -30,14 +30,20 @@ def read_free_recall(csv_file):
     return merged
 
 
+def unpack_array(x):
+    if isinstance(x, np.ndarray):
+        x = unpack_array(x[0])
+    return x
+
+
 def read_similarity(sim_file):
     """Read pairwise similarity values from a standard MAT-file."""
 
     mat = io.loadmat(sim_file)
-    item = [i[0] for i in mat['item'][0]]
-    index = mat['item_index'][0]
-    similarity = mat['pair_similarity']
-    sim = {'item': item, 'index': index, 'similarity': similarity}
+    items = np.array([unpack_array(i) for i in mat['items']])
+    similarity = mat['sem_mat']
+    vectors = mat['vectors']
+    sim = {'items': items, 'vectors': vectors, 'similarity': similarity}
     return sim
 
 
