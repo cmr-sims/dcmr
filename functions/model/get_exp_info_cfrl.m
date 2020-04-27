@@ -16,7 +16,7 @@ if nargin < 2
 end
 
 % assume all data is stored within the code project
-proj_dir = fileparts(mfilename('fullpath'));
+proj_dir = fileparts(fileparts(mfilename('fullpath')));
 
 sem_exp = experiment;
 if isempty(res_dir)
