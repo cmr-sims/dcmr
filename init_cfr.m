@@ -9,4 +9,4 @@ addpath(fullfile(proj_dir, 'functions', 'analysis'))
 addpath(fullfile(proj_dir, 'functions', 'decode'))
 addpath(fullfile(proj_dir, 'functions', 'model'))
 addpath(fullfile(proj_dir, 'scripts'))
-
+addpath(fullfile(proj_dir, 'data'))
