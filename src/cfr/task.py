@@ -35,7 +35,6 @@ def block_fields(study):
 
 def read_free_recall(csv_file):
     """Read and score free recall data."""
-
     if not os.path.exists(csv_file):
         raise ValueError(f'Data file does not exist: {csv_file}')
 
@@ -66,7 +65,6 @@ def unpack_array(x):
 
 def read_similarity(sim_file):
     """Read pairwise similarity values from a standard MAT-file."""
-
     mat = io.loadmat(sim_file)
     items = np.array([unpack_array(i) for i in mat['items']])
     similarity = mat['sem_mat']
@@ -77,7 +75,6 @@ def read_similarity(sim_file):
 
 def set_item_index(data, items):
     """Set item index based on a pool."""
-
     data_index = np.empty(data.shape[0])
     data_index.fill(np.nan)
     for idx, item in enumerate(items):
