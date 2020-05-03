@@ -5,8 +5,8 @@ import numpy as np
 from scipy import io
 from scipy import stats
 import pandas as pd
-import h5py
 from psifr import fr
+from cymr import network
 
 
 def block_fields(study):
@@ -87,27 +87,7 @@ def set_item_index(data, items):
     return data
 
 
-def write_patterns(h5_file, items, **kwargs):
-    """Write patterns and similarity matrices to hdf5."""
-    with h5py.File(h5_file, 'w') as f:
-        # items
-        dt = h5py.special_dtype(vlen=str)
-        dset = f.create_dataset('items', items.shape, dtype=dt)
-        for i, item in enumerate(items):
-            dset[i] = item
-
-        # patterns
-        for name, vectors in kwargs.items():
-            # normalize so that dot product is equal to correlation
-            z = stats.zscore(vectors, axis=1) / np.sqrt(vectors.shape[1])
-            f.create_dataset('pattern/' + name, data=z)
-
-            # set pattern similarity to pairwise pattern correlation
-            sim = np.dot(z, z.T)
-            f.create_dataset('similarity/' + name, data=sim)
-
-
-def write_patterns_w2v(mat_file, h5_file):
+def save_patterns_w2v(mat_file, h5_file):
     """Read wiki2vec data and write patterns and similarity matrices."""
     mat = read_similarity(mat_file)
 
@@ -124,6 +104,9 @@ def write_patterns_w2v(mat_file, h5_file):
     # semantic patterns based on wiki2vec
     sem_patterns = mat['vectors']
 
+    # normalize so that dot product is equal to correlation
+    sem_z = stats.zscore(sem_patterns, axis=1) / np.sqrt(sem_patterns.shape[1])
+
     # write to standard format hdf5 file
-    write_patterns(h5_file, mat['items'], loc=loc_patterns, cat=cat_patterns,
-                   w2v=sem_patterns)
+    network.save_patterns(h5_file, mat['items'], loc=loc_patterns,
+                          cat=cat_patterns, w2v=sem_z)
