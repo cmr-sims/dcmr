@@ -8,12 +8,12 @@ if nargin < 2
 end
 
 % get all item numbers across subjects
-uitemno = unique(tab.item_number);
+uitemno = unique(tab.item_index);
 
 % remove intrusions
 uitemno = uitemno(uitemno ~= -1);
 for i = 1:length(uitemno)
-    match = tab.item_number == uitemno(i);
+    match = tab.item_index == uitemno(i);
     [c, ia, ib] = unique(tab.item(match));
     if length(c) > 1
         n = zeros(size(c));
