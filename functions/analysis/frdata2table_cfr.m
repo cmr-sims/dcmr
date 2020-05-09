@@ -13,7 +13,7 @@ data.rec.onset = times / 1000;
 
 % run the conversion
 extra = {'itemno', 'session', 'listtype', 'category', 'resp', 'rt'};
-names = {'item_number', '', 'list_type', '', 'response', 'response_time'};
+names = {'item_index', '', 'list_type', '', 'response', 'response_time'};
 if isfield(data, 'fam')
     data = rmfield(data, 'fam');
 end
@@ -47,3 +47,4 @@ tab.category = category;
 % deal with one subject who's item strings are cut off at one word;
 % was probably some problem with the parsing data
 tab = fix_item_column(tab);
+tab.item_index = tab.item_index - 1;
