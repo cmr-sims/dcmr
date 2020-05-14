@@ -1,6 +1,5 @@
 """Fit and simulate data using CMR."""
 
-import numpy as np
 from cymr.fit import Parameters
 
 
@@ -57,9 +56,8 @@ class WeightParameters(Parameters):
         connect : {'fdf', 'ff'}
             Type of connection.
 
-        weights : dict of (str: bool)
-            Weights to include in the parameterization, and whether to
-            allow it to be free and nonzero.
+        weights : list of str
+            Weights to include.
 
         upper : float
             Upper bound of parameters beyond the first two.
@@ -70,34 +68,30 @@ class WeightParameters(Parameters):
             prefix = 's'
         else:
             raise ValueError(f'Invalid connection type: {connect}')
-        n_weight = np.count_nonzero([include for include in weights.values()])
+        n_weight = len(weights)
         w_param = [f'{prefix}{n}' for n in range(n_weight - 1)]
 
         n = 0
         m = 0
-        for name, include in weights.items():
+        for name in weights:
             param = f'{prefix}_{name}'
-            if not include:
-                # this pattern is turned off
-                self.add_fixed({param: 0})
-            else:
-                self.add_weights(connect, {name: param})
-                if n_weight == 1:
-                    # if only one, no weight parameter necessary
-                    self.add_fixed({param: 1})
-                    continue
+            self.add_weights(connect, {name: param})
+            if n_weight == 1:
+                # if only one, no weight parameter necessary
+                self.add_fixed({param: 1})
+                continue
 
-                # set up weight parameter and translate to original name
-                if n == 0:
-                    ref_param = w_param[m]
-                    self.add_free({ref_param: (0, 1)})
-                    self.add_dependent({param: lambda par: par[ref_param]})
-                    m += 1
-                elif n == 1:
-                    self.add_dependent({param: lambda par: 1 - par[ref_param]})
-                else:
-                    new_param = w_param[m]
-                    self.add_free({new_param: (0, upper)})
-                    self.add_dependent({param: lambda par: par[new_param]})
-                    m += 1
-                n += 1
+            # set up weight parameter and translate to original name
+            if n == 0:
+                ref_param = w_param[m]
+                self.add_free({ref_param: (0, 1)})
+                self.add_dependent({param: lambda par: par[ref_param]})
+                m += 1
+            elif n == 1:
+                self.add_dependent({param: lambda par: 1 - par[ref_param]})
+            else:
+                new_param = w_param[m]
+                self.add_free({new_param: (0, upper)})
+                self.add_dependent({param: lambda par: par[new_param]})
+                m += 1
+            n += 1
