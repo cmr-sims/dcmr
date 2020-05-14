@@ -48,22 +48,28 @@ class WeightParameters(Parameters):
         probability by output position. [0, Inf]
     """
 
-    def add_weights(self, weights, prefix='w', upper=100):
+    def add_weight_param(self, connect, weights, upper=100):
         """
         Add weight parameters for patterns or similarity.
 
         Parameters
         ----------
+        connect : {'fdf', 'ff'}
+            Type of connection.
+
         weights : dict of (str: bool)
             Weights to include in the parameterization, and whether to
             allow it to be free and nonzero.
 
-        prefix : str
-            Prefix for weight parameters.
-
         upper : float
             Upper bound of parameters beyond the first two.
         """
+        if connect == 'fcf':
+            prefix = 'w'
+        elif connect == 'ff':
+            prefix = 's'
+        else:
+            raise ValueError(f'Invalid connection type: {connect}')
         n_weight = np.count_nonzero([include for include in weights.values()])
         w_param = [f'{prefix}{n}' for n in range(n_weight - 1)]
 
@@ -75,6 +81,7 @@ class WeightParameters(Parameters):
                 # this pattern is turned off
                 self.add_fixed({param: 0})
             else:
+                self.add_weights(connect, {name: param})
                 if n_weight == 1:
                     # if only one, no weight parameter necessary
                     self.add_fixed({param: 1})
