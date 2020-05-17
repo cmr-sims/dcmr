@@ -136,7 +136,7 @@ def read_pool_cfr(image_dir):
             m = re.match(pattern, filename)
             if m is None:
                 raise IOError(f'Failed to parse filename: {filename}')
-            names.append(m.group(1).replace('_', ' '))
+            names.append(m.group(1).replace('_', ' ').strip())
             tags.append(m.group(2))
             filepaths.append(match)
             item_category.append(category)
