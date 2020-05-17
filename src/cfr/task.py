@@ -1,6 +1,9 @@
 """Analyze free recall data."""
 
 import os
+import glob
+import re
+import shutil
 import numpy as np
 from scipy import io
 from scipy import stats
@@ -110,3 +113,51 @@ def save_patterns_w2v(mat_file, h5_file):
     # write to standard format hdf5 file
     network.save_patterns(h5_file, mat['items'], loc=loc_patterns,
                           cat=cat_patterns, w2v=sem_z)
+
+
+def read_pool_cfr(image_dir):
+    """Read CFR pool information."""
+    sub_dirs = ['celebrities', 'locations', 'objects']
+    categories = ['cel', 'loc', 'obj']
+
+    names = []
+    tags = []
+    filepaths = []
+    item_category = []
+    pattern = re.compile("([A-Za-z0-9_'.]*){([A-Za-z]*)}")
+    for sub_dir, category in zip(sub_dirs, categories):
+        cat_dir = os.path.join(image_dir, sub_dir)
+        if not os.path.exists(cat_dir):
+            raise IOError(f'Category directory not found: {cat_dir}')
+
+        matches = sorted(glob.glob(os.path.join(cat_dir, '*.jpg')))
+        for match in matches:
+            filename = os.path.basename(match)
+            m = re.match(pattern, filename)
+            if m is None:
+                raise IOError(f'Failed to parse filename: {filename}')
+            names.append(m.group(1).replace('_', ' '))
+            tags.append(m.group(2))
+            filepaths.append(match)
+            item_category.append(category)
+    pool = pd.DataFrame({'item': names, 'category': item_category,
+                         'tag': tags, 'filepath': filepaths})
+    return pool
+
+
+def save_pool_images(pool, image_dir):
+    """Save pool images in standard format."""
+    if not os.path.exists(image_dir):
+        os.makedirs(image_dir)
+
+    categories = pool['category'].unique()
+    sub_dir = {}
+    for category in categories:
+        sub_dir[category] = os.path.join(image_dir, category)
+        if not os.path.exists(sub_dir[category]):
+            os.makedirs(sub_dir[category])
+
+    for i, item in pool.iterrows():
+        old_path = item['filepath']
+        new_path = os.path.join(sub_dir[item['category']], item['item'] + '.jpg')
+        shutil.copy2(old_path, new_path)
