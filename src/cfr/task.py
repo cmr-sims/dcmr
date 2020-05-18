@@ -7,6 +7,8 @@ import shutil
 import numpy as np
 from scipy import io
 from scipy import stats
+import matplotlib.pyplot as plt
+from skimage import transform
 import pandas as pd
 from psifr import fr
 from cymr import network
@@ -161,3 +163,28 @@ def save_pool_images(pool, image_dir):
         old_path = item['filepath']
         new_path = os.path.join(sub_dir[item['category']], item['item'] + '.jpg')
         shutil.copy2(old_path, new_path)
+
+
+def load_pool_images(pool, image_dir, rescale=None):
+    """Load pool images."""
+    if not os.path.exists(image_dir):
+        raise IOError(f'Image directory does not exist: {image_dir}')
+
+    images = {}
+    for i, item in pool.iterrows():
+        image_file = os.path.join(image_dir, item['category'],
+                                  item['item'] + '.jpg')
+        image = plt.imread(image_file)
+        if len(image.shape) == 2:
+            image = np.tile(image[:, :, None], 3)
+        image = np.asarray(image, dtype=float) / 255
+
+        if rescale is not None:
+            new_shape = np.array(image.shape).copy()
+            new_shape[:2] = new_shape[:2] * rescale
+            rescaled = transform.resize(image, new_shape)
+        else:
+            rescaled = np.asarray(image, dtype=float)
+
+        images[item['item']] = rescaled
+    return images
