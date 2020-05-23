@@ -6,3 +6,4 @@ seaborn
 scikit-image
 git+https://github.com/mortonne/psifr
 git+https://github.com/mortonne/cymr
+git+https://github.com/mortonne/wikivector
