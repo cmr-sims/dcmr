@@ -9,7 +9,8 @@ from cymr import network
 from cfr import framework
 
 
-def main(data_file, patterns_file, model_type, sem_model, res_file, n_jobs=1):
+def main(data_file, patterns_file, model_type, sem_model, res_file,
+         n_reps=1, n_jobs=1):
 
     data = pd.read_csv(data_file)
     model = models.CMRDistributed()
@@ -17,7 +18,7 @@ def main(data_file, patterns_file, model_type, sem_model, res_file, n_jobs=1):
     patterns = network.load_patterns(patterns_file)
     results = model.fit_indiv(data, wp.fixed, wp.free, wp.dependent,
                               patterns=patterns, weights=wp.weights,
-                              n_jobs=n_jobs, method='de')
+                              n_jobs=n_jobs, method='de', n_rep=n_reps)
     results.to_csv(res_file)
 
 
@@ -28,7 +29,8 @@ if __name__ == '__main__':
     parser.add_argument('model_type')
     parser.add_argument('sem_model')
     parser.add_argument('res_file')
+    parser.add_argument('--n-reps', '-n', type=int, default=1)
     parser.add_argument('--n-jobs', '-j', type=int, default=1)
     args = parser.parse_args()
     main(args.data_file, args.patterns_file, args.model_type, args.sem_model,
-         args.res_file, args.n_jobs)
+         args.res_file, args.n_reps, args.n_jobs)
