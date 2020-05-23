@@ -12,6 +12,7 @@ from skimage import transform
 import pandas as pd
 from psifr import fr
 from cymr import network
+from wikivector import vector
 
 
 def block_fields(study):
