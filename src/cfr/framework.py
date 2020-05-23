@@ -95,3 +95,21 @@ class WeightParameters(Parameters):
                 self.add_dependent({param: lambda par: par[new_param]})
                 m += 1
             n += 1
+
+
+def model_variant(model_type, sem_model='w2v'):
+    """Define parameters for a model variant."""
+    wp = WeightParameters()
+    wp.add_fixed(Afc=0, Acf=0, Aff=0, Dff=1)
+    wp.add_free(Lfc=(0, 1), Lcf=(0, 1), P1=(0, 10), P2=(0, 10),
+                B_enc=(0, 1), B_start=(0, 1), B_rec=(0, 1),
+                T=(0, 10), X1=(0, 1), X2=(0, 10))
+    wp.add_dependent(Dfc=lambda par: 1 - par['Lfc'],
+                     Dcf=lambda par: 1 - par['Lcf'])
+
+    if model_type == 'hybrid':
+        wp.add_weight_param('fcf', ['loc', 'cat'])
+        wp.add_weight_param('ff', [sem_model])
+    else:
+        raise ValueError(f"Invalid model type: {model_type}")
+    return wp
