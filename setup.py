@@ -26,11 +26,6 @@ setuptools.setup(
     packages=setuptools.find_packages('src'),
     package_dir={'': 'src'},
     scripts=find_scripts(),
-    install_requires=[
-        'numpy',
-        'pandas',
-        'seaborn',
-    ],
     classifiers=[
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3.8',

@@ -1,0 +1,8 @@
+numpy
+scipy
+matplotlib
+pandas
+seaborn
+scikit-image
+git+https://github.com/mortonne/psifr
+git+https://github.com/mortonne/cymr
