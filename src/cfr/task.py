@@ -92,9 +92,11 @@ def set_item_index(data, items):
     return data
 
 
-def save_patterns_w2v(mat_file, h5_file):
+def save_patterns_w2v(mat_file, use_file, h5_file):
     """Read wiki2vec data and write patterns and similarity matrices."""
     mat = read_similarity(mat_file)
+    use_patterns, use_items = vector.load_vectors(use_file)
+    np.testing.assert_array_equal(mat['items'], use_items)
 
     # localist patterns
     loc_patterns = np.eye(mat['items'].shape[0])
@@ -112,9 +114,12 @@ def save_patterns_w2v(mat_file, h5_file):
     # normalize so that dot product is equal to correlation
     sem_z = stats.zscore(sem_patterns, axis=1) / np.sqrt(sem_patterns.shape[1])
 
+    # use vectors
+    use_z = stats.zscore(use_patterns, axis=1) / np.sqrt(use_patterns.shape[1])
+
     # write to standard format hdf5 file
     network.save_patterns(h5_file, mat['items'], loc=loc_patterns,
-                          cat=cat_patterns, w2v=sem_z)
+                          cat=cat_patterns, w2v=sem_z, use=use_z)
 
 
 def read_pool_cfr(image_dir):
