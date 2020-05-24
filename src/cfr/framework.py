@@ -85,14 +85,14 @@ class WeightParameters(Parameters):
             if n == 0:
                 ref_param = w_param[m]
                 self.add_free({ref_param: (0, 1)})
-                self.add_dependent({param: lambda par: par[ref_param]})
+                self.add_dependent({param: ref_param})
                 m += 1
             elif n == 1:
-                self.add_dependent({param: lambda par: 1 - par[ref_param]})
+                self.add_dependent({param: f'1 - {ref_param}'})
             else:
                 new_param = w_param[m]
                 self.add_free({new_param: (0, upper)})
-                self.add_dependent({param: lambda par: par[new_param]})
+                self.add_dependent({param: new_param})
                 m += 1
             n += 1
 
@@ -104,8 +104,7 @@ def model_variant(model_type, sem_model='w2v'):
     wp.add_free(Lfc=(0, 1), Lcf=(0, 1), P1=(0, 10), P2=(0, 10),
                 B_enc=(0, 1), B_start=(0, 1), B_rec=(0, 1),
                 T=(0, 10), X1=(0, 1), X2=(0, 10))
-    wp.add_dependent(Dfc=lambda par: 1 - par['Lfc'],
-                     Dcf=lambda par: 1 - par['Lcf'])
+    wp.add_dependent(Dfc='1 - Lfc', Dcf='1 - Lcf')
 
     if model_type == 'hybrid':
         wp.add_weight_param('fcf', ['loc', 'cat'])
