@@ -100,11 +100,22 @@ class WeightParameters(Parameters):
 def model_variant(model_type, sem_model='w2v'):
     """Define parameters for a model variant."""
     wp = WeightParameters()
-    wp.add_fixed(Afc=0, Acf=0, Aff=0, Dff=1)
-    wp.add_free(Lfc=(0, 1), Lcf=(0, 1), P1=(0, 10), P2=(0, 10),
-                B_enc=(0, 1), B_start=(0, 1), B_rec=(0, 1),
-                T=(0, 10), X1=(0, 1), X2=(0, 10))
-    wp.add_dependent(Dfc='1 - Lfc', Dcf='1 - Lcf')
+    wp.add_fixed(Afc=0,
+                 Acf=0,
+                 Aff=0,
+                 Dff=1)
+    wp.add_free(Lfc=(0, 1),
+                Lcf=(0, 1),
+                P1=(0, 10),
+                P2=(0.1, 5),
+                B_enc=(0, 1),
+                B_start=(0, 1),
+                B_rec=(0, 1),
+                T=(0.1, 10),
+                X1=(0, 1),
+                X2=(0, 5))
+    wp.add_dependent(Dfc='1 - Lfc',
+                     Dcf='1 - Lcf')
 
     if model_type == 'hybrid':
         wp.add_weight_param('fcf', ['loc', 'cat'])
