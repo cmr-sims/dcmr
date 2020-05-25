@@ -59,13 +59,13 @@ if __name__ == '__main__':
     parser.add_argument('--tol', '-t', type=float, default=0.00001)
     args = parser.parse_args()
 
-    if args.fcf_features:
-        fcf = args.fcf_features.split(',')
+    if args.fcf_features and args.fcf_features != 'none':
+        fcf = args.fcf_features.split('-')
     else:
         fcf = None
 
-    if args.ff_features:
-        ff = args.ff_features.split(',')
+    if args.ff_features and args.ff_features != 'none':
+        ff = args.ff_features.split('-')
     else:
         ff = None
 
