@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 
 
-def main(fcf_features, ff_features, n_rep=10, n_job=29, tol=0.00001):
+def main(fcf_features, ff_features, n_rep=10, n_job=48, tol=0.00001):
     study_dir = os.environ['STUDYDIR']
     if not study_dir:
         raise EnvironmentError('STUDYDIR not defined.')
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     parser.add_argument('fcf_features')
     parser.add_argument('ff_features')
     parser.add_argument('--n-rep', '-n', default=10, type=int)
-    parser.add_argument('--n_job', '-j', default=29, type=int)
+    parser.add_argument('--n_job', '-j', default=48, type=int)
     parser.add_argument('--tol', '-t', type=float, default=0.00001)
     args = parser.parse_args()
 
