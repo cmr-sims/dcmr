@@ -22,7 +22,7 @@ def main(data_file, patterns_file, model_type, sem_model, res_dir,
     results = model.fit_indiv(data, wp.fixed, wp.free, wp.dependent,
                               patterns=patterns, weights=wp.weights,
                               n_jobs=n_jobs, method='de', n_rep=n_reps,
-                              tol=0.001)
+                              tol=0.000001)
 
     if not os.path.exists(res_dir):
         os.makedirs(res_dir)
