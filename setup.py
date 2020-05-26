@@ -10,6 +10,7 @@ def readme():
 
 def find_scripts():
     scripts = glob.glob(os.path.join('bin', '*.py'))
+    scripts.extend(glob.glob(os.path.join('bin', '*.sh')))
     return scripts
 
 
