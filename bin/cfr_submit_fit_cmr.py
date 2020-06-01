@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 
 
-def main(fcf_features, ff_features, n_rep=10, n_job=48, tol=0.00001):
+def main(fcf_features, ff_features, res_dir, n_rep=10, n_job=48, tol=0.00001):
     study_dir = os.environ['STUDYDIR']
     if not study_dir:
         raise EnvironmentError('STUDYDIR not defined.')
@@ -22,15 +22,16 @@ def main(fcf_features, ff_features, n_rep=10, n_job=48, tol=0.00001):
         res_name += f'_fcf-{fcf_features}'
     if ff_features and ff_features != 'none':
         res_name += f'_ff-{ff_features}'
-    res_dir = os.path.join(study_dir, 'cfr', 'fits', res_name)
+    full_dir = os.path.join(study_dir, 'cfr', res_dir, res_name)
 
-    print(f'cfr_fit_cmr.py {inputs} {fcf_features} {ff_features} {res_dir} {opts}')
+    print(f'cfr_fit_cmr.py {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('fcf_features')
     parser.add_argument('ff_features')
+    parser.add_argument('res_dir')
     parser.add_argument('--n-rep', '-n', default=10, type=int)
     parser.add_argument('--n_job', '-j', default=48, type=int)
     parser.add_argument('--tol', '-t', type=float, default=0.00001)
@@ -46,4 +47,4 @@ if __name__ == '__main__':
         ff_list *= max_n
 
     for fcf, ff in zip(fcf_list, ff_list):
-        main(fcf, ff, args.n_rep, args.n_job, args.tol)
+        main(fcf, ff, args.res_dir, args.n_rep, args.n_job, args.tol)
