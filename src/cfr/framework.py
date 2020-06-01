@@ -103,7 +103,8 @@ def model_variant(fcf_features, ff_features=None):
     wp.add_fixed(Afc=0,
                  Acf=0,
                  Aff=0,
-                 Dff=1)
+                 Dff=1,
+                 T=0.1)
     wp.add_free(Lfc=(0, 1),
                 Lcf=(0, 1),
                 P1=(0, 10),
@@ -111,7 +112,6 @@ def model_variant(fcf_features, ff_features=None):
                 B_enc=(0, 1),
                 B_start=(0, 1),
                 B_rec=(0, 1),
-                T=(0.1, 10),
                 X1=(0, 1),
                 X2=(0, 5))
     wp.add_dependent(Dfc='1 - Lfc',
@@ -122,4 +122,6 @@ def model_variant(fcf_features, ff_features=None):
 
     if ff_features:
         wp.add_weight_param('ff', ff_features)
+        del wp.fixed['Dff']
+        wp.add_free(Dff=(0, 10))
     return wp
