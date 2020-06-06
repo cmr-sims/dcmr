@@ -77,14 +77,14 @@ def main(data_file, patterns_file, param1, sweep1, param2, sweep2,
     g.savefig(os.path.join(res_dir, 'cat_crp.pdf'))
 
     # semantic crp
-    edges = np.linspace(0, .4, 5)
+    edges = np.linspace(.05, .95, 10)
     rsm = patterns['similarity']['use']
     p = sim.groupby(level=[0, 1]).apply(
         fr.distance_crp, 'item_index', rsm, edges
     )
     g = fr.plot_distance_crp(p.reset_index(), row=param_names[0],
-                             col=param_names[1], **kws)
-    g.set(ylim=[0, .2])
+                             col=param_names[1], min_samples=10 * n_rep,
+                             **kws)
     g.savefig(os.path.join(res_dir, 'use_crp.pdf'))
 
     # raster by serial position
