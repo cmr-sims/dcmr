@@ -4,7 +4,8 @@
 
 rsync -azvu stampede:work/cmr_cfr/cfr/fits/ \
   "$STUDYDIR"/cfr/fits \
-  --include="cmr*/" \
+  --include="*/" \
+  --include="*/cmr*/" \
   --include="*.csv" \
   --include="*.json" \
   --exclude="*" \
