@@ -41,10 +41,8 @@ def main(data_file, patterns_file, param1, sweep1, param2, sweep2,
     sim = results.groupby(level=[0, 1]).apply(
         fr.merge_free_recall, study_keys=['category', 'item_index']
     )
-    sim1 = sim.loc[sim['list'] <= 48]
-
-    if not os.path.exists(res_dir):
-        os.makedirs(res_dir)
+    sim_list = fr.reset_list(sim.reset_index())
+    sim1 = sim_list.loc[sim_list['list'] <= 30]
     kws = {'height': 4}
 
     # serial position curve
