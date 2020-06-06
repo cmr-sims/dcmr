@@ -27,7 +27,18 @@ def main(data_file, patterns_file, param1, sweep1, param2, sweep2,
              'Lfc': .16, 'Lcf': .08, 'P1': .14, 'P2': 1.3,
              'B_enc': .75, 'B_start': .87, 'B_rec': .95, 'T': .10,
              'X1': .0078, 'X2': .26, 'Dfc': .84, 'Dcf': .92,
-             'w0': .5, 'w1': .5}
+             'w0': .5, 'w1': 1}
+
+    # write parameter definition file
+    if not os.path.exists(res_dir):
+        os.makedirs(res_dir)
+    wp.fixed.update(fixed)
+    wp.free = {}
+    wp.add_free({param1: (sweep1[0], sweep1[-1]),
+                 param2: (sweep2[0], sweep2[-1])})
+    del wp.fixed[param1]
+    del wp.fixed[param2]
+    wp.to_json(os.path.join(res_dir, 'parameters.json'))
 
     # run sweep
     study_data = data.loc[(data['trial_type'] == 'study')]
