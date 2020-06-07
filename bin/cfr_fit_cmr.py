@@ -12,7 +12,7 @@ from cfr import framework
 
 
 def main(data_file, patterns_file, fcf_features, ff_features, res_dir,
-         n_reps=1, n_jobs=1, tol=0.00001):
+         n_reps=1, n_jobs=1, tol=0.00001, n_sim_reps=1):
 
     # run individual parameter search
     data = pd.read_csv(data_file)
@@ -42,7 +42,8 @@ def main(data_file, patterns_file, fcf_features, ff_features, res_dir,
     subj_param = best.T.to_dict()
     study_data = data.loc[(data['trial_type'] == 'study')]
     sim = model.generate(study_data, {}, subj_param,
-                         patterns=patterns, weights=wp.weights)
+                         patterns=patterns, weights=wp.weights,
+                         n_rep=n_sim_reps)
     sim_file = os.path.join(res_dir, 'sim.csv')
     sim.to_csv(sim_file, index=False)
 
@@ -57,6 +58,7 @@ if __name__ == '__main__':
     parser.add_argument('--n-reps', '-n', type=int, default=1)
     parser.add_argument('--n-jobs', '-j', type=int, default=1)
     parser.add_argument('--tol', '-t', type=float, default=0.00001)
+    parser.add_argument('--n-sim-reps', '-r', type=int, default=1)
     args = parser.parse_args()
 
     if args.fcf_features and args.fcf_features != 'none':
@@ -70,4 +72,4 @@ if __name__ == '__main__':
         ff = None
 
     main(args.data_file, args.patterns_file, fcf, ff,
-         args.res_dir, args.n_reps, args.n_jobs, args.tol)
+         args.res_dir, args.n_reps, args.n_jobs, args.tol, args.n_sim_reps)
