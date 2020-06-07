@@ -1,5 +1,8 @@
 """Fit and simulate data using CMR."""
 
+import os
+import json
+import pandas as pd
 from cymr.fit import Parameters
 
 
@@ -125,3 +128,19 @@ def model_variant(fcf_features, ff_features=None):
         del wp.fixed['Dff']
         wp.add_free(Dff=(0, 10))
     return wp
+
+
+def read_fit_param(fit_file):
+    """Read subject parameters from a fit results file."""
+    fit = pd.read_csv(fit_file, index_col=0)
+    fit = fit.drop(['rep', 'logl', 'n', 'k'], axis=1)
+    param = fit.T.to_dict()
+    return param
+
+
+def read_fit_weights(param_file):
+    """Read weights from a parameters file."""
+    with open(param_file, 'r') as f:
+        wp = json.load(f)
+    weights = wp['weights']
+    return weights
