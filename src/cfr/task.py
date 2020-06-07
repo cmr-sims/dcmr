@@ -60,16 +60,20 @@ def read_free_recall(csv_file):
     data = pd.read_csv(csv_file, dtype={'category': 'category'})
     data.category.cat.as_ordered(inplace=True)
 
-    study = data.query('trial_type == "study"').copy()
-    study = block_fields(study)
-    recall = data.query('trial_type == "recall"').copy()
-
-    # additional fields
+    # additional list fields
     list_keys = ['session']
     fields = ['list_type', 'list_category', 'distractor']
     for field in fields:
         if field in data:
             list_keys += [field]
+    data = data.groupby(['subject', 'list']).apply(set_list_columns, list_keys)
+
+    # split, add block fields to study
+    study = data.query('trial_type == "study"').copy()
+    study = block_fields(study)
+    recall = data.query('trial_type == "recall"').copy()
+
+    # merge study and recalle events
     study_keys = ['category', 'block', 'n_block', 'block_pos', 'block_len']
     merged = fr.merge_lists(study, recall, list_keys=list_keys,
                             study_keys=study_keys)
