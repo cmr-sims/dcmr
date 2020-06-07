@@ -1,6 +1,5 @@
 """Fit and simulate data using CMR."""
 
-import os
 import json
 import pandas as pd
 from cymr.fit import Parameters
