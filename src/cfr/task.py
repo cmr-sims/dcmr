@@ -41,6 +41,17 @@ def block_fields(study):
     return study
 
 
+def set_list_columns(data, columns):
+    """Set columns that are defined for each list."""
+    modified = data.copy()
+    for column in columns:
+        unique_value = data[column][data[column].notna()].unique()
+        if len(unique_value) > 1:
+            raise ValueError(f"Column {column} has multiple values.")
+        modified[column] = unique_value[0]
+    return modified
+
+
 def read_free_recall(csv_file):
     """Read and score free recall data."""
     if not os.path.exists(csv_file):
