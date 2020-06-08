@@ -6,6 +6,7 @@ import os
 import argparse
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from psifr import fr
 from cymr import network
 from cfr import task
@@ -29,6 +30,13 @@ def main(data_file, patterns_file, fit_dir):
 
     # make plots
     fig_dir = os.path.join(fit_dir, 'figs')
+    p = full.groupby('source').apply(fr.category_crp, category_key='category')
+    comp = p[['prob']].unstack(level=0).droplevel(axis=1, level=0)
+    g = sns.relplot(kind='scatter', x='Data', y='Model',
+                    data=comp.reset_index())
+    g.axes[0, 0].plot([0, 1], [0, 1], '-k')
+    g.savefig(os.path.join(fig_dir, f'cat_crp_comp.pdf'))
+
     figures.plot_fit(
         full, 'source', 'use_crp',
         lambda x: fr.distance_crp(x, 'item_index', rsm, edges),
