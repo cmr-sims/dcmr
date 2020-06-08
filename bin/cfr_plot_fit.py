@@ -30,12 +30,22 @@ def main(data_file, patterns_file, fit_dir):
 
     # make plots
     fig_dir = os.path.join(fit_dir, 'figs')
+
+    # temporal rank
+    p = full.groupby('source').apply(fr.lag_rank)
+    comp = p[['rank']].unstack(level=0).droplevel(axis=1, level=0)
+    g = sns.relplot(kind='scatter', x='Data', y='Model',
+                    data=comp.reset_index())
+    g.axes[0, 0].plot([0, 1], [0, 1], '-k')
+    g.savefig(os.path.join(fig_dir, 'lag_rank_comp.pdf'))
+
+    # category clustering
     p = full.groupby('source').apply(fr.category_crp, category_key='category')
     comp = p[['prob']].unstack(level=0).droplevel(axis=1, level=0)
     g = sns.relplot(kind='scatter', x='Data', y='Model',
                     data=comp.reset_index())
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
-    g.savefig(os.path.join(fig_dir, f'cat_crp_comp.pdf'))
+    g.savefig(os.path.join(fig_dir, 'cat_crp_comp.pdf'))
 
     figures.plot_fit(
         full, 'source', 'use_crp',
@@ -44,12 +54,12 @@ def main(data_file, patterns_file, fit_dir):
     )
     figures.plot_fit(full, 'source', 'spc', fr.spc, {}, fr.plot_spc, {},
                      fig_dir)
-    figures.plot_fit(full, 'source', 'crp', fr.lag_crp, {},
+    figures.plot_fit(full, 'source', 'lag_crp', fr.lag_crp, {},
                      fr.plot_lag_crp, {}, fig_dir)
-    figures.plot_fit(full, 'source', 'crp_within', fr.lag_crp,
+    figures.plot_fit(full, 'source', 'lag_crp_within', fr.lag_crp,
                      {'test_key': 'category', 'test': lambda x, y: x == y},
                      fr.plot_lag_crp, {}, fig_dir)
-    figures.plot_fit(full, 'source', 'crp_across', fr.lag_crp,
+    figures.plot_fit(full, 'source', 'lag_crp_across', fr.lag_crp,
                      {'test_key': 'category', 'test': lambda x, y: x != y},
                      fr.plot_lag_crp, {}, fig_dir)
 
