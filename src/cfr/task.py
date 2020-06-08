@@ -74,7 +74,8 @@ def read_free_recall(csv_file):
     recall = data.query('trial_type == "recall"').copy()
 
     # merge study and recalle events
-    study_keys = ['category', 'block', 'n_block', 'block_pos', 'block_len']
+    study_keys = ['item_index', 'category', 'block', 'n_block', 'block_pos',
+                  'block_len']
     merged = fr.merge_lists(study, recall, list_keys=list_keys,
                             study_keys=study_keys)
     return merged
