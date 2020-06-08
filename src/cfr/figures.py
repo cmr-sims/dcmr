@@ -26,6 +26,8 @@ def plot_fit(data, group_var, stat_name, f_stat, stat_kws, f_plot, out_dir):
     var_name = stat.index.names[2]
 
     # by mean
+    if 'prob' in stat:
+        stat = stat.loc[:, ['prob']].copy()
     m = stat.groupby([group_var, var_name]).mean()
     comp = m.unstack(level=0).droplevel(axis=1, level=0)
     g = sns.relplot(kind='scatter', x=groups[0], y=groups[1], hue=var_name,
