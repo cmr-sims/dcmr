@@ -63,9 +63,21 @@ def main(data_file, patterns_file, fit_dir):
 
     # curves
     figures.plot_fit(
-        full, 'source', 'use_crp',
-        lambda x: fr.distance_crp(x, 'item_index', rsm, edges), {}, 'prob',
-        fr.plot_distance_crp, {'min_samples': 10}, fig_dir
+        full, 'source', 'use_crp', fr.distance_crp,
+        {'index_key': 'item_index', 'distances': rsm, 'edges': edges},
+        'prob', fr.plot_distance_crp, {'min_samples': 10}, fig_dir
+    )
+    figures.plot_fit(
+        full, 'source', 'use_crp_within', fr.distance_crp,
+        {'index_key': 'item_index', 'distances': rsm, 'edges': edges,
+         'test_key': 'category', 'test': lambda x, y: x == y},
+        'prob', fr.plot_distance_crp, {'min_samples': 10}, fig_dir
+    )
+    figures.plot_fit(
+        full, 'source', 'use_crp_across', fr.distance_crp,
+        {'index_key': 'item_index', 'distances': rsm, 'edges': edges,
+         'test_key': 'category', 'test': lambda x, y: x != y},
+        'prob', fr.plot_distance_crp, {'min_samples': 10}, fig_dir
     )
     figures.plot_fit(
         full, 'source', 'spc', fr.spc, {}, 'recall',
