@@ -1,5 +1,6 @@
 """Fit and simulate data using CMR."""
 
+import os
 import json
 import pandas as pd
 from cymr.fit import Parameters
@@ -143,3 +144,20 @@ def read_fit_weights(param_file):
         wp = json.load(f)
     weights = wp['weights']
     return weights
+
+
+def read_model_fits(fit_dir, models, model_names=None):
+    """Read fit results for multiple models."""
+    if model_names is None:
+        model_names = models
+
+    res_list = []
+    for model in models:
+        fit_file = os.path.join(fit_dir, model, 'fit.csv')
+        res_model = pd.read_csv(fit_file)
+        res_list.append(res_model)
+    res = pd.concat(res_list, axis=0, keys=model_names)
+    res = res.reset_index(level=1, drop=True)
+    res.index.rename('model', inplace=True)
+    res = res.set_index('subject', append=True)
+    return res
