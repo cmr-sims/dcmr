@@ -2,6 +2,7 @@
 
 import os
 import json
+import numpy as np
 import pandas as pd
 from cymr.fit import Parameters
 
@@ -161,3 +162,16 @@ def read_model_fits(fit_dir, models, model_names=None):
     res.index.rename('model', inplace=True)
     res = res.set_index('subject', append=True)
     return res
+
+
+def aic(logl, n, k):
+    """Akaike information criterion."""
+    return -2 * logl + 2 * k + ((2 * k * (k + 1)) / (n - k - 1))
+
+
+def waic(a, axis=1):
+    """Akaike weights."""
+    min_aic = np.expand_dims(np.min(a, axis), axis)
+    delta_aic = np.exp(-0.5 * (a - min_aic))
+    sum_aic = np.expand_dims(np.sum(delta_aic, axis), axis)
+    return delta_aic / sum_aic
