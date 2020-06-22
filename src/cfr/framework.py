@@ -147,6 +147,39 @@ def read_fit_weights(param_file):
     return weights
 
 
+def read_model_spec(def_file):
+    """Read model specification file as a series."""
+    with open(def_file, 'r') as f:
+        model_def = json.load(f)
+
+    value = {**model_def['fixed'], **model_def['free'],
+             **model_def['dependent']}
+    kind = {}
+    for par in model_def['fixed'].keys():
+        kind[par] = 'fixed'
+    for par in model_def['free'].keys():
+        kind[par] = 'free'
+    for par in model_def['dependent'].keys():
+        kind[par] = 'dependent'
+
+    df = pd.DataFrame([value, kind], index=['value', 'kind'])
+    return df.T
+
+
+def read_model_specs(fit_dir, models, model_names=None):
+    """Read model definitions for multiple models."""
+    if model_names is None:
+        model_names = models
+
+    spec_list = []
+    for model in models:
+        spec_file = os.path.join(fit_dir, model, 'parameters.json')
+        spec = read_model_spec(spec_file)
+        spec_list.append(spec)
+    model_defs = pd.concat(spec_list, keys=model_names)
+    return model_defs
+
+
 def read_model_fits(fit_dir, models, model_names=None):
     """Read fit results for multiple models."""
     if model_names is None:
