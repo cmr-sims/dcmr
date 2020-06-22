@@ -177,6 +177,7 @@ def read_model_specs(fit_dir, models, model_names=None):
         spec = read_model_spec(spec_file)
         spec_list.append(spec)
     model_defs = pd.concat(spec_list, keys=model_names)
+    model_defs.index.rename(['model', 'param'], inplace=True)
     return model_defs
 
 
