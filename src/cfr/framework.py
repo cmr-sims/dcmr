@@ -5,6 +5,7 @@ import json
 import numpy as np
 import pandas as pd
 from cymr.fit import Parameters
+from cfr import task
 
 
 class WeightParameters(Parameters):
@@ -196,6 +197,23 @@ def read_model_fits(fit_dir, models, model_names=None):
     res.index.rename('model', inplace=True)
     res = res.set_index('subject', append=True)
     return res
+
+
+def read_model_sims(data_file, fit_dir, models, model_names=None):
+    """Read simulated data for multiple models."""
+    if model_names is None:
+        model_names = models
+
+    data_list = []
+    obs_data = task.read_free_recall(data_file)
+    data_list.append(obs_data)
+    for model in models:
+        sim_file = os.path.join(fit_dir, model, 'sim.csv')
+        sim_data = task.read_free_recall(sim_file)
+        data_list.append(sim_data)
+    data = pd.concat(data_list, axis=0, keys=['data'] + model_names)
+    data.index.rename(['source', 'trial'], inplace=True)
+    return data
 
 
 def aic(logl, n, k):
