@@ -5,7 +5,7 @@
 import os
 import argparse
 import pandas as pd
-from cymr import models
+from cymr import cmr
 from cymr import network
 from cymr import fit
 from cfr import framework
@@ -16,7 +16,7 @@ def main(data_file, patterns_file, fcf_features, ff_features, res_dir,
 
     # run individual parameter search
     data = pd.read_csv(data_file)
-    model = models.CMRDistributed()
+    model = cmr.CMRDistributed()
     wp = framework.model_variant(fcf_features, ff_features)
     patterns = network.load_patterns(patterns_file)
     results = model.fit_indiv(data, wp.fixed, wp.free, wp.dependent,

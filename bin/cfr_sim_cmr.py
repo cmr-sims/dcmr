@@ -5,7 +5,7 @@
 import os
 import argparse
 import pandas as pd
-from cymr import models
+from cymr import cmr
 from cymr import network
 from cfr import framework
 
@@ -20,7 +20,7 @@ def main(data_file, patterns_file, fit_dir, n_rep=1):
     study_data = data.loc[(data['trial_type'] == 'study')]
 
     # get model, patterns, and weights
-    model = models.CMRDistributed()
+    model = cmr.CMRDistributed()
     patterns = network.load_patterns(patterns_file)
     param_file = os.path.join(fit_dir, 'parameters.json')
     weights = framework.read_fit_weights(param_file)

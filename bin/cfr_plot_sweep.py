@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from cymr import models
+from cymr import cmr
 from cymr import network
 from cfr import framework
 from psifr import fr
@@ -18,7 +18,7 @@ def main(data_file, patterns_file, param1, sweep1, param2, sweep2,
 
     # run individual parameter search
     data = pd.read_csv(data_file)
-    model = models.CMRDistributed()
+    model = cmr.CMRDistributed()
     wp = framework.model_variant(['loc', 'cat', 'use'], None)
     patterns = network.load_patterns(patterns_file)
 
