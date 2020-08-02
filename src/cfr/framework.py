@@ -4,7 +4,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
-from cymr.fit import Parameters
+from cymr.parameters import Parameters
 from cfr import task
 
 
@@ -52,7 +52,7 @@ class WeightParameters(Parameters):
         probability by output position. [0, Inf]
     """
 
-    def add_weight_param(self, connect, weights, upper=100):
+    def set_weight_param(self, connect, weights, upper=100):
         """
         Add weight parameters for patterns or similarity.
 
@@ -80,24 +80,24 @@ class WeightParameters(Parameters):
         m = 0
         for name in weights:
             param = f'{prefix}_{name}'
-            self.add_weights(connect, {name: param})
+            self.set_weights(connect, {name: param})
             if n_weight == 1:
                 # if only one, no weight parameter necessary
-                self.add_fixed({param: 1})
+                self.set_fixed({param: 1})
                 continue
 
             # set up weight parameter and translate to original name
             if n == 0:
                 ref_param = w_param[m]
-                self.add_free({ref_param: (0, 1)})
-                self.add_dependent({param: ref_param})
+                self.set_free({ref_param: (0, 1)})
+                self.set_dependent({param: ref_param})
                 m += 1
             elif n == 1:
-                self.add_dependent({param: f'1 - {ref_param}'})
+                self.set_dependent({param: f'1 - {ref_param}'})
             else:
                 new_param = w_param[m]
-                self.add_free({new_param: (0, upper)})
-                self.add_dependent({param: new_param})
+                self.set_free({new_param: (0, upper)})
+                self.set_dependent({param: new_param})
                 m += 1
             n += 1
 
@@ -105,12 +105,12 @@ class WeightParameters(Parameters):
 def model_variant(fcf_features, ff_features=None):
     """Define parameters for a model variant."""
     wp = WeightParameters()
-    wp.add_fixed(Afc=0,
+    wp.set_fixed(Afc=0,
                  Acf=0,
                  Aff=0,
                  Dff=1,
                  T=0.1)
-    wp.add_free(Lfc=(0, 1),
+    wp.set_free(Lfc=(0, 1),
                 Lcf=(0, 1),
                 P1=(0, 10),
                 P2=(0.1, 5),
@@ -119,16 +119,16 @@ def model_variant(fcf_features, ff_features=None):
                 B_rec=(0, 1),
                 X1=(0, 1),
                 X2=(0, 5))
-    wp.add_dependent(Dfc='1 - Lfc',
+    wp.set_dependent(Dfc='1 - Lfc',
                      Dcf='1 - Lcf')
 
     if fcf_features:
-        wp.add_weight_param('fcf', fcf_features)
+        wp.set_weight_param('fcf', fcf_features)
 
     if ff_features:
-        wp.add_weight_param('ff', ff_features)
+        wp.set_weight_param('ff', ff_features)
         del wp.fixed['Dff']
-        wp.add_free(Dff=(0, 10))
+        wp.set_free(Dff=(0, 10))
     return wp
 
 
