@@ -17,12 +17,12 @@ def main(data_file, patterns_file, fcf_features, ff_features, res_dir,
     # run individual parameter search
     data = pd.read_csv(data_file)
     model = cmr.CMRDistributed()
-    wp = framework.model_variant(fcf_features, ff_features)
+    param_def = framework.model_variant(fcf_features, ff_features)
     patterns = network.load_patterns(patterns_file)
-    results = model.fit_indiv(data, wp.fixed, wp.free, wp.dependent,
-                              patterns=patterns, weights=wp.weights,
-                              n_jobs=n_jobs, method='de', n_rep=n_reps,
-                              tol=tol)
+    results = model.fit_indiv(
+        data, param_def, patterns=patterns, n_jobs=n_jobs, method='de',
+        n_rep=n_reps, tol=tol
+    )
 
     if not os.path.exists(res_dir):
         os.makedirs(res_dir)
@@ -31,7 +31,7 @@ def main(data_file, patterns_file, fcf_features, ff_features, res_dir,
     res_file = os.path.join(res_dir, 'search.csv')
     results.to_csv(res_file)
     json_file = os.path.join(res_dir, 'parameters.json')
-    wp.to_json(json_file)
+    param_def.to_json(json_file)
 
     # best results
     best = fit.get_best_results(results)
@@ -41,9 +41,10 @@ def main(data_file, patterns_file, fcf_features, ff_features, res_dir,
     # simulate data based on best parameters
     subj_param = best.T.to_dict()
     study_data = data.loc[(data['trial_type'] == 'study')]
-    sim = model.generate(study_data, {}, subj_param,
-                         patterns=patterns, weights=wp.weights,
-                         n_rep=n_sim_reps)
+    sim = model.generate(
+        study_data, {}, subj_param=subj_param, param_def=param_def,
+        patterns=patterns, n_rep=n_sim_reps
+    )
     sim_file = os.path.join(res_dir, 'sim.csv')
     sim.to_csv(sim_file, index=False)
 

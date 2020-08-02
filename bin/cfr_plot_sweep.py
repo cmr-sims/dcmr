@@ -19,7 +19,7 @@ def main(data_file, patterns_file, param1, sweep1, param2, sweep2,
     # run individual parameter search
     data = pd.read_csv(data_file)
     model = cmr.CMRDistributed()
-    wp = framework.model_variant(['loc', 'cat', 'use'], None)
+    param_def = framework.model_variant(['loc', 'cat', 'use'], None)
     patterns = network.load_patterns(patterns_file)
 
     # fixed parameters
@@ -32,21 +32,23 @@ def main(data_file, patterns_file, param1, sweep1, param2, sweep2,
     # write parameter definition file
     if not os.path.exists(res_dir):
         os.makedirs(res_dir)
-    wp.fixed.update(fixed)
-    wp.free = {}
-    wp.add_free({param1: (sweep1[0], sweep1[-1]),
-                 param2: (sweep2[0], sweep2[-1])})
-    del wp.fixed[param1]
-    del wp.fixed[param2]
-    wp.to_json(os.path.join(res_dir, 'parameters.json'))
+    param_def.set_fixed(fixed)
+    param_def.set_free({
+        param1: (sweep1[0], sweep1[-1]),
+        param2: (sweep2[0], sweep2[-1])
+    })
+    del param_def.fixed[param1]
+    del param_def.fixed[param2]
+    param_def.to_json(os.path.join(res_dir, 'parameters.json'))
 
     # run sweep
     study_data = data.loc[(data['trial_type'] == 'study')]
     param_names = [param1, param2]
     param_sweeps = [sweep1, sweep2]
-    results = model.parameter_sweep(study_data, fixed, param_names, param_sweeps,
-                                    dependent=wp.dependent, patterns=patterns,
-                                    weights=wp.weights, n_rep=n_rep)
+    results = model.parameter_sweep(
+        study_data, param_def, param_names, param_sweeps,
+        patterns=patterns, n_rep=n_rep
+    )
 
     # prep for analysis
     sim = results.groupby(level=[0, 1]).apply(

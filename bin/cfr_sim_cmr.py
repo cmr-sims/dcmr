@@ -7,6 +7,7 @@ import argparse
 import pandas as pd
 from cymr import cmr
 from cymr import network
+from cymr import parameters
 from cfr import framework
 
 
@@ -23,15 +24,16 @@ def main(data_file, patterns_file, fit_dir, n_rep=1):
     model = cmr.CMRDistributed()
     patterns = network.load_patterns(patterns_file)
     param_file = os.path.join(fit_dir, 'parameters.json')
-    weights = framework.read_fit_weights(param_file)
+    param_def = parameters.read_json(param_file)
 
     # load parameters
     fit_file = os.path.join(fit_dir, 'fit.csv')
     subj_param = framework.read_fit_param(fit_file)
 
     # run simulation
-    sim = model.generate(study_data, {}, subj_param,
-                         patterns=patterns, weights=weights, n_rep=n_rep)
+    sim = model.generate(
+        study_data, {}, subj_param, param_def, patterns, n_rep=n_rep
+    )
 
     # save
     sim_file = os.path.join(fit_dir, 'sim.csv')
