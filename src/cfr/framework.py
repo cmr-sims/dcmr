@@ -52,13 +52,13 @@ class WeightParameters(Parameters):
         probability by output position. [0, Inf]
     """
 
-    def set_weight_param(self, connect, weights, upper=100):
+    def set_weight_param(self, connect, weights, upper=100, sublayers=False):
         """
         Add weight parameters for patterns or similarity.
 
         Parameters
         ----------
-        connect : {'fdf', 'ff'}
+        connect : {'fcf', 'ff'}
             Type of connection.
 
         weights : list of str
@@ -66,24 +66,46 @@ class WeightParameters(Parameters):
 
         upper : float
             Upper bound of parameters beyond the first two.
+
+        sublayers : bool, optional
+            If true, weight matrices will be split into sublayers that
+            will evolve context independently of one another. If false,
+            weight matrices will be assigned to different regions within
+            a single 'task' sublayer.
         """
         if connect == 'fcf':
             prefix = 'w'
+            matrices = ['fc', 'cf']
         elif connect == 'ff':
             prefix = 's'
+            matrices = ['ff']
         else:
             raise ValueError(f'Invalid connection type: {connect}')
         n_weight = len(weights)
         w_param = [f'{prefix}{n}' for n in range(n_weight - 1)]
 
+        # set list of sublayers
+        if sublayers:
+            self.set_sublayers(f=['task'], c=weights)
+        else:
+            self.set_sublayers(f=['task'], c=['task'])
+
         n = 0
         m = 0
         for name in weights:
             param = f'{prefix}_{name}'
-            self.set_weights(connect, {name: param})
+            if n_weight == 1:
+                expr = name
+            else:
+                expr = f'{param} * {name}'
+            if sublayers:
+                region = (('task', 'item'), (name, 'item'))
+            else:
+                region = (('task', 'item'), ('task', name))
+            for matrix in matrices:
+                self.set_weights(matrix, {region: expr})
             if n_weight == 1:
                 # if only one, no weight parameter necessary
-                self.set_fixed({param: 1})
                 continue
 
             # set up weight parameter and translate to original name
