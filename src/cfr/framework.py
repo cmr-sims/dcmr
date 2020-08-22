@@ -149,11 +149,7 @@ class WeightParameters(Parameters):
 def model_variant(fcf_features, ff_features=None):
     """Define parameters for a model variant."""
     wp = WeightParameters()
-    wp.set_fixed(Afc=0,
-                 Acf=0,
-                 Aff=0,
-                 Dff=1,
-                 T=0.1)
+    wp.set_fixed(T=0.1)
     wp.set_free(Lfc=(0, 1),
                 Lcf=(0, 1),
                 P1=(0, 10),
