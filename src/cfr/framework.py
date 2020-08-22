@@ -144,6 +144,8 @@ class WeightParameters(Parameters):
 
         if sublayers:
             self.set_sublayer_param('c', sublayer_param)
+            del self.free['B_enc']
+            del self.free['B_rec']
 
 
 def model_variant(fcf_features, ff_features=None):
