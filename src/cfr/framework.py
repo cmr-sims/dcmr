@@ -147,6 +147,24 @@ class WeightParameters(Parameters):
             del self.free['B_enc']
             del self.free['B_rec']
 
+    def set_weight_param_sublayer(self, weights):
+        """Set sublayer parameter definitions."""
+        self.set_sublayers(f=['task'], c=weights)
+        for name in weights:
+            region = (('task', 'item'), (name, 'item'))
+            Lfc = f'Lfc_{name}'
+            Lcf = f'Lcf_{name}'
+            Dfc = f'Dfc_{name}'
+            Dcf = f'Dcf_{name}'
+            B_enc = f'B_enc_{name}'
+            B_rec = f'B_rec_{name}'
+            self.set_free({
+                Lfc: (0, 1), Lcf: (0, 1), B_enc: (0, 1), B_rec: (0, 1)
+            })
+            self.set_dependent({Dfc: f'1 - {Lfc}', Dcf: f'1 - {Lcf}'})
+            self.set_weights('fc', {region: f'{Dfc} * {name}'})
+            self.set_weights('cf', {region: f'{Dcf} * {name}'})
+
 
 def model_variant(fcf_features, ff_features=None, sublayers=False):
     """Define parameters for a model variant."""
@@ -165,7 +183,10 @@ def model_variant(fcf_features, ff_features=None, sublayers=False):
                      Dcf='1 - Lcf')
 
     if fcf_features:
-        wp.set_weight_param('fcf', fcf_features, sublayers=sublayers)
+        if sublayers:
+            wp.set_weight_param_sublayer(fcf_features)
+        else:
+            wp.set_weight_param('fcf', fcf_features, sublayers=sublayers)
 
     if ff_features:
         wp.set_weight_param('ff', ff_features)
