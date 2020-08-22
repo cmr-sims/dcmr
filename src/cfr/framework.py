@@ -93,13 +93,22 @@ class WeightParameters(Parameters):
         n = 0
         m = 0
         weight_expr = []
+        sublayer_param = {}
         for name in weights:
             param = f'{prefix}_{name}'
-            if n_weight == 1:
+            if sublayers or n_weight == 1:
                 expr = name
             else:
                 expr = f'{param} * {name}'
             weight_expr.append(expr)
+
+            if sublayers:
+                sublayer_param[name] = {
+                    'B_enc': f'B_enc_{name}', 'B_rec': f'B_rec_{name}'
+                }
+                self.set_free(
+                    {f'B_enc_{name}': (0, 1), f'B_rec_{name}': (0, 1)}
+                )
 
             if connect == 'fcf':
                 if sublayers:
@@ -108,7 +117,7 @@ class WeightParameters(Parameters):
                     region = (('task', 'item'), ('task', name))
                 for matrix in matrices:
                     self.set_weights(matrix, {region: expr})
-            if n_weight == 1:
+            if sublayers or n_weight == 1:
                 # if only one, no weight parameter necessary
                 continue
 
@@ -132,6 +141,9 @@ class WeightParameters(Parameters):
             region = ('task', 'item')
             expr = ' + '.join(weight_expr)
             self.set_weights('ff', {region: expr})
+
+        if sublayers:
+            self.set_sublayer_param('c', sublayer_param)
 
 
 def model_variant(fcf_features, ff_features=None):
