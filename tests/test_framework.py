@@ -79,3 +79,30 @@ def test_item_weight_param3():
     assert wp.weights == {
         'ff': {('task', 'item'): 's_loc * loc + s_cat * cat + s_use * use'}
     }
+
+
+def test_weight_param_sublayers():
+    wp = framework.WeightParameters()
+    wp.set_weight_param('fcf', ['loc', 'cat', 'use'], sublayers=True)
+
+    assert wp.free == {
+        'B_enc_loc': (0, 1),
+        'B_rec_loc': (0, 1),
+        'B_enc_cat': (0, 1),
+        'B_rec_cat': (0, 1),
+        'B_enc_use': (0, 1),
+        'B_rec_use': (0, 1),
+    }
+    assert wp.sublayers == {'f': ['task'], 'c': ['loc', 'cat', 'use']}
+    weights = {
+        (('task', 'item'), ('loc', 'item')): 'loc',
+        (('task', 'item'), ('cat', 'item')): 'cat',
+        (('task', 'item'), ('use', 'item')): 'use',
+    }
+    assert wp.weights['fc'] == weights
+    assert wp.weights['cf'] == weights
+    assert wp.sublayer_param['c'] == {
+        'loc': {'B_enc': 'B_enc_loc', 'B_rec': 'B_rec_loc'},
+        'cat': {'B_enc': 'B_enc_cat', 'B_rec': 'B_rec_cat'},
+        'use': {'B_enc': 'B_enc_use', 'B_rec': 'B_rec_use'},
+    }
