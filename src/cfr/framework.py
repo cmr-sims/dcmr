@@ -148,7 +148,7 @@ class WeightParameters(Parameters):
             del self.free['B_rec']
 
 
-def model_variant(fcf_features, ff_features=None):
+def model_variant(fcf_features, ff_features=None, sublayers=False):
     """Define parameters for a model variant."""
     wp = WeightParameters()
     wp.set_fixed(T=0.1)
@@ -165,7 +165,7 @@ def model_variant(fcf_features, ff_features=None):
                      Dcf='1 - Lcf')
 
     if fcf_features:
-        wp.set_weight_param('fcf', fcf_features)
+        wp.set_weight_param('fcf', fcf_features, sublayers=sublayers)
 
     if ff_features:
         wp.set_weight_param('ff', ff_features)
