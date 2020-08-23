@@ -14,26 +14,29 @@ from cfr import framework
 def main(data_file, patterns_file, fcf_features, ff_features, sublayers,
          res_dir, n_reps=1, n_jobs=1, tol=0.00001, n_sim_reps=1):
 
-    # run individual parameter search
+    # prepare model for search
     data = pd.read_csv(data_file)
     model = cmr.CMRDistributed()
     param_def = framework.model_variant(
         fcf_features, ff_features, sublayers=sublayers
     )
     patterns = network.load_patterns(patterns_file)
+
+    # save model information
+    if not os.path.exists(res_dir):
+        os.makedirs(res_dir)
+    json_file = os.path.join(res_dir, 'parameters.json')
+    param_def.to_json(json_file)
+
+    # run individual subject fits
     results = model.fit_indiv(
         data, param_def, patterns=patterns, n_jobs=n_jobs, method='de',
         n_rep=n_reps, tol=tol
     )
 
-    if not os.path.exists(res_dir):
-        os.makedirs(res_dir)
-
     # full search information
     res_file = os.path.join(res_dir, 'search.csv')
     results.to_csv(res_file)
-    json_file = os.path.join(res_dir, 'parameters.json')
-    param_def.to_json(json_file)
 
     # best results
     best = fit.get_best_results(results)
