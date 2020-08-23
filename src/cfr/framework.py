@@ -147,6 +147,11 @@ class WeightParameters(Parameters):
             self.set_dependent({Dfc: f'1 - {Lfc}', Dcf: f'1 - {Lcf}'})
             self.set_weights('fc', {region: f'{Dfc} * {name}'})
             self.set_weights('cf', {region: f'{Dcf} * {name}'})
+            self.set_sublayer_param('c', {
+                name: {
+                    'B_enc': B_enc, 'B_rec': B_rec, 'Lfc': Lfc, 'Lcf': Lcf
+                }
+            })
 
 
 def model_variant(fcf_features, ff_features=None, sublayers=False):
