@@ -194,7 +194,6 @@ def model_variant(fcf_features, ff_features=None, sublayers=False):
 
     if ff_features:
         wp.set_weight_param('ff', ff_features)
-        del wp.fixed['Dff']
         wp.set_free(Dff=(0, 10))
     return wp
 
