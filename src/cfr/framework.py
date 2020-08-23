@@ -52,7 +52,7 @@ class WeightParameters(Parameters):
         probability by output position. [0, Inf]
     """
 
-    def set_weight_param(self, connect, weights, upper=100, sublayers=False):
+    def set_weight_param(self, connect, weights, upper=100):
         """
         Add weight parameters for patterns or similarity.
 
@@ -85,39 +85,25 @@ class WeightParameters(Parameters):
         w_param = [f'{prefix}{n}' for n in range(n_weight - 1)]
 
         # set list of sublayers
-        if sublayers:
-            self.set_sublayers(f=['task'], c=weights)
-        else:
-            self.set_sublayers(f=['task'], c=['task'])
+        self.set_sublayers(f=['task'], c=['task'])
 
         n = 0
         m = 0
         weight_expr = []
-        sublayer_param = {}
         for name in weights:
             param = f'{prefix}_{name}'
-            if sublayers or n_weight == 1:
+            if n_weight == 1:
                 expr = name
             else:
                 expr = f'{param} * {name}'
             weight_expr.append(expr)
 
-            if sublayers:
-                sublayer_param[name] = {
-                    'B_enc': f'B_enc_{name}', 'B_rec': f'B_rec_{name}'
-                }
-                self.set_free(
-                    {f'B_enc_{name}': (0, 1), f'B_rec_{name}': (0, 1)}
-                )
-
             if connect == 'fcf':
-                if sublayers:
-                    region = (('task', 'item'), (name, 'item'))
-                else:
-                    region = (('task', 'item'), ('task', name))
+                region = (('task', 'item'), ('task', name))
                 for matrix in matrices:
-                    self.set_weights(matrix, {region: expr})
-            if sublayers or n_weight == 1:
+                    w_expr = f'D{matrix} * {expr}'
+                    self.set_weights(matrix, {region: w_expr})
+            if n_weight == 1:
                 # if only one, no weight parameter necessary
                 continue
 
@@ -140,12 +126,9 @@ class WeightParameters(Parameters):
             # add compiled weight matrices
             region = ('task', 'item')
             expr = ' + '.join(weight_expr)
-            self.set_weights('ff', {region: expr})
-
-        if sublayers:
-            self.set_sublayer_param('c', sublayer_param)
-            del self.free['B_enc']
-            del self.free['B_rec']
+            self.set_free(Dff=(0, 10))
+            w_expr = f'Dff * ({expr})'
+            self.set_weights('ff', {region: w_expr})
 
     def set_weight_param_sublayer(self, weights):
         """Set sublayer parameter definitions."""
