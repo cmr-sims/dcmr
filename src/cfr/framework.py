@@ -152,6 +152,10 @@ class WeightParameters(Parameters):
                     'B_enc': B_enc, 'B_rec': B_rec, 'Lfc': Lfc, 'Lcf': Lcf
                 }
             })
+        for par in ['B_enc', 'B_rec', 'Lfc', 'Lcf']:
+            del self.free[par]
+        for par in ['Dfc', 'Dcf']:
+            del self.dependent[par]
 
 
 def model_variant(fcf_features, ff_features=None, sublayers=False):
