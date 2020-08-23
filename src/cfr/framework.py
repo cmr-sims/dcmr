@@ -174,7 +174,7 @@ def model_variant(fcf_features, ff_features=None, sublayers=False):
         if sublayers:
             wp.set_weight_param_sublayer(fcf_features)
         else:
-            wp.set_weight_param('fcf', fcf_features, sublayers=sublayers)
+            wp.set_weight_param('fcf', fcf_features)
 
     if ff_features:
         wp.set_weight_param('ff', ff_features)
