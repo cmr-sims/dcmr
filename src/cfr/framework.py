@@ -76,9 +76,13 @@ class WeightParameters(Parameters):
         if connect == 'fcf':
             prefix = 'w'
             matrices = ['fc', 'cf']
+            ssw = ' + '.join([f'wr_{name}**2' for name in weights])
+            denom = f'sqrt({ssw})'
         elif connect == 'ff':
             prefix = 's'
             matrices = ['ff']
+            sw = ' + '.join([f'sr_{name}' for name in weights])
+            denom = f'({sw})'
         else:
             raise ValueError(f'Invalid connection type: {connect}')
         n_weight = len(weights)
@@ -90,8 +94,10 @@ class WeightParameters(Parameters):
         n = 0
         m = 0
         weight_expr = []
+        rescaled = {}
         for name in weights:
             param = f'{prefix}_{name}'
+            raw_param = f'{prefix}r_{name}'
             if n_weight == 1:
                 expr = name
             else:
@@ -111,16 +117,20 @@ class WeightParameters(Parameters):
             if n == 0:
                 ref_param = w_param[m]
                 self.set_free({ref_param: (0, 1)})
-                self.set_dependent({param: ref_param})
+                self.set_dependent({raw_param: ref_param})
                 m += 1
             elif n == 1:
-                self.set_dependent({param: f'1 - {ref_param}'})
+                self.set_dependent({raw_param: f'1 - {ref_param}'})
             else:
                 new_param = w_param[m]
                 self.set_free({new_param: (0, upper)})
-                self.set_dependent({param: new_param})
+                self.set_dependent({raw_param: new_param})
                 m += 1
+
+            # set up rescaling
+            rescaled.update({param: f'{raw_param} / {denom}'})
             n += 1
+        self.set_dependent(rescaled)
 
         if connect == 'ff':
             # add compiled weight matrices
