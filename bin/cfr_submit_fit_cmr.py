@@ -7,8 +7,8 @@ import argparse
 import numpy as np
 
 
-def main(fcf_features, ff_features, res_dir, n_rep=10, n_job=48, tol=0.00001,
-         n_sim_rep=50):
+def main(fcf_features, ff_features, sublayers, res_dir, n_rep=10, n_job=48,
+         tol=0.00001, n_sim_rep=50):
     study_dir = os.environ['STUDYDIR']
     if not study_dir:
         raise EnvironmentError('STUDYDIR not defined.')
@@ -18,7 +18,12 @@ def main(fcf_features, ff_features, res_dir, n_rep=10, n_job=48, tol=0.00001,
     inputs = f'{data_file} {patterns_file}'
     opts = f'-t {tol:.6f} -n {n_rep} -j {n_job} -r {n_sim_rep}'
 
-    res_name = 'cmr'
+    if sublayers:
+        opts = f'-s {opts}'
+        res_name = 'cmr-sl'
+    else:
+        res_name = 'cmr'
+
     if fcf_features and fcf_features != 'none':
         res_name += f'_fcf-{fcf_features}'
     if ff_features and ff_features != 'none':
@@ -33,6 +38,7 @@ if __name__ == '__main__':
     parser.add_argument('fcf_features')
     parser.add_argument('ff_features')
     parser.add_argument('res_dir')
+    parser.add_argument('--sublayers', '-s', action='store_true')
     parser.add_argument('--n-rep', '-n', default=10, type=int)
     parser.add_argument('--n_job', '-j', default=48, type=int)
     parser.add_argument('--tol', '-t', type=float, default=0.00001)
@@ -49,5 +55,5 @@ if __name__ == '__main__':
         ff_list *= max_n
 
     for fcf, ff in zip(fcf_list, ff_list):
-        main(fcf, ff, args.res_dir, args.n_rep, args.n_job, args.tol,
-             args.n_sim_rep)
+        main(fcf, ff, args.sublayers, args.res_dir, args.n_rep, args.n_job,
+             args.tol, args.n_sim_rep)
