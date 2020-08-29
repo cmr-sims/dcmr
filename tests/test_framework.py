@@ -75,6 +75,37 @@ def test_scaling_param_s3():
     }
 
 
+def test_region_weights():
+    wp = framework.WeightParameters()
+    spar = wp.set_scaling_param('vector', ['loc', 'cat', 'use'])
+    wp.set_region_weights('fc', spar, 'Dfc')
+    assert wp.weights['fc'] == {
+        (('task', 'item'), ('task', 'loc')): 'Dfc * w_loc * loc',
+        (('task', 'item'), ('task', 'cat')): 'Dfc * w_cat * cat',
+        (('task', 'item'), ('task', 'use')): 'Dfc * w_use * use',
+    }
+
+
+def test_sublayer_weights():
+    wp = framework.WeightParameters()
+    spar = wp.set_scaling_param('vector', ['loc', 'cat', 'use'])
+    wp.set_sublayer_weights('fc', spar, 'Dfc')
+    assert wp.weights['fc'] == {
+        (('task', 'item'), ('loc', 'item')): 'Dfc * w_loc * loc',
+        (('task', 'item'), ('cat', 'item')): 'Dfc * w_cat * cat',
+        (('task', 'item'), ('use', 'item')): 'Dfc * w_use * use',
+    }
+
+
+def test_item_weights():
+    wp = framework.WeightParameters()
+    spar = wp.set_scaling_param('similarity', ['loc', 'cat', 'use'])
+    wp.set_item_weights(spar, 'Dff')
+    assert wp.weights['ff'] == {
+        ('task', 'item'): 'Dff * (s_loc * loc + s_cat * cat + s_use * use)',
+    }
+
+
 def test_weight_param1():
     wp = framework.WeightParameters()
     wp.set_weight_param('fcf', ['loc'])
