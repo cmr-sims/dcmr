@@ -205,13 +205,18 @@ def model_variant(fcf_features, ff_features=None, sublayers=False,
     if fcf_features:
         scaling_param = wp.set_scaling_param('vector', fcf_features)
         if sublayers:
+            wp.set_sublayer_weights('fc', scaling_param, 'Dfc')
+            wp.set_sublayer_weights('cf', scaling_param, 'Dcf')
             breakpoint()
             wp.set_weight_param_sublayer(fcf_features)
         else:
-            wp.set_weight_param('fcf', fcf_features)
+            wp.set_sublayers(f=['task'], c=['task'])
+            wp.set_region_weights('fc', scaling_param, 'Dfc')
+            wp.set_region_weights('cf', scaling_param, 'Dcf')
 
     if ff_features:
-        wp.set_weight_param('ff', ff_features)
+        scaling_param = wp.set_scaling_param('similarity', ff_features)
+        wp.set_item_weights(scaling_param, 'Dff')
         wp.set_free(Dff=(0, 10))
     return wp
 
