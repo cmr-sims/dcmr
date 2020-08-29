@@ -155,34 +155,32 @@ class WeightParameters(Parameters):
         w_expr = f'{pre_param} * ({expr})'
         self.set_weights('ff', {('task', 'item'): w_expr})
 
-    def set_weight_param_sublayer(self, weights):
-        """Set sublayer parameter definitions."""
-        self.set_sublayers(f=['task'], c=weights)
-        for name in weights:
-            region = (('task', 'item'), (name, 'item'))
-            Lfc = f'Lfc_{name}'
-            Lcf = f'Lcf_{name}'
-            Dfc = f'Dfc_{name}'
-            Dcf = f'Dcf_{name}'
-            B_enc = f'B_enc_{name}'
-            B_rec = f'B_rec_{name}'
-            self.set_free({
-                Lfc: (0, 1), Lcf: (0, 1), B_enc: (0, 1), B_rec: (0, 1)
-            })
-            self.set_dependent({Dfc: f'1 - {Lfc}', Dcf: f'1 - {Lcf}'})
-            self.set_weights('fc', {region: f'{Dfc} * {name}'})
-            self.set_weights('cf', {region: f'{Dcf} * {name}'})
-            self.set_sublayer_param('c', {
-                name: {
-                    'B_enc': B_enc, 'B_rec': B_rec, 'Lfc': Lfc, 'Lcf': Lcf
-                }
-            })
-        for par in ['B_enc', 'B_rec', 'Lfc', 'Lcf']:
-            if par in self.free:
-                del self.free[par]
-        for par in ['Dfc', 'Dcf']:
-            if par in self.dependent:
-                del self.dependent[par]
+    def set_weight_sublayer_param(self, scaling_param):
+        """Set scaling of sublayer learning rates."""
+        for weight in self.sublayers['c']:
+            scaling = scaling_param[weight]
+            weight_param = {}
+            for param in ['Lfc', 'Lcf']:
+                sub_param = f'{param}_{weight}'
+                self.set_dependent({sub_param: f'{param} * {scaling}'})
+                weight_param[param] = sub_param
+            self.set_sublayer_param('c', weight, weight_param)
+
+    def set_free_sublayer_param(self, param_names):
+        """Set sublayer parameters to be free."""
+        for param in param_names:
+            if param not in self.free:
+                raise ValueError(f'No range defined for {param}.')
+
+            # make a copy of the base parameter for each sublayer
+            for weight in self.sublayers['c']:
+                param_name = f'{param}_{weight}'
+                self.set_free({param_name: self.free[param]})
+                self.set_sublayer_param('c', weight, {param: param_name})
+
+            # remove the base parameter from the list of free variables
+            if param in self.free:
+                del self.free[param]
 
 
 def model_variant(fcf_features, ff_features=None, sublayers=False,
