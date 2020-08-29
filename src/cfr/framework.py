@@ -130,12 +130,6 @@ class WeightParameters(Parameters):
 
         upper : float
             Upper bound of parameters beyond the first two.
-
-        sublayers : bool, optional
-            If true, weight matrices will be split into sublayers that
-            will evolve context independently of one another. If false,
-            weight matrices will be assigned to different regions within
-            a single 'task' sublayer.
         """
         if connect == 'fcf':
             prefix = 'w'
