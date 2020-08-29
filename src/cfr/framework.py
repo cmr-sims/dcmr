@@ -52,6 +52,70 @@ class WeightParameters(Parameters):
         probability by output position. [0, Inf]
     """
 
+    def set_scaling_param(self, scaling_type, weights, upper=100):
+        """
+        Add scaling parameters for patterns or similarity.
+
+        Parameters
+        ----------
+        scaling_type : {'similarity', 'vector'}
+            Type of matrix to be scaled. This determines how weights
+            are normalized.
+
+        weights : list of str
+            Labels of weights to include.
+
+        upper : float
+            Upper bound of parameters beyond the first two.
+        """
+        if scaling_type == 'vector':
+            prefix = 'w'
+            ssw = ' + '.join([f'wr_{name}**2' for name in weights])
+            denom = f'sqrt({ssw})'
+        elif scaling_type == 'similarity':
+            prefix = 's'
+            sw = ' + '.join([f'sr_{name}' for name in weights])
+            denom = f'({sw})'
+        else:
+            raise ValueError(f'Invalid scaling type: {scaling_type}')
+
+        n_weight = len(weights)
+        w_param = [f'{prefix}{n}' for n in range(n_weight - 1)]
+
+        n = 0
+        m = 0
+        rescaled = {}
+        scaling_param = {}
+        for name in weights:
+            param = f'{prefix}_{name}'
+            raw_param = f'{prefix}r_{name}'
+
+            if n_weight == 1:
+                # if only one, no weight parameter necessary
+                scaling_param[name] = None
+                continue
+
+            # set up scaling parameter and translate to original name
+            if n == 0:
+                ref_param = w_param[m]
+                self.set_free({ref_param: (0, 1)})
+                self.set_dependent({raw_param: ref_param})
+                m += 1
+            elif n == 1:
+                self.set_dependent({raw_param: f'1 - {ref_param}'})
+            else:
+                new_param = w_param[m]
+                self.set_free({new_param: (0, upper)})
+                self.set_dependent({raw_param: new_param})
+                m += 1
+
+            # set up rescaling
+            rescaled.update({param: f'{raw_param} / {denom}'})
+            n += 1
+            scaling_param[name] = param
+        self.set_dependent(rescaled)
+        return scaling_param
+
     def set_weight_param(self, connect, weights, upper=100):
         """
         Add weight parameters for patterns or similarity.
