@@ -168,47 +168,13 @@ def test_item_weight_param3():
 
 
 def test_weight_param_sublayers():
-    wp = framework.WeightParameters()
-    wp.set_weight_param_sublayer(['loc', 'cat', 'use'])
-
-    assert wp.free == {
-        'B_enc_loc': (0, 1),
-        'B_rec_loc': (0, 1),
-        'B_enc_cat': (0, 1),
-        'B_rec_cat': (0, 1),
-        'B_enc_use': (0, 1),
-        'B_rec_use': (0, 1),
-        'Lfc_loc': (0, 1),
-        'Lcf_loc': (0, 1),
-        'Lfc_cat': (0, 1),
-        'Lcf_cat': (0, 1),
-        'Lfc_use': (0, 1),
-        'Lcf_use': (0, 1),
-    }
-    assert wp.dependent == {
-        'Dfc_loc': '1 - Lfc_loc',
-        'Dcf_loc': '1 - Lcf_loc',
-        'Dfc_cat': '1 - Lfc_cat',
-        'Dcf_cat': '1 - Lcf_cat',
-        'Dfc_use': '1 - Lfc_use',
-        'Dcf_use': '1 - Lcf_use',
-    }
+    wp = framework.model_variant(['loc', 'cat', 'use'], None, sublayers=True,
+                                 sublayer_param=['B_enc'])
+    assert 'B_enc_loc' in wp.free
+    assert 'B_enc' not in wp.free
     assert wp.sublayers == {'f': ['task'], 'c': ['loc', 'cat', 'use']}
-    assert wp.weights['fc'] == {
-        (('task', 'item'), ('loc', 'item')): 'Dfc_loc * loc',
-        (('task', 'item'), ('cat', 'item')): 'Dfc_cat * cat',
-        (('task', 'item'), ('use', 'item')): 'Dfc_use * use',
-    }
-    assert wp.weights['cf'] == {
-        (('task', 'item'), ('loc', 'item')): 'Dcf_loc * loc',
-        (('task', 'item'), ('cat', 'item')): 'Dcf_cat * cat',
-        (('task', 'item'), ('use', 'item')): 'Dcf_use * use',
-    }
-    assert wp.sublayer_param['c'] == {
-        'loc': {'B_enc': 'B_enc_loc', 'B_rec': 'B_rec_loc',
-                'Lfc': 'Lfc_loc', 'Lcf': 'Lcf_loc'},
-        'cat': {'B_enc': 'B_enc_cat', 'B_rec': 'B_rec_cat',
-                'Lfc': 'Lfc_cat', 'Lcf': 'Lcf_cat'},
-        'use': {'B_enc': 'B_enc_use', 'B_rec': 'B_rec_use',
-                'Lfc': 'Lfc_use', 'Lcf': 'Lcf_use'},
-    }
+    assert wp.sublayer_param == {'c': {
+        'loc': {'Lfc': 'Lfc_loc', 'Lcf': 'Lcf_loc', 'B_enc': 'B_enc_loc'},
+        'cat': {'Lfc': 'Lfc_cat', 'Lcf': 'Lcf_cat', 'B_enc': 'B_enc_cat'},
+        'use': {'Lfc': 'Lfc_use', 'Lcf': 'Lcf_use', 'B_enc': 'B_enc_use'},
+    }}
