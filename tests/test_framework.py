@@ -107,10 +107,7 @@ def test_item_weights():
 
 
 def test_weight_param1():
-    wp = framework.WeightParameters()
-    wp.set_weight_param('fcf', ['loc'])
-    assert wp.free == {}
-    assert wp.dependent == {}
+    wp = framework.model_variant(['loc'], None, sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
     assert wp.weights['fc'] == {
         (('task', 'item'), ('task', 'loc')): 'Dfc * loc'
@@ -121,16 +118,7 @@ def test_weight_param1():
 
 
 def test_weight_param2():
-    wp = framework.WeightParameters()
-    wp.set_weight_param('fcf', ['loc', 'cat'])
-
-    assert wp.free == {'w0': (0, 1)}
-    assert wp.dependent == {
-        'wr_loc': 'w0',
-        'wr_cat': '1 - w0',
-        'w_loc': 'wr_loc / sqrt(wr_loc**2 + wr_cat**2)',
-        'w_cat': 'wr_cat / sqrt(wr_loc**2 + wr_cat**2)',
-    }
+    wp = framework.model_variant(['loc', 'cat'], None, sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
     assert wp.weights['fc'] == {
         (('task', 'item'), ('task', 'loc')): 'Dfc * w_loc * loc',
@@ -143,18 +131,7 @@ def test_weight_param2():
 
 
 def test_weight_param3():
-    wp = framework.WeightParameters()
-    wp.set_weight_param('fcf', ['loc', 'cat', 'use'])
-
-    assert wp.free == {'w0': (0, 1), 'w1': (0, 100)}
-    assert wp.dependent == {
-        'wr_loc': 'w0',
-        'wr_cat': '1 - w0',
-        'wr_use': 'w1',
-        'w_loc': 'wr_loc / sqrt(wr_loc**2 + wr_cat**2 + wr_use**2)',
-        'w_cat': 'wr_cat / sqrt(wr_loc**2 + wr_cat**2 + wr_use**2)',
-        'w_use': 'wr_use / sqrt(wr_loc**2 + wr_cat**2 + wr_use**2)',
-    }
+    wp = framework.model_variant(['loc', 'cat', 'use'], None, sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
     assert wp.weights['fc'] == {
         (('task', 'item'), ('task', 'loc')): 'Dfc * w_loc * loc',
@@ -169,48 +146,24 @@ def test_weight_param3():
 
 
 def test_item_weight_param1():
-    wp = framework.WeightParameters()
-    wp.set_weight_param('ff', ['loc'])
-
-    assert wp.free == {'Dff': (0, 10)}
-    assert wp.dependent == {}
+    wp = framework.model_variant(['loc'], ['loc'], sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
-    assert wp.weights == {'ff': {('task', 'item'): 'Dff * (loc)'}}
+    assert wp.weights['ff'] == {('task', 'item'): 'Dff * (loc)'}
 
 
 def test_item_weight_param2():
-    wp = framework.WeightParameters()
-    wp.set_weight_param('ff', ['loc', 'cat'])
-
-    assert wp.free == {'Dff': (0, 10), 's0': (0, 1)}
-    assert wp.dependent == {
-        'sr_loc': 's0',
-        'sr_cat': '1 - s0',
-        's_loc': 'sr_loc / (sr_loc + sr_cat)',
-        's_cat': 'sr_cat / (sr_loc + sr_cat)',
-    }
+    wp = framework.model_variant(['loc'], ['loc', 'cat'], sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
-    assert wp.weights == {
-        'ff': {('task', 'item'): 'Dff * (s_loc * loc + s_cat * cat)'}
+    assert wp.weights['ff'] == {
+        ('task', 'item'): 'Dff * (s_loc * loc + s_cat * cat)'
     }
 
 
 def test_item_weight_param3():
-    wp = framework.WeightParameters()
-    wp.set_weight_param('ff', ['loc', 'cat', 'use'])
-
-    assert wp.free == {'Dff': (0, 10), 's0': (0, 1), 's1': (0, 100)}
-    assert wp.dependent == {
-        'sr_loc': 's0',
-        'sr_cat': '1 - s0',
-        'sr_use': 's1',
-        's_loc': 'sr_loc / (sr_loc + sr_cat + sr_use)',
-        's_cat': 'sr_cat / (sr_loc + sr_cat + sr_use)',
-        's_use': 'sr_use / (sr_loc + sr_cat + sr_use)',
-    }
+    wp = framework.model_variant(['loc'], ['loc', 'cat', 'use'], sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
-    assert wp.weights == {
-        'ff': {('task', 'item'): 'Dff * (s_loc * loc + s_cat * cat + s_use * use)'}
+    assert wp.weights['ff'] == {
+        ('task', 'item'): 'Dff * (s_loc * loc + s_cat * cat + s_use * use)'
     }
 
 
