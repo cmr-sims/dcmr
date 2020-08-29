@@ -116,6 +116,46 @@ class WeightParameters(Parameters):
         self.set_dependent(rescaled)
         return scaling_param
 
+    def set_region_weights(self, connect, scaling_param, pre_param):
+        """Sets weights within sublayer regions."""
+        for weight, scaling in scaling_param.items():
+            if scaling is not None:
+                expr = f'{pre_param} * {scaling} * {weight}'
+            else:
+                expr = f'{pre_param} * {weight}'
+            self.set_weights(connect, {
+                (('task', 'item'), ('task', weight)): expr
+            })
+
+    def set_sublayer_weights(self, connect, scaling_param, pre_param):
+        """Set weights for different sublayers."""
+        for weight, scaling in scaling_param.items():
+            if isinstance(pre_param, str):
+                pre = pre_param
+            else:
+                pre = pre_param[weight]
+            if scaling is not None:
+                expr = f'{pre} * {scaling} * {weight}'
+            else:
+                expr = f'{pre} * {weight}'
+            self.set_weights(connect, {
+                (('task', 'item'), (weight, 'item')): expr
+            })
+
+    def set_item_weights(self, scaling_param, pre_param):
+        """Set item-item weights."""
+        weight_expr = []
+        for weight, scaling in scaling_param.items():
+            if scaling is not None:
+                expr = f'{scaling} * {weight}'
+            else:
+                expr = weight
+            weight_expr.append(expr)
+        expr = ' + '.join(weight_expr)
+        w_expr = f'{pre_param} * ({expr})'
+        self.set_weights('ff', {('task', 'item'): w_expr})
+
+
     def set_weight_param(self, connect, weights, upper=100):
         """
         Add weight parameters for patterns or similarity.
@@ -228,7 +268,8 @@ class WeightParameters(Parameters):
                 del self.dependent[par]
 
 
-def model_variant(fcf_features, ff_features=None, sublayers=False):
+def model_variant(fcf_features, ff_features=None, sublayers=False,
+                  sublayer_param=None):
     """Define parameters for a model variant."""
     wp = WeightParameters()
     wp.set_fixed(T=0.1)
@@ -245,7 +286,9 @@ def model_variant(fcf_features, ff_features=None, sublayers=False):
                      Dcf='1 - Lcf')
 
     if fcf_features:
+        scaling_param = wp.set_scaling_param('vector', fcf_features)
         if sublayers:
+            breakpoint()
             wp.set_weight_param_sublayer(fcf_features)
         else:
             wp.set_weight_param('fcf', fcf_features)
