@@ -52,7 +52,7 @@ class WeightParameters(Parameters):
         probability by output position. [0, Inf]
     """
 
-    def set_scaling_param(self, scaling_type, weights, upper=100):
+    def set_scaling_param(self, scaling_type, weights, upper=1):
         """
         Add scaling parameters for patterns or similarity.
 
