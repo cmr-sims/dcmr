@@ -227,15 +227,34 @@ def model_variant(fcf_features, ff_features=None, sublayers=False,
                      Dcf='1 - Lcf')
 
     if fcf_features:
+        # set global weight scaling
         scaling_param = wp.set_scaling_param('vector', fcf_features)
         if sublayers:
             wp.set_sublayers(f=['task'], c=fcf_features)
-            wp.set_sublayer_weights('fc', scaling_param, 'Dfc')
-            wp.set_sublayer_weights('cf', scaling_param, 'Dcf')
-            wp.set_weight_sublayer_param(scaling_param)
+
+            # set sublayer L and D parameters
+            Dfc = 'Dfc'
+            Dcf = 'Dcf'
+            suffix = {'Lfc': None, 'Lcf': None}
             if sublayer_param is not None:
+                if 'Lfc' in sublayer_param:
+                    Lfc, Dfc = wp.set_learning_sublayer_param('Lfc', 'Dfc')
+                    sublayer_param.remove('Lfc')
+                    suffix['Lfc'] = '_raw'
+                if 'Lcf' in sublayer_param:
+                    Lcf, Dcf = wp.set_learning_sublayer_param('Lcf', 'Dcf')
+                    sublayer_param.remove('Lcf')
+                    suffix['Lcf'] = '_raw'
                 wp.set_free_sublayer_param(sublayer_param)
+
+            # set weights based on fixed or varying D parameters
+            wp.set_sublayer_weights('fc', scaling_param, Dfc)
+            wp.set_sublayer_weights('cf', scaling_param, Dcf)
+
+            # set learning rate to vary by sublayer
+            wp.set_weight_sublayer_param(scaling_param, suffix)
         else:
+            # set weights based on fixed D parameters
             wp.set_sublayers(f=['task'], c=['task'])
             wp.set_region_weights('fc', scaling_param, 'Dfc')
             wp.set_region_weights('cf', scaling_param, 'Dcf')
