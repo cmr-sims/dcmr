@@ -187,6 +187,8 @@ def test_learning_param_sublayers():
     assert 'Lcf' not in wp.free
     assert wp.dependent['Lfc_loc'] == 'Lfc * w_loc'
     assert wp.dependent['Lcf_loc'] == 'Lcf_loc_raw * w_loc'
+    assert wp.dependent['Dfc'] == '1 - Lfc'
+    assert wp.dependent['Dcf_loc'] == '1 - Lcf_loc_raw'
     assert wp.weights['fc'][(('task', 'item'), ('loc', 'item'))] == 'Dfc * w_loc * loc'
     assert wp.weights['cf'][(('task', 'item'), ('loc', 'item'))] == 'Dcf_loc * w_loc * loc'
     assert wp.sublayer_param == {'c': {
