@@ -12,10 +12,13 @@ from cfr import framework
 
 
 def main(data_file, patterns_file, fcf_features, ff_features, sublayers,
-         res_dir, n_reps=1, n_jobs=1, tol=0.00001, n_sim_reps=1):
+         res_dir, n_reps=1, n_jobs=1, tol=0.00001, n_sim_reps=1, include=None):
 
     # prepare model for search
     data = pd.read_csv(data_file)
+    if include is not None:
+        data = data.loc[data['subject'].isin(include)]
+
     model = cmr.CMRDistributed()
     param_def = framework.model_variant(
         fcf_features, ff_features, sublayers=sublayers
@@ -66,6 +69,7 @@ if __name__ == '__main__':
     parser.add_argument('--n-jobs', '-j', type=int, default=1)
     parser.add_argument('--tol', '-t', type=float, default=0.00001)
     parser.add_argument('--n-sim-reps', '-r', type=int, default=1)
+    parser.add_argument('--include', '-i', default=None)
     args = parser.parse_args()
 
     if args.fcf_features and args.fcf_features != 'none':
@@ -78,5 +82,11 @@ if __name__ == '__main__':
     else:
         ff = None
 
+    if args.include is not None:
+        include_subjects = args.include.split('-')
+    else:
+        include_subjects = None
+
     main(args.data_file, args.patterns_file, fcf, ff, args.sublayers,
-         args.res_dir, args.n_reps, args.n_jobs, args.tol, args.n_sim_reps)
+         args.res_dir, args.n_reps, args.n_jobs, args.tol, args.n_sim_reps,
+         include_subjects)
