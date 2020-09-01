@@ -12,7 +12,8 @@ from cfr import framework
 
 
 def main(data_file, patterns_file, fcf_features, ff_features, sublayers,
-         res_dir, n_reps=1, n_jobs=1, tol=0.00001, n_sim_reps=1, include=None):
+         res_dir, sublayer_param=None, n_reps=1, n_jobs=1, tol=0.00001,
+         n_sim_reps=1, include=None):
 
     # prepare model for search
     data = pd.read_csv(data_file)
@@ -21,7 +22,8 @@ def main(data_file, patterns_file, fcf_features, ff_features, sublayers,
 
     model = cmr.CMRDistributed()
     param_def = framework.model_variant(
-        fcf_features, ff_features, sublayers=sublayers
+        fcf_features, ff_features, sublayers=sublayers,
+        sublayer_param=sublayer_param
     )
     patterns = network.load_patterns(patterns_file)
 
@@ -65,6 +67,7 @@ if __name__ == '__main__':
     parser.add_argument('ff_features')
     parser.add_argument('res_dir')
     parser.add_argument('--sublayers', '-s', action='store_true')
+    parser.add_argument('--sublayer-param', '-p', default=None)
     parser.add_argument('--n-reps', '-n', type=int, default=1)
     parser.add_argument('--n-jobs', '-j', type=int, default=1)
     parser.add_argument('--tol', '-t', type=float, default=0.00001)
@@ -87,6 +90,11 @@ if __name__ == '__main__':
     else:
         include_subjects = None
 
+    if args.sublayer_param is not None:
+        subpar = args.sublayer_param.split('-')
+    else:
+        subpar = None
+
     main(args.data_file, args.patterns_file, fcf, ff, args.sublayers,
-         args.res_dir, args.n_reps, args.n_jobs, args.tol, args.n_sim_reps,
-         include_subjects)
+         args.res_dir, subpar, args.n_reps, args.n_jobs, args.tol,
+         args.n_sim_reps, include_subjects)
