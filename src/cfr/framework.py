@@ -167,7 +167,7 @@ class WeightParameters(Parameters):
         L_param = {}
         D_param = {}
         for weight in self.sublayers['c']:
-            source = f'{L_name}_{weight}'
+            source = f'{L_name}_{weight}_raw'
             dependent = f'{D_name}_{weight}'
             self.set_dependent({dependent: f'1 - {source}'})
 
