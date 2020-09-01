@@ -155,6 +155,26 @@ class WeightParameters(Parameters):
         w_expr = f'{pre_param} * ({expr})'
         self.set_weights('ff', {('task', 'item'): w_expr})
 
+    def set_learning_sublayer_param(self, L_name, D_name):
+        """Set dependent sublayer parameters for learning."""
+        # free up the learning rate
+        self.set_free_sublayer_param([L_name], '_raw')
+
+        # remove existing generic definition
+        if D_name in self.dependent:
+            del self.dependent[D_name]
+
+        L_param = {}
+        D_param = {}
+        for weight in self.sublayers['c']:
+            source = f'{L_name}_{weight}'
+            dependent = f'{D_name}_{weight}'
+            self.set_dependent({dependent: f'1 - {source}'})
+
+            L_param[weight] = source
+            D_param[weight] = dependent
+        return L_param, D_param
+
     def set_weight_sublayer_param(self, scaling_param):
         """Set scaling of sublayer learning rates."""
         for weight in self.sublayers['c']:
