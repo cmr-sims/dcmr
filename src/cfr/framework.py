@@ -166,7 +166,7 @@ class WeightParameters(Parameters):
                 weight_param[param] = sub_param
             self.set_sublayer_param('c', weight, weight_param)
 
-    def set_free_sublayer_param(self, param_names):
+    def set_free_sublayer_param(self, param_names, suffix=None):
         """Set sublayer parameters to be free."""
         for param in param_names:
             if param not in self.free:
@@ -175,6 +175,8 @@ class WeightParameters(Parameters):
             # make a copy of the base parameter for each sublayer
             for weight in self.sublayers['c']:
                 param_name = f'{param}_{weight}'
+                if suffix is not None:
+                    param_name += suffix
                 self.set_free({param_name: self.free[param]})
                 self.set_sublayer_param('c', weight, {param: param_name})
 
