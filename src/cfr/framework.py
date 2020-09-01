@@ -175,14 +175,18 @@ class WeightParameters(Parameters):
             D_param[weight] = dependent
         return L_param, D_param
 
-    def set_weight_sublayer_param(self, scaling_param):
+    def set_weight_sublayer_param(self, scaling_param, suffix=None):
         """Set scaling of sublayer learning rates."""
         for weight in self.sublayers['c']:
             scaling = scaling_param[weight]
             weight_param = {}
             for param in ['Lfc', 'Lcf']:
                 sub_param = f'{param}_{weight}'
-                self.set_dependent({sub_param: f'{param} * {scaling}'})
+                if suffix is not None and suffix[param] is not None:
+                    raw_param = sub_param + suffix[param]
+                    self.set_dependent({sub_param: f'{raw_param} * {scaling}'})
+                else:
+                    self.set_dependent({sub_param: f'{param} * {scaling}'})
                 weight_param[param] = sub_param
             self.set_sublayer_param('c', weight, weight_param)
 
