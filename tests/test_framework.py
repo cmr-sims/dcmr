@@ -178,3 +178,19 @@ def test_weight_param_sublayers():
         'cat': {'Lfc': 'Lfc_cat', 'Lcf': 'Lcf_cat', 'B_enc': 'B_enc_cat'},
         'use': {'Lfc': 'Lfc_use', 'Lcf': 'Lcf_use', 'B_enc': 'B_enc_use'},
     }}
+
+
+def test_learning_param_sublayers():
+    wp = framework.model_variant(['loc', 'cat', 'use'], None, sublayers=True,
+                                 sublayer_param=['Lcf'])
+    assert 'Lcf_loc_raw' in wp.free
+    assert 'Lcf' not in wp.free
+    assert wp.dependent['Lfc_loc'] == 'Lfc * w_loc'
+    assert wp.dependent['Lcf_loc'] == 'Lcf_loc_raw * w_loc'
+    assert wp.weights['fc'][(('task', 'item'), ('loc', 'item'))] == 'Dfc * w_loc * loc'
+    assert wp.weights['cf'][(('task', 'item'), ('loc', 'item'))] == 'Dcf_loc * w_loc * loc'
+    assert wp.sublayer_param == {'c': {
+        'loc': {'Lfc': 'Lfc_loc', 'Lcf': 'Lcf_loc'},
+        'cat': {'Lfc': 'Lfc_cat', 'Lcf': 'Lcf_cat'},
+        'use': {'Lfc': 'Lfc_use', 'Lcf': 'Lcf_use'}
+    }}
