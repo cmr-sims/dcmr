@@ -7,8 +7,8 @@ import argparse
 import numpy as np
 
 
-def main(fcf_features, ff_features, sublayers, res_dir, subpar, n_rep=10,
-         n_job=48, tol=0.00001, n_sim_rep=50):
+def main(fcf_features, ff_features, sublayers, res_dir, subpar, fixed,
+         n_rep=10, n_job=48, tol=0.00001, n_sim_rep=50):
     study_dir = os.environ['STUDYDIR']
     if not study_dir:
         raise EnvironmentError('STUDYDIR not defined.')
@@ -31,6 +31,9 @@ def main(fcf_features, ff_features, sublayers, res_dir, subpar, n_rep=10,
     if subpar:
         opts += f' -p {subpar}'
         res_name += f'_sl-{subpar}'
+    if fixed:
+        opts += f' -f {fixed}'
+        res_name += f'_fix-{fixed}'
     full_dir = os.path.join(study_dir, 'cfr', res_dir, res_name)
 
     print(f'cfr_fit_cmr.py {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
@@ -43,6 +46,7 @@ if __name__ == '__main__':
     parser.add_argument('res_dir')
     parser.add_argument('--sublayers', '-s', action='store_true')
     parser.add_argument('--sublayer-param', '-p', default=None)
+    parser.add_argument('--fixed', '-f', default=None)
     parser.add_argument('--n-rep', '-n', default=10, type=int)
     parser.add_argument('--n_job', '-j', default=48, type=int)
     parser.add_argument('--tol', '-t', type=float, default=0.00001)
@@ -55,8 +59,12 @@ if __name__ == '__main__':
         sub_list = args.sublayer_param.split(',')
     else:
         sub_list = []
+    if args.fixed is not None:
+        fix_list = args.fixed.split(',')
+    else:
+        fix_list = []
 
-    max_n = np.max([len(arg) for arg in [fcf_list, ff_list, sub_list]])
+    max_n = np.max([len(arg) for arg in [fcf_list, ff_list, sub_list, fix_list]])
     if len(fcf_list) == 1:
         fcf_list *= max_n
     if len(ff_list) == 1:
@@ -66,7 +74,12 @@ if __name__ == '__main__':
             sub_list *= max_n
     else:
         sub_list = [None] * max_n
+    if args.fixed is not None:
+        if len(fix_list) == 1:
+            fix_list *= max_n
+    else:
+        fix_list = [None] * max_n
 
-    for fcf, ff, sub in zip(fcf_list, ff_list, sub_list):
-        main(fcf, ff, args.sublayers, args.res_dir, sub, args.n_rep,
+    for fcf, ff, sub, fix in zip(fcf_list, ff_list, sub_list, fix_list):
+        main(fcf, ff, args.sublayers, args.res_dir, sub, fix, args.n_rep,
              args.n_job, args.tol, args.n_sim_rep)
