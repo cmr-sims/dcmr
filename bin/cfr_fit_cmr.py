@@ -12,20 +12,30 @@ from cfr import framework
 
 
 def main(data_file, patterns_file, fcf_features, ff_features, sublayers,
-         res_dir, sublayer_param=None, n_reps=1, n_jobs=1, tol=0.00001,
-         n_sim_reps=1, include=None):
+         res_dir, sublayer_param=None, fixed_param=None, n_reps=1, n_jobs=1,
+         tol=0.00001, n_sim_reps=1, include=None):
 
     # prepare model for search
     data = pd.read_csv(data_file)
     if include is not None:
         data = data.loc[data['subject'].isin(include)]
 
+    # set parameter definitions based on model framework
     model = cmr.CMRDistributed()
     param_def = framework.model_variant(
         fcf_features, ff_features, sublayers=sublayers,
         sublayer_param=sublayer_param
     )
     patterns = network.load_patterns(patterns_file)
+
+    # fix parameters if specified
+    if fixed_param is not None:
+        for expr in fixed_param:
+            param_name, val = expr.split('=')
+            param_def.set_fixed({param_name: float(val)})
+            if param_name not in param_def.free:
+                raise ValueError(f'Parameter {param_name} is not free.')
+            del param_def.free[param_name]
 
     # save model information
     if not os.path.exists(res_dir):
@@ -83,6 +93,7 @@ if __name__ == '__main__':
     parser.add_argument('res_dir')
     parser.add_argument('--sublayers', '-s', action='store_true')
     parser.add_argument('--sublayer-param', '-p', default=None)
+    parser.add_argument('--fixed', '-f', default=None)
     parser.add_argument('--n-reps', '-n', type=int, default=1)
     parser.add_argument('--n-jobs', '-j', type=int, default=1)
     parser.add_argument('--tol', '-t', type=float, default=0.00001)
@@ -94,7 +105,8 @@ if __name__ == '__main__':
     ff = split_arg(args.ff_features)
     include_subjects = split_arg(args.include)
     subpar = split_arg(args.sublayer_param)
+    fixed = split_arg(args.fixed)
 
     main(args.data_file, args.patterns_file, fcf, ff, args.sublayers,
-         args.res_dir, subpar, args.n_reps, args.n_jobs, args.tol,
+         args.res_dir, subpar, fixed, args.n_reps, args.n_jobs, args.tol,
          args.n_sim_reps, include_subjects)
