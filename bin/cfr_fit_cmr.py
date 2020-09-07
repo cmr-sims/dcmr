@@ -59,6 +59,21 @@ def main(data_file, patterns_file, fcf_features, ff_features, sublayers,
     sim.to_csv(sim_file, index=False)
 
 
+def split_arg(arg):
+    """Split a dash-separated argument."""
+    if arg is not None:
+        if isinstance(arg, str):
+            if arg != 'none':
+                split = arg.split('-')
+            else:
+                split = None
+        else:
+            split = arg.split('-')
+    else:
+        split = None
+    return split
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('data_file')
@@ -75,25 +90,10 @@ if __name__ == '__main__':
     parser.add_argument('--include', '-i', default=None)
     args = parser.parse_args()
 
-    if args.fcf_features and args.fcf_features != 'none':
-        fcf = args.fcf_features.split('-')
-    else:
-        fcf = None
-
-    if args.ff_features and args.ff_features != 'none':
-        ff = args.ff_features.split('-')
-    else:
-        ff = None
-
-    if args.include is not None:
-        include_subjects = args.include.split('-')
-    else:
-        include_subjects = None
-
-    if args.sublayer_param is not None:
-        subpar = args.sublayer_param.split('-')
-    else:
-        subpar = None
+    fcf = split_arg(args.fcf_features)
+    ff = split_arg(args.ff_features)
+    include_subjects = split_arg(args.include)
+    subpar = split_arg(args.sublayer_param)
 
     main(args.data_file, args.patterns_file, fcf, ff, args.sublayers,
          args.res_dir, subpar, args.n_reps, args.n_jobs, args.tol,
