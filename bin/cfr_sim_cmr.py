@@ -43,7 +43,7 @@ def main(data_file, patterns_file, fit_dir, n_rep=1):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('data_file')
-    parser.add_argument('patterns_file')
+    parser.add_argument('patterns_file', help="Path to HDF5 file with patterns")
     parser.add_argument('fit_dir')
     parser.add_argument('--n-rep', '-r', type=int, default=1)
     args = parser.parse_args()
