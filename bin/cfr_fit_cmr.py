@@ -21,7 +21,7 @@ def main(data_file, patterns_file, fcf_features, ff_features, sublayers,
         data = data.loc[data['subject'].isin(include)]
 
     # set parameter definitions based on model framework
-    model = cmr.CMRDistributed()
+    model = cmr.CMR()
     param_def = framework.model_variant(
         fcf_features, ff_features, sublayers=sublayers,
         sublayer_param=sublayer_param

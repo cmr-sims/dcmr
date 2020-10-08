@@ -21,7 +21,7 @@ def main(data_file, patterns_file, fit_dir, n_rep=1):
     study_data = data.loc[(data['trial_type'] == 'study')]
 
     # get model, patterns, and weights
-    model = cmr.CMRDistributed()
+    model = cmr.CMR()
     patterns = network.load_patterns(patterns_file)
     param_file = os.path.join(fit_dir, 'parameters.json')
     param_def = parameters.read_json(param_file)

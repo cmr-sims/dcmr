@@ -18,7 +18,7 @@ def main(data_file, patterns_file, param1, sweep1, param2, sweep2,
 
     # run individual parameter search
     data = pd.read_csv(data_file)
-    model = cmr.CMRDistributed()
+    model = cmr.CMR()
     param_def = framework.model_variant(['loc', 'cat', 'use'], None)
     patterns = network.load_patterns(patterns_file)
 
