@@ -210,3 +210,29 @@ def load_pool_images(pool, image_dir, rescale=None):
 
         images[item['item']] = rescaled
     return images
+
+
+def label_clean_trials(data):
+    """Label study and recall trials as clean or not."""
+    # score data
+    merged = fr.merge_free_recall(data)
+
+    # make scored data comparable to raw data
+    merged_recall = merged.query('recall').copy()
+    merged_recall['trial_type'] = 'recall'
+    merged_recall['position'] = merged_recall['output'].astype('int')
+
+    # merge to copy scoring to raw data
+    merge_keys = ['subject', 'list', 'item', 'trial_type', 'position']
+    rmerged = pd.merge(
+        data, merged_recall, left_on=merge_keys, right_on=merge_keys, how='outer'
+    )
+
+    # filter to label clean recalls
+    rmerged['intrusion'] = rmerged['intrusion'].fillna(False)
+    clean = rmerged.query('trial_type == "study" | (~intrusion & repeat == 0)')
+    label = np.zeros(data.shape[0], dtype=bool)
+    label[clean.index] = True
+    labeled = data.copy()
+    labeled['clean'] = label
+    return labeled
