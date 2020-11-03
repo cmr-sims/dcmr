@@ -236,3 +236,18 @@ def label_clean_trials(data):
     labeled = data.copy()
     labeled['clean'] = label
     return labeled
+
+
+def get_train_category(category):
+    """Given current category, get previous and baseline categories."""
+    trial_prev = ''
+    trial_base = ''
+    prev = []
+    base = []
+    for i, trial_curr in enumerate(category):
+        prev.append(trial_prev)
+        base.append(trial_base)
+        if i < len(category) - 1 and trial_curr != category[i + 1]:
+            trial_base = trial_prev
+            trial_prev = trial_curr
+    return np.array(prev), np.array(base)
