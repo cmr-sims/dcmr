@@ -251,3 +251,17 @@ def get_train_category(category):
             trial_base = trial_prev
             trial_prev = trial_curr
     return np.array(prev), np.array(base)
+
+
+def label_train_category(data):
+    study_data = fr.filter_data(data, trial_type='study')
+    labeled = data.copy()
+    for _, list_data in study_data.groupby(['subject', 'list']):
+        prev, base = get_train_category(list_data['category'].to_numpy())
+        labeled.loc[list_data.index, 'prev'] = prev
+        labeled.loc[list_data.index, 'base'] = base
+    labeled['prev'] = labeled['prev'].astype('category')
+    labeled['base'] = labeled['base'].astype('category')
+    labeled['prev'][labeled['prev'] == ''] = np.nan
+    labeled['base'][labeled['base'] == ''] = np.nan
+    return labeled
