@@ -253,7 +253,7 @@ def get_train_category(category):
     return np.array(prev), np.array(base)
 
 
-def label_train_category(data):
+def label_block_category(data):
     study_data = fr.filter_data(data, trial_type='study')
     labeled = data.copy()
     for _, list_data in study_data.groupby(['subject', 'list']):
