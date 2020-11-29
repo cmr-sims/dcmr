@@ -4,6 +4,8 @@ import os
 import json
 import numpy as np
 import pandas as pd
+from sklearn import svm
+from sklearn import model_selection as ms
 from cymr.parameters import Parameters
 from cfr import task
 
@@ -361,3 +363,19 @@ def waic(a, axis=1):
     delta_aic = np.exp(-0.5 * (a - min_aic))
     sum_aic = np.expand_dims(np.sum(delta_aic, axis), axis)
     return delta_aic / sum_aic
+
+
+def classify_patterns(trials, patterns):
+    trials = trials.reset_index()
+    labels = trials['category'].to_numpy()
+    groups = trials['list'].to_numpy()
+    categories = trials['category'].unique()
+    evidence = pd.DataFrame(index=trials.index, columns=categories, dtype='float')
+    logo = ms.LeaveOneGroupOut()
+    clf = svm.SVC(probability=True)
+    for train, test in logo.split(patterns, labels, groups):
+        clf.fit(patterns[train], labels[train])
+        prob = clf.predict_proba(patterns[test])
+        xval = pd.DataFrame(prob, index=test, columns=clf.classes_)
+        evidence.loc[test, :] = xval
+    return evidence
