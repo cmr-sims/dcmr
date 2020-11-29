@@ -265,3 +265,28 @@ def label_block_category(data):
     labeled['prev'][labeled['prev'] == ''] = np.nan
     labeled['base'][labeled['base'] == ''] = np.nan
     return labeled
+
+
+def label_block(data):
+    labeled = data.copy()
+    labeled['block'] = (
+        data.groupby(['subject', 'list'])['category']
+            .transform(fr.block_index)
+    )
+    # get the number of blocks for each study list
+    n_block = labeled.groupby(['subject', 'list'])['block'].max()
+    n_block.name = 'n_block'
+
+    # merge the n_block field
+    labeled = pd.merge(labeled, n_block, left_on=['subject', 'list'],
+                       right_on=['subject', 'list'], how='outer')
+
+    # position within block
+    labeled.loc[:, 'block_pos'] = labeled.groupby(
+        ['subject', 'list', 'block']
+    )['position'].cumcount() + 1
+    block_len = labeled.groupby(['subject', 'list', 'block'])['block_pos'].max()
+    block_len.name = 'block_len'
+    labeled = pd.merge(labeled, block_len, left_on=['subject', 'list', 'block'],
+                       right_on=['subject', 'list', 'block'], how='outer')
+    return labeled
