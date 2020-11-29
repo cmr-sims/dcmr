@@ -366,6 +366,7 @@ def waic(a, axis=1):
 
 
 def classify_patterns(trials, patterns):
+    """Run cross-validation and return evidence for each category."""
     trials = trials.reset_index()
     labels = trials['category'].to_numpy()
     groups = trials['list'].to_numpy()

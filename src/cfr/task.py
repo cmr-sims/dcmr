@@ -254,6 +254,7 @@ def get_train_category(category):
 
 
 def label_block_category(data):
+    """Label block category."""
     study_data = fr.filter_data(data, trial_type='study')
     labeled = data.copy()
     for _, list_data in study_data.groupby(['subject', 'list']):
