@@ -15,6 +15,18 @@ from cymr import network
 from wikivector import vector
 
 
+def get_subjects():
+    subject_nos = [
+        1, 2, 3, 5, 8,
+        11, 16, 18,
+        22, 23, 24, 25, 27, 28, 29,
+        31, 32, 33, 34, 35, 37, 38,
+        40, 41, 42, 43, 44, 45, 46
+    ]
+    subject_ids = [f'LTP{no:03d}' for no in subject_nos]
+    return subject_ids, subject_nos
+
+
 def block_fields(study):
     """Add fields labeling category blocks."""
     # add label to study events indicating the block
