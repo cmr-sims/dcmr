@@ -1,8 +1,21 @@
 """Functions to run classification of EEG data or network representation."""
 
+import numpy as np
 import pandas as pd
 from sklearn import svm
 from sklearn import model_selection as ms
+
+
+def impute_samples(patterns):
+    """Impute missing samples for variables in patterns."""
+    m = np.nanmean(patterns, 0)
+    fixed = patterns.copy()
+    for i in range(fixed.shape[1]):
+        isnan = np.isnan(fixed[:, i])
+        if not np.any(isnan):
+            continue
+        fixed[isnan, i] = m[i]
+    return fixed
 
 
 def classify_patterns(trials, patterns):
