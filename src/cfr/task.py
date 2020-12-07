@@ -30,27 +30,29 @@ def get_subjects():
 def block_fields(study):
     """Add fields labeling category blocks."""
     # add label to study events indicating the block
+    labeled = study.copy()
     list_category = study.groupby(['subject', 'list'])['category']
-    study.loc[:, 'block'] = list_category.transform(fr.block_index)
+    labeled.loc[:, 'block'] = list_category.transform(fr.block_index)
 
     # get the number of blocks for each study list
-    n_block = study.groupby(['subject', 'list'])['block'].max()
+    n_block = labeled.groupby(['subject', 'list'])['block'].max()
     n_block.name = 'n_block'
 
     # merge the n_block field
-    study = pd.merge(study, n_block, left_on=['subject', 'list'],
-                     right_on=['subject', 'list'], how='outer')
+    labeled = pd.merge(labeled, n_block, left_on=['subject', 'list'],
+                       right_on=['subject', 'list'], how='outer')
 
     # block position
-    study.loc[:, 'block_pos'] = study.groupby(['subject', 'list', 'block'])[
-                                    'position'].cumcount() + 1
+    labeled.loc[:, 'block_pos'] = labeled.groupby(
+        ['subject', 'list', 'block']
+    )['position'].cumcount() + 1
 
     # block length
-    block_len = study.groupby(['subject', 'list', 'block'])['block_pos'].max()
+    block_len = labeled.groupby(['subject', 'list', 'block'])['block_pos'].max()
     block_len.name = 'block_len'
-    study = pd.merge(study, block_len, left_on=['subject', 'list', 'block'],
+    labeled = pd.merge(labeled, block_len, left_on=['subject', 'list', 'block'],
                      right_on=['subject', 'list', 'block'], how='outer')
-    return study
+    return labeled
 
 
 def set_list_columns(data, columns):
