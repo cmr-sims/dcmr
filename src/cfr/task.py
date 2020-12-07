@@ -244,11 +244,13 @@ def get_train_category(category):
     trial_base = ''
     prev = []
     base = []
+    cats = np.unique(category)
     for i, trial_curr in enumerate(category):
+        if trial_prev:
+            trial_base = [c for c in cats if (c != trial_curr) and (c != trial_prev)][0]
         prev.append(trial_prev)
         base.append(trial_base)
         if i < len(category) - 1 and trial_curr != category[i + 1]:
-            trial_base = trial_prev
             trial_prev = trial_curr
     return np.array(prev), np.array(base)
 
