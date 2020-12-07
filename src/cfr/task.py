@@ -27,34 +27,6 @@ def get_subjects():
     return subject_ids, subject_nos
 
 
-def block_fields(study):
-    """Add fields labeling category blocks."""
-    # add label to study events indicating the block
-    labeled = study.copy()
-    list_category = study.groupby(['subject', 'list'])['category']
-    labeled.loc[:, 'block'] = list_category.transform(fr.block_index)
-
-    # get the number of blocks for each study list
-    n_block = labeled.groupby(['subject', 'list'])['block'].max()
-    n_block.name = 'n_block'
-
-    # merge the n_block field
-    labeled = pd.merge(labeled, n_block, left_on=['subject', 'list'],
-                       right_on=['subject', 'list'], how='outer')
-
-    # block position
-    labeled.loc[:, 'block_pos'] = labeled.groupby(
-        ['subject', 'list', 'block']
-    )['position'].cumcount() + 1
-
-    # block length
-    block_len = labeled.groupby(['subject', 'list', 'block'])['block_pos'].max()
-    block_len.name = 'block_len'
-    labeled = pd.merge(labeled, block_len, left_on=['subject', 'list', 'block'],
-                     right_on=['subject', 'list', 'block'], how='outer')
-    return labeled
-
-
 def set_list_columns(data, columns):
     """Set columns that are defined for each list."""
     modified = data.copy()
@@ -84,7 +56,7 @@ def read_free_recall(csv_file):
 
     # split, add block fields to study
     study = data.query('trial_type == "study"').copy()
-    study = block_fields(study)
+    study = label_block(study)
     recall = data.query('trial_type == "recall"').copy()
 
     # merge study and recalle events
