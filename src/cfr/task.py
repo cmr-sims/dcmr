@@ -273,24 +273,27 @@ def label_block_category(data):
 
 def label_block(data):
     labeled = data.copy()
+    list_keys = ['subject', 'list', 'trial_type']
+    block_keys = list_keys + ['block']
     labeled['block'] = (
-        data.groupby(['subject', 'list'])['category']
-            .transform(fr.block_index)
+        data.groupby(list_keys)['category'].transform(fr.block_index)
     )
     # get the number of blocks for each study list
-    n_block = labeled.groupby(['subject', 'list'])['block'].max()
+    n_block = labeled.groupby(list_keys)['block'].max()
     n_block.name = 'n_block'
 
     # merge the n_block field
-    labeled = pd.merge(labeled, n_block, left_on=['subject', 'list'],
-                       right_on=['subject', 'list'], how='outer')
+    labeled = pd.merge(
+        labeled, n_block, left_on=list_keys, right_on=list_keys, how='outer'
+    )
 
     # position within block
     labeled.loc[:, 'block_pos'] = labeled.groupby(
-        ['subject', 'list', 'block']
+        block_keys
     )['position'].cumcount() + 1
-    block_len = labeled.groupby(['subject', 'list', 'block'])['block_pos'].max()
+    block_len = labeled.groupby(block_keys)['block_pos'].max()
     block_len.name = 'block_len'
-    labeled = pd.merge(labeled, block_len, left_on=['subject', 'list', 'block'],
-                       right_on=['subject', 'list', 'block'], how='outer')
+    labeled = pd.merge(
+        labeled, block_len, left_on=block_keys, right_on=block_keys, how='outer'
+    )
     return labeled
