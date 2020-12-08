@@ -33,3 +33,17 @@ def classify_patterns(trials, patterns):
         xval = pd.DataFrame(prob, index=test, columns=clf.classes_)
         evidence.loc[test, :] = xval
     return evidence
+
+
+def label_evidence(data, prefix):
+    """Label evidence by block category."""
+    cats = data['curr'].dropna().unique()
+    evidence = ['curr', 'prev', 'base']
+    res = data.copy()
+    for cat in cats:
+        for evid in evidence:
+            include = data[evid] == cat
+            evid_key = prefix + evid
+            cat_key = prefix + cat
+            res.loc[include, evid_key] = data.loc[include, cat_key]
+    return res
