@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn import svm
 from sklearn import model_selection as ms
+import sklearn.linear_model as lm
 
 
 def impute_samples(patterns):
@@ -46,4 +47,20 @@ def label_evidence(data, prefix):
             evid_key = prefix + evid
             cat_key = prefix + cat
             res.loc[include, evid_key] = data.loc[include, cat_key]
+    return res
+
+
+def regress_evidence_block_pos(data, prefix):
+    """Regress evidence on block position."""
+    data = data.reset_index()
+    evidence = ['curr', 'prev', 'base']
+    n = data['n'].to_numpy()
+    x = data['block_pos'].to_numpy().reshape(-1, 1)
+    d = {}
+    for evid in evidence:
+        y = data[prefix + evid].to_numpy()
+        model = lm.LinearRegression()
+        model.fit(x, y, sample_weight=n)
+        d[prefix + evid + '_slope'] = model.coef_[0]
+    res = pd.Series(d)
     return res
