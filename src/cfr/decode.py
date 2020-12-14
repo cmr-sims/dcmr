@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn import svm
 from sklearn import model_selection as ms
 import sklearn.linear_model as lm
+from sklearn import preprocessing
 
 
 def impute_samples(patterns):
@@ -19,7 +20,7 @@ def impute_samples(patterns):
     return fixed
 
 
-def classify_patterns(trials, patterns):
+def classify_patterns(trials, patterns, clf='svm'):
     """Run cross-validation and return evidence for each category."""
     trials = trials.reset_index()
     labels = trials['category'].to_numpy()
@@ -27,7 +28,15 @@ def classify_patterns(trials, patterns):
     categories = trials['category'].unique()
     evidence = pd.DataFrame(index=trials.index, columns=categories, dtype='float')
     logo = ms.LeaveOneGroupOut()
-    clf = svm.SVC(probability=True)
+
+    if clf == 'svm':
+        clf = svm.SVC(probability=True)
+    elif clf == 'logreg':
+        clf = lm.LogisticRegression(max_iter=1000)
+    else:
+        raise ValueError(f'Unknown classifier: {clf}')
+
+    patterns = preprocessing.scale(patterns)
     for train, test in logo.split(patterns, labels, groups):
         clf.fit(patterns[train], labels[train])
         prob = clf.predict_proba(patterns[test])
