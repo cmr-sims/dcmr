@@ -5,6 +5,7 @@ matplotlib
 pandas
 seaborn
 scikit-image
+scikit-learn
 git+https://github.com/mortonne/psifr
 git+https://github.com/mortonne/cymr
 git+https://github.com/mortonne/wikivector
