@@ -109,9 +109,9 @@ def set_item_index(data, items):
     return data
 
 
-def save_patterns_w2v(mat_file, use_file, h5_file):
-    """Read wiki2vec data and write patterns and similarity matrices."""
-    mat = read_similarity(mat_file)
+def save_patterns_sem(w2v_file, use_file, h5_file):
+    """Read wiki2vec and wiki2USE data and write semantic patterns."""
+    mat = read_similarity(w2v_file)
     use_patterns, use_items = vector.load_vectors(use_file)
     np.testing.assert_array_equal(mat['items'], use_items)
 
