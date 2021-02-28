@@ -114,11 +114,11 @@ def save_patterns_sem(use_file, h5_file):
     patterns, items = vector.load_vectors(use_file)
 
     # localist patterns
-    loc_patterns = np.eye(items.shape[0])
+    loc_patterns = np.eye(len(items))
 
     # category patterns
     category = np.repeat(['cel', 'loc', 'obj'], 256)
-    cat_patterns = np.zeros((items.shape[0], 3))
+    cat_patterns = np.zeros((len(items), 3))
     cat_names = np.unique(category)
     for i in range(3):
         cat_patterns[category == cat_names[i], i] = 1
