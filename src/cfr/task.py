@@ -109,34 +109,27 @@ def set_item_index(data, items):
     return data
 
 
-def save_patterns_sem(w2v_file, use_file, h5_file):
-    """Read wiki2vec and wiki2USE data and write semantic patterns."""
-    mat = read_similarity(w2v_file)
-    use_patterns, use_items = vector.load_vectors(use_file)
-    np.testing.assert_array_equal(mat['items'], use_items)
+def save_patterns_sem(use_file, h5_file):
+    """Read wiki2USE data and write semantic patterns."""
+    patterns, items = vector.load_vectors(use_file)
 
     # localist patterns
-    loc_patterns = np.eye(mat['items'].shape[0])
+    loc_patterns = np.eye(items.shape[0])
 
     # category patterns
     category = np.repeat(['cel', 'loc', 'obj'], 256)
-    cat_patterns = np.zeros((mat['items'].shape[0], 3))
+    cat_patterns = np.zeros((items.shape[0], 3))
     cat_names = np.unique(category)
     for i in range(3):
         cat_patterns[category == cat_names[i], i] = 1
 
-    # semantic patterns based on wiki2vec
-    sem_patterns = mat['vectors']
-
-    # normalize so that dot product is equal to correlation
-    sem_z = stats.zscore(sem_patterns, axis=1) / np.sqrt(sem_patterns.shape[1])
-
     # use vectors
-    use_z = stats.zscore(use_patterns, axis=1) / np.sqrt(use_patterns.shape[1])
+    use_z = stats.zscore(patterns, axis=1) / np.sqrt(patterns.shape[1])
 
     # write to standard format hdf5 file
-    network.save_patterns(h5_file, mat['items'], loc=loc_patterns,
-                          cat=cat_patterns, w2v=sem_z, use=use_z)
+    network.save_patterns(
+        h5_file, items, loc=loc_patterns, cat=cat_patterns, use=use_z
+    )
 
 
 def read_pool_cfr(image_dir):
