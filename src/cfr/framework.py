@@ -179,6 +179,11 @@ class WeightParameters(Parameters):
         """Set scaling of sublayer learning rates."""
         for weight in self.sublayers['c']:
             scaling = scaling_param[weight]
+
+            # if no scaling, do not need to set learning rates to vary
+            if scaling is None:
+                continue
+
             weight_param = {}
             for param in ['Lfc', 'Lcf']:
                 sub_param = f'{param}_{weight}'
