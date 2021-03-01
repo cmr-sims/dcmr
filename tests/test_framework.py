@@ -167,7 +167,43 @@ def test_item_weight_param3():
     }
 
 
-def test_weight_param_sublayers():
+def test_weight_param_sublayers1():
+    """Using one sublayer does not set sublayer-dependent learning."""
+    wp = framework.model_variant(['loc'], None, sublayers=True)
+    assert 'Lfc_loc' not in wp.dependent
+    assert 'Lcf_loc' not in wp.dependent
+    assert wp.sublayers == {'f': ['task'], 'c': ['loc']}
+    assert wp.sublayer_param == {}
+
+
+def test_weight_param_sublayers3():
+    """Using three sublayers sets sublayer-dependent learning."""
+    wp = framework.model_variant(['loc', 'cat', 'use'], None, sublayers=True)
+    assert wp.sublayers == {'f': ['task'], 'c': ['loc', 'cat', 'use']}
+    assert wp.weights['fc'] == {
+        (('task', 'item'), ('loc', 'item')): 'Dfc * w_loc * loc',
+        (('task', 'item'), ('cat', 'item')): 'Dfc * w_cat * cat',
+        (('task', 'item'), ('use', 'item')): 'Dfc * w_use * use',
+    }
+    assert wp.weights['cf'] == {
+        (('task', 'item'), ('loc', 'item')): 'Dcf * w_loc * loc',
+        (('task', 'item'), ('cat', 'item')): 'Dcf * w_cat * cat',
+        (('task', 'item'), ('use', 'item')): 'Dcf * w_use * use',
+    }
+    assert wp.dependent['Lfc_loc'] == 'Lfc * w_loc'
+    assert wp.dependent['Lcf_loc'] == 'Lcf * w_loc'
+    assert wp.dependent['Lfc_cat'] == 'Lfc * w_cat'
+    assert wp.dependent['Lcf_cat'] == 'Lcf * w_cat'
+    assert wp.dependent['Lfc_use'] == 'Lfc * w_use'
+    assert wp.dependent['Lcf_use'] == 'Lcf * w_use'
+    assert wp.sublayer_param == {'c': {
+        'loc': {'Lfc': 'Lfc_loc', 'Lcf': 'Lcf_loc'},
+        'cat': {'Lfc': 'Lfc_cat', 'Lcf': 'Lcf_cat'},
+        'use': {'Lfc': 'Lfc_use', 'Lcf': 'Lcf_use'},
+    }}
+
+
+def test_param_sublayers3():
     wp = framework.model_variant(['loc', 'cat', 'use'], None, sublayers=True,
                                  sublayer_param=['B_enc'])
     assert 'B_enc_loc' in wp.free
