@@ -6,12 +6,8 @@ from cfr import framework
 def test_weight_param1():
     wp = framework.model_variant(['loc'], None, sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
-    assert wp.weights['fc'] == {
-        (('task', 'item'), ('task', 'loc')): 'Dfc * loc'
-    }
-    assert wp.weights['cf'] == {
-        (('task', 'item'), ('task', 'loc')): 'Dcf * loc'
-    }
+    assert wp.weights['fc'] == {(('task', 'item'), ('task', 'loc')): 'Dfc * loc'}
+    assert wp.weights['cf'] == {(('task', 'item'), ('task', 'loc')): 'Dcf * loc'}
 
 
 def test_weight_param2():
@@ -51,9 +47,7 @@ def test_item_weight_param1():
 def test_item_weight_param2():
     wp = framework.model_variant(['loc'], ['loc', 'cat'], sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
-    assert wp.weights['ff'] == {
-        ('task', 'item'): 'Dff * (s_loc * loc + s_cat * cat)'
-    }
+    assert wp.weights['ff'] == {('task', 'item'): 'Dff * (s_loc * loc + s_cat * cat)'}
 
 
 def test_item_weight_param3():
@@ -99,29 +93,35 @@ def test_weight_param_sublayers3():
     assert wp.dependent['Lcf_cat'] == 'Lcf * w_cat'
     assert wp.dependent['Lfc_use'] == 'Lfc * w_use'
     assert wp.dependent['Lcf_use'] == 'Lcf * w_use'
-    assert wp.sublayer_param == {'c': {
-        'loc': {'Lfc': 'Lfc_loc', 'Lcf': 'Lcf_loc'},
-        'cat': {'Lfc': 'Lfc_cat', 'Lcf': 'Lcf_cat'},
-        'use': {'Lfc': 'Lfc_use', 'Lcf': 'Lcf_use'},
-    }}
+    assert wp.sublayer_param == {
+        'c': {
+            'loc': {'Lfc': 'Lfc_loc', 'Lcf': 'Lcf_loc'},
+            'cat': {'Lfc': 'Lfc_cat', 'Lcf': 'Lcf_cat'},
+            'use': {'Lfc': 'Lfc_use', 'Lcf': 'Lcf_use'},
+        }
+    }
 
 
 def test_param_sublayers3():
-    wp = framework.model_variant(['loc', 'cat', 'use'], None, sublayers=True,
-                                 sublayer_param=['B_enc'])
+    wp = framework.model_variant(
+        ['loc', 'cat', 'use'], None, sublayers=True, sublayer_param=['B_enc']
+    )
     assert 'B_enc_loc' in wp.free
     assert 'B_enc' not in wp.free
     assert wp.sublayers == {'f': ['task'], 'c': ['loc', 'cat', 'use']}
-    assert wp.sublayer_param == {'c': {
-        'loc': {'Lfc': 'Lfc_loc', 'Lcf': 'Lcf_loc', 'B_enc': 'B_enc_loc'},
-        'cat': {'Lfc': 'Lfc_cat', 'Lcf': 'Lcf_cat', 'B_enc': 'B_enc_cat'},
-        'use': {'Lfc': 'Lfc_use', 'Lcf': 'Lcf_use', 'B_enc': 'B_enc_use'},
-    }}
+    assert wp.sublayer_param == {
+        'c': {
+            'loc': {'Lfc': 'Lfc_loc', 'Lcf': 'Lcf_loc', 'B_enc': 'B_enc_loc'},
+            'cat': {'Lfc': 'Lfc_cat', 'Lcf': 'Lcf_cat', 'B_enc': 'B_enc_cat'},
+            'use': {'Lfc': 'Lfc_use', 'Lcf': 'Lcf_use', 'B_enc': 'B_enc_use'},
+        }
+    }
 
 
 def test_learning_param_sublayers():
-    wp = framework.model_variant(['loc', 'cat', 'use'], None, sublayers=True,
-                                 sublayer_param=['Lcf'])
+    wp = framework.model_variant(
+        ['loc', 'cat', 'use'], None, sublayers=True, sublayer_param=['Lcf']
+    )
     assert 'Lcf_loc_raw' in wp.free
     assert 'Lcf' not in wp.free
     assert wp.dependent['Lfc_loc'] == 'Lfc * w_loc'
@@ -129,9 +129,13 @@ def test_learning_param_sublayers():
     assert wp.dependent['Dfc'] == '1 - Lfc'
     assert wp.dependent['Dcf_loc'] == '1 - Lcf_loc_raw'
     assert wp.weights['fc'][(('task', 'item'), ('loc', 'item'))] == 'Dfc * w_loc * loc'
-    assert wp.weights['cf'][(('task', 'item'), ('loc', 'item'))] == 'Dcf_loc * w_loc * loc'
-    assert wp.sublayer_param == {'c': {
-        'loc': {'Lfc': 'Lfc_loc', 'Lcf': 'Lcf_loc'},
-        'cat': {'Lfc': 'Lfc_cat', 'Lcf': 'Lcf_cat'},
-        'use': {'Lfc': 'Lfc_use', 'Lcf': 'Lcf_use'}
-    }}
+    assert (
+        wp.weights['cf'][(('task', 'item'), ('loc', 'item'))] == 'Dcf_loc * w_loc * loc'
+    )
+    assert wp.sublayer_param == {
+        'c': {
+            'loc': {'Lfc': 'Lfc_loc', 'Lcf': 'Lcf_loc'},
+            'cat': {'Lfc': 'Lfc_cat', 'Lcf': 'Lcf_cat'},
+            'use': {'Lfc': 'Lfc_use', 'Lcf': 'Lcf_use'},
+        }
+    }
