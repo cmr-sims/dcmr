@@ -102,6 +102,16 @@ def test_weight_param_sublayers3():
     }
 
 
+def test_param_sublayers1():
+    wp = framework.model_variant(
+        ['loc'], None, sublayers=True, sublayer_param=['B_enc']
+    )
+    assert 'B_enc_loc' in wp.free
+    assert 'B_enc' not in wp.free
+    assert wp.sublayers == {'f': ['task'], 'c': ['loc']}
+    assert wp.sublayer_param == {'c': {'loc': {'B_enc': 'B_enc_loc'}}}
+
+
 def test_param_sublayers3():
     wp = framework.model_variant(
         ['loc', 'cat', 'use'], None, sublayers=True, sublayer_param=['B_enc']
