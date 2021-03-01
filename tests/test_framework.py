@@ -174,6 +174,12 @@ def test_weight_param_sublayers1():
     assert 'Lcf_loc' not in wp.dependent
     assert wp.sublayers == {'f': ['task'], 'c': ['loc']}
     assert wp.sublayer_param == {}
+    assert wp.weights['fc'] == {
+        (('task', 'item'), ('loc', 'item')): 'Dfc * loc',
+    }
+    assert wp.weights['cf'] == {
+        (('task', 'item'), ('loc', 'item')): 'Dcf * loc',
+    }
 
 
 def test_weight_param_sublayers3():
