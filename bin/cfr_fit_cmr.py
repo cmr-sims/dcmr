@@ -94,7 +94,7 @@ if __name__ == '__main__':
         'fcf_features', help='dash-separated list of item-context associations'
     )
     parser.add_argument(
-        'ff_features', help='dash-separated list of item-item associations'
+        'ff_features', help='dash-separated list of item-item associations (or none)'
     )
     parser.add_argument('res_dir', help='directory to save results')
     parser.add_argument(
