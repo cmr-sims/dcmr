@@ -85,20 +85,48 @@ def split_arg(arg):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('data_file')
-    parser.add_argument('patterns_file')
-    parser.add_argument('fcf_features')
-    parser.add_argument('ff_features')
-    parser.add_argument('res_dir')
-    parser.add_argument('--sublayers', '-s', action='store_true')
-    parser.add_argument('--sublayer-param', '-p', default=None)
-    parser.add_argument('--fixed', '-f', default=None)
-    parser.add_argument('--n-reps', '-n', type=int, default=1)
-    parser.add_argument('--n-jobs', '-j', type=int, default=1)
-    parser.add_argument('--tol', '-t', type=float, default=0.00001)
-    parser.add_argument('--n-sim-reps', '-r', type=int, default=1)
-    parser.add_argument('--include', '-i', default=None)
+    parser = argparse.ArgumentParser(
+        description='Run a parameter search to fit a model, then simulate data.'
+    )
+    parser.add_argument('data_file', help='path to Psifr csv data file')
+    parser.add_argument('patterns_file', help='path to network patterns')
+    parser.add_argument(
+        'fcf_features', help='dash-separated list of item-context associations'
+    )
+    parser.add_argument(
+        'ff_features', help='dash-separated list of item-item associations'
+    )
+    parser.add_argument('res_dir', help='directory to save results')
+    parser.add_argument(
+        '--sublayers', '-s', action='store_true',
+        help='include a sublayer for each feature (default: multiple segments)'
+    )
+    parser.add_argument(
+        '--sublayer-param', '-p', default=None,
+        help='parameters free to vary between sublayers (e.g., B_enc-B_rec)'
+    )
+    parser.add_argument(
+        '--fixed', '-f', default=None,
+        help='dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)'
+    )
+    parser.add_argument(
+        '--n-reps', '-n', type=int, default=1,
+        help='number of times to replicate the search'
+    )
+    parser.add_argument(
+        '--n-jobs', '-j', type=int, default=1, help='number of parallel jobs to use'
+    )
+    parser.add_argument(
+        '--tol', '-t', type=float, default=0.00001, help='search tolerance'
+    )
+    parser.add_argument(
+        '--n-sim-reps', '-r', type=int, default=1,
+        help='number of experiment replications to simulate'
+    )
+    parser.add_argument(
+        '--include', '-i', default=None,
+        help='dash-separated list of subject to include (default: all in data file)'
+    )
     args = parser.parse_args()
 
     fcf = split_arg(args.fcf_features)

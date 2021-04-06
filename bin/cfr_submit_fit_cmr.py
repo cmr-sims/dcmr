@@ -40,7 +40,9 @@ def main(fcf_features, ff_features, sublayers, res_dir, subpar, fixed,
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description='Fit multiple models to a dataset. See cfr_fit_cmr.py for details.'
+    )
     parser.add_argument('fcf_features')
     parser.add_argument('ff_features')
     parser.add_argument('res_dir')
