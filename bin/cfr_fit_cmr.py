@@ -4,6 +4,7 @@
 
 import os
 import argparse
+import logging
 import pandas as pd
 from cymr import cmr
 from cymr import network
@@ -15,7 +16,15 @@ def main(data_file, patterns_file, fcf_features, ff_features, sublayers,
          res_dir, sublayer_param=None, fixed_param=None, n_reps=1, n_jobs=1,
          tol=0.00001, n_sim_reps=1, include=None):
 
+    os.makedirs(res_dir, exist_ok=True)
+    log_file = os.path.join(res_dir, 'log_fit.txt')
+    logging.basicConfig(
+        filename=log_file, filemode='w', level=logging.INFO,
+        format='%(asctime)s %(levelname)s:%(name)s:%(message)s'
+    )
+
     # prepare model for search
+    logging.info(f'Loading data from {data_file}.')
     data = pd.read_csv(data_file)
     if include is not None:
         data = data.loc[data['subject'].isin(include)]
@@ -26,6 +35,7 @@ def main(data_file, patterns_file, fcf_features, ff_features, sublayers,
         fcf_features, ff_features, sublayers=sublayers,
         sublayer_param=sublayer_param
     )
+    logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = network.load_patterns(patterns_file)
 
     # fix parameters if specified
@@ -38,12 +48,16 @@ def main(data_file, patterns_file, fcf_features, ff_features, sublayers,
             del param_def.free[param_name]
 
     # save model information
-    if not os.path.exists(res_dir):
-        os.makedirs(res_dir)
     json_file = os.path.join(res_dir, 'parameters.json')
+    logging.info(f'Saving parameter definition to {json_file}.')
     param_def.to_json(json_file)
 
     # run individual subject fits
+    n = data['subject'].nunique()
+    logging.info(
+        f'Running {n_reps} parameter optimization repeat(s) for {n} participant(s).'
+    )
+    logging.info(f'Using {n_jobs} core(s).')
     results = model.fit_indiv(
         data, param_def, patterns=patterns, n_jobs=n_jobs, method='de',
         n_rep=n_reps, tol=tol
@@ -51,21 +65,27 @@ def main(data_file, patterns_file, fcf_features, ff_features, sublayers,
 
     # full search information
     res_file = os.path.join(res_dir, 'search.csv')
+    logging.info(f'Saving full search results to {res_file}.')
     results.to_csv(res_file)
 
     # best results
     best = fit.get_best_results(results)
     best_file = os.path.join(res_dir, 'fit.csv')
+    logging.info(f'Saving best fitting results to {best_file}.')
     best.to_csv(best_file)
 
     # simulate data based on best parameters
     subj_param = best.T.to_dict()
     study_data = data.loc[(data['trial_type'] == 'study')]
+    logging.info(
+        f'Simulating {n_sim_reps} replication(s) with best-fitting parameters.'
+    )
     sim = model.generate(
         study_data, {}, subj_param=subj_param, param_def=param_def,
         patterns=patterns, n_rep=n_sim_reps
     )
     sim_file = os.path.join(res_dir, 'sim.csv')
+    logging.info(f'Saving simulated data to {sim_file}.')
     sim.to_csv(sim_file, index=False)
 
 
