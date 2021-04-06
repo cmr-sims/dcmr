@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
     fcf = split_arg(args.fcf_features)
     ff = split_arg(args.ff_features)
-    include_subjects = split_arg(args.include)
+    include_subjects = [int(s) for s in split_arg(args.include)]
     subpar = split_arg(args.sublayer_param)
     fixed = split_arg(args.fixed)
 
