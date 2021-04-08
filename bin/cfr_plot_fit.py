@@ -4,6 +4,7 @@
 
 import os
 import argparse
+import logging
 import numpy as np
 import pandas as pd
 from psifr import fr
@@ -13,12 +14,22 @@ from cfr import figures
 
 
 def main(data_file, patterns_file, fit_dir):
+    log_file = os.path.join(fit_dir, 'log_plot.txt')
+    logging.basicConfig(
+        filename=log_file, filemode='w', level=logging.INFO,
+        format='%(asctime)s %(levelname)s:%(name)s:%(message)s'
+    )
+    logging.info(f'Plotting fitted simulation data in {fit_dir}.')
+
     # load data and simulated data
     sim_file = os.path.join(fit_dir, 'sim.csv')
+    logging.info(f'Loading data from {data_file}.')
     data = task.read_free_recall(data_file)
+    logging.info(f'Loading simulation from {sim_file}.')
     sim = task.read_free_recall(sim_file)
 
     # prep semantic similarity
+    logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = network.load_patterns(patterns_file)
     rsm = patterns['similarity']['use']
     edges = np.linspace(.05, .95, 10)
@@ -29,8 +40,10 @@ def main(data_file, patterns_file, fit_dir):
 
     # make plots
     fig_dir = os.path.join(fit_dir, 'figs')
+    logging.info(f'Saving figures to {fig_dir}.')
 
     # scalar stats
+    logging.info('Plotting fits to individual scalar statistics.')
     figures.plot_fit_scatter(
         full, 'source', 'use_rank', fr.distance_rank,
         {'index_key': 'item_index', 'distances': rsm}, 'rank', fig_dir
@@ -62,6 +75,7 @@ def main(data_file, patterns_file, fit_dir):
     )
 
     # curves
+    logging.info('Plotting fits to curves.')
     figures.plot_fit(
         full, 'source', 'use_crp', fr.distance_crp,
         {'index_key': 'item_index', 'distances': rsm, 'edges': edges},
