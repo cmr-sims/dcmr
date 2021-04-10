@@ -38,6 +38,63 @@ def set_list_columns(data, columns):
     return modified
 
 
+def get_train_category(category):
+    """Given current category, get previous and baseline categories."""
+    trial_prev = ''
+    trial_base = ''
+    prev = []
+    base = []
+    cats = np.unique(category)
+    for i, trial_curr in enumerate(category):
+        if trial_prev:
+            trial_base = [c for c in cats if (c != trial_curr) and (c != trial_prev)][0]
+        prev.append(trial_prev)
+        base.append(trial_base)
+        if i < len(category) - 1 and trial_curr != category[i + 1]:
+            trial_prev = trial_curr
+    return np.array(prev), np.array(base)
+
+
+def label_block_category(data):
+    """Label block category."""
+    study_data = fr.filter_data(data, trial_type='study')
+    labeled = data.copy()
+    labeled['curr'] = labeled['category']
+    for _, list_data in study_data.groupby(['subject', 'list']):
+        prev, base = get_train_category(list_data['category'].to_numpy())
+        labeled.loc[list_data.index, 'prev'] = prev
+        labeled.loc[list_data.index, 'base'] = base
+    labeled['prev'] = labeled['prev'].astype('category')
+    labeled['base'] = labeled['base'].astype('category')
+    labeled['prev'][labeled['prev'] == ''] = np.nan
+    labeled['base'][labeled['base'] == ''] = np.nan
+    return labeled
+
+
+def label_block(data):
+    labeled = data.copy()
+    list_keys = ['subject', 'list', 'trial_type']
+    block_keys = list_keys + ['block']
+    labeled['block'] = data.groupby(list_keys)['category'].transform(fr.block_index)
+    # get the number of blocks for each study list
+    n_block = labeled.groupby(list_keys)['block'].max()
+    n_block.name = 'n_block'
+
+    # merge the n_block field
+    labeled = pd.merge(
+        labeled, n_block, left_on=list_keys, right_on=list_keys, how='outer'
+    )
+
+    # position within block
+    labeled.loc[:, 'block_pos'] = labeled.groupby(block_keys)['position'].cumcount() + 1
+    block_len = labeled.groupby(block_keys)['block_pos'].max()
+    block_len.name = 'block_len'
+    labeled = pd.merge(
+        labeled, block_len, left_on=block_keys, right_on=block_keys, how='outer'
+    )
+    return labeled
+
+
 def read_study_recall(csv_file):
     """Read study and recall data."""
     if not os.path.exists(csv_file):
@@ -83,6 +140,32 @@ def read_free_recall(csv_file):
             list_keys += [field]
     merged = fr.merge_lists(study, recall, list_keys=list_keys, study_keys=study_keys)
     return merged
+
+
+def label_clean_trials(data):
+    """Label study and recall trials as clean or not."""
+    # score data
+    merged = fr.merge_free_recall(data)
+
+    # make scored data comparable to raw data
+    merged_recall = merged.query('recall').copy()
+    merged_recall['trial_type'] = 'recall'
+    merged_recall['position'] = merged_recall['output'].astype('int')
+
+    # merge to copy scoring to raw data
+    merge_keys = ['subject', 'list', 'item', 'trial_type', 'position']
+    rmerged = pd.merge(
+        data, merged_recall, left_on=merge_keys, right_on=merge_keys, how='outer'
+    )
+
+    # filter to label clean recalls
+    rmerged['intrusion'] = rmerged['intrusion'].fillna(False)
+    clean = rmerged.query('trial_type == "study" | (~intrusion & repeat == 0)')
+    label = np.zeros(data.shape[0], dtype=bool)
+    label[clean.index] = True
+    labeled = data.copy()
+    labeled['clean'] = label
+    return labeled
 
 
 def unpack_array(x):
@@ -205,86 +288,3 @@ def load_pool_images(pool, image_dir, rescale=None):
 
         images[item['item']] = rescaled
     return images
-
-
-def label_clean_trials(data):
-    """Label study and recall trials as clean or not."""
-    # score data
-    merged = fr.merge_free_recall(data)
-
-    # make scored data comparable to raw data
-    merged_recall = merged.query('recall').copy()
-    merged_recall['trial_type'] = 'recall'
-    merged_recall['position'] = merged_recall['output'].astype('int')
-
-    # merge to copy scoring to raw data
-    merge_keys = ['subject', 'list', 'item', 'trial_type', 'position']
-    rmerged = pd.merge(
-        data, merged_recall, left_on=merge_keys, right_on=merge_keys, how='outer'
-    )
-
-    # filter to label clean recalls
-    rmerged['intrusion'] = rmerged['intrusion'].fillna(False)
-    clean = rmerged.query('trial_type == "study" | (~intrusion & repeat == 0)')
-    label = np.zeros(data.shape[0], dtype=bool)
-    label[clean.index] = True
-    labeled = data.copy()
-    labeled['clean'] = label
-    return labeled
-
-
-def get_train_category(category):
-    """Given current category, get previous and baseline categories."""
-    trial_prev = ''
-    trial_base = ''
-    prev = []
-    base = []
-    cats = np.unique(category)
-    for i, trial_curr in enumerate(category):
-        if trial_prev:
-            trial_base = [c for c in cats if (c != trial_curr) and (c != trial_prev)][0]
-        prev.append(trial_prev)
-        base.append(trial_base)
-        if i < len(category) - 1 and trial_curr != category[i + 1]:
-            trial_prev = trial_curr
-    return np.array(prev), np.array(base)
-
-
-def label_block_category(data):
-    """Label block category."""
-    study_data = fr.filter_data(data, trial_type='study')
-    labeled = data.copy()
-    labeled['curr'] = labeled['category']
-    for _, list_data in study_data.groupby(['subject', 'list']):
-        prev, base = get_train_category(list_data['category'].to_numpy())
-        labeled.loc[list_data.index, 'prev'] = prev
-        labeled.loc[list_data.index, 'base'] = base
-    labeled['prev'] = labeled['prev'].astype('category')
-    labeled['base'] = labeled['base'].astype('category')
-    labeled['prev'][labeled['prev'] == ''] = np.nan
-    labeled['base'][labeled['base'] == ''] = np.nan
-    return labeled
-
-
-def label_block(data):
-    labeled = data.copy()
-    list_keys = ['subject', 'list', 'trial_type']
-    block_keys = list_keys + ['block']
-    labeled['block'] = data.groupby(list_keys)['category'].transform(fr.block_index)
-    # get the number of blocks for each study list
-    n_block = labeled.groupby(list_keys)['block'].max()
-    n_block.name = 'n_block'
-
-    # merge the n_block field
-    labeled = pd.merge(
-        labeled, n_block, left_on=list_keys, right_on=list_keys, how='outer'
-    )
-
-    # position within block
-    labeled.loc[:, 'block_pos'] = labeled.groupby(block_keys)['position'].cumcount() + 1
-    block_len = labeled.groupby(block_keys)['block_pos'].max()
-    block_len.name = 'block_len'
-    labeled = pd.merge(
-        labeled, block_len, left_on=block_keys, right_on=block_keys, how='outer'
-    )
-    return labeled
