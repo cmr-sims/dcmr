@@ -74,10 +74,15 @@ def label_block_category(data):
     study_data = fr.filter_data(data, trial_type='study')
     labeled = data.copy()
     labeled['curr'] = labeled['category']
-    for _, list_data in study_data.groupby(['subject', 'list']):
-        prev, base = get_train_category(list_data['category'].to_numpy())
-        labeled.loc[list_data.index, 'prev'] = prev
-        labeled.loc[list_data.index, 'base'] = base
+    labeled['prev'] = (
+        study_data.groupby(['subject', 'list'])['category'].transform(get_prev_category)
+    )
+    labeled['base'] = ''
+    ucat = study_data['category'].unique()
+    for (curr, prev), df in labeled.groupby(['curr', 'prev']):
+        if not prev:
+            continue
+        labeled.loc[df.index, 'base'] = np.setdiff1d(ucat, [curr, prev])[0]
     labeled['prev'] = labeled['prev'].astype('category')
     labeled['base'] = labeled['base'].astype('category')
     labeled['prev'][labeled['prev'] == ''] = np.nan
