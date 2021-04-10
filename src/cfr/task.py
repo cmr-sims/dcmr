@@ -55,6 +55,20 @@ def get_train_category(category):
     return np.array(prev), np.array(base)
 
 
+def get_prev_category(category):
+    """Given current category for a list, get previous category."""
+    category = np.asarray(category)
+    prev = np.empty(category.shape, dtype=object)
+    trial_prev = ''
+    prev[0] = ''
+    for i in range(1, len(category)):
+        if category[i - 1] != category[i]:
+            # just shifted category; update previous category
+            trial_prev = category[i - 1]
+        prev[i] = trial_prev
+    return prev
+
+
 def label_block_category(data):
     """Label block category."""
     study_data = fr.filter_data(data, trial_type='study')
