@@ -38,23 +38,6 @@ def set_list_columns(data, columns):
     return modified
 
 
-def get_train_category(category):
-    """Given current category, get previous and baseline categories."""
-    trial_prev = ''
-    trial_base = ''
-    prev = []
-    base = []
-    cats = np.unique(category)
-    for i, trial_curr in enumerate(category):
-        if trial_prev:
-            trial_base = [c for c in cats if (c != trial_curr) and (c != trial_prev)][0]
-        prev.append(trial_prev)
-        base.append(trial_base)
-        if i < len(category) - 1 and trial_curr != category[i + 1]:
-            trial_prev = trial_curr
-    return np.array(prev), np.array(base)
-
-
 def get_prev_category(category):
     """Given current category for a list, get previous category."""
     category = np.asarray(category)
