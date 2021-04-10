@@ -65,7 +65,6 @@ def read_free_recall(csv_file):
 
     # split, add block fields to study
     study = data.query('trial_type == "study"').copy()
-    study = label_block(study)
     recall = data.query('trial_type == "recall"').copy()
 
     # merge study and recall events
