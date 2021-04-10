@@ -123,9 +123,7 @@ class WeightParameters(Parameters):
                 expr = f'{pre_param} * {scaling} * {weight}'
             else:
                 expr = f'{pre_param} * {weight}'
-            self.set_weights(connect, {
-                (('task', 'item'), ('task', weight)): expr
-            })
+            self.set_weights(connect, {(('task', 'item'), ('task', weight)): expr})
 
     def set_sublayer_weights(self, connect, scaling_param, pre_param):
         """Set weights for different sublayers."""
@@ -138,9 +136,7 @@ class WeightParameters(Parameters):
                 expr = f'{pre} * {scaling} * {weight}'
             else:
                 expr = f'{pre} * {weight}'
-            self.set_weights(connect, {
-                (('task', 'item'), (weight, 'item')): expr
-            })
+            self.set_weights(connect, {(('task', 'item'), (weight, 'item')): expr})
 
     def set_item_weights(self, scaling_param, pre_param):
         """Set item-item weights."""
@@ -214,22 +210,22 @@ class WeightParameters(Parameters):
                 del self.free[param]
 
 
-def model_variant(fcf_features, ff_features=None, sublayers=False,
-                  sublayer_param=None):
+def model_variant(fcf_features, ff_features=None, sublayers=False, sublayer_param=None):
     """Define parameters for a model variant."""
     wp = WeightParameters()
     wp.set_fixed(T=0.1)
-    wp.set_free(Lfc=(0, 1),
-                Lcf=(0, 1),
-                P1=(0, 10),
-                P2=(0.1, 5),
-                B_enc=(0, 1),
-                B_start=(0, 1),
-                B_rec=(0, 1),
-                X1=(0, 1),
-                X2=(0, 5))
-    wp.set_dependent(Dfc='1 - Lfc',
-                     Dcf='1 - Lcf')
+    wp.set_free(
+        Lfc=(0, 1),
+        Lcf=(0, 1),
+        P1=(0, 10),
+        P2=(0.1, 5),
+        B_enc=(0, 1),
+        B_start=(0, 1),
+        B_rec=(0, 1),
+        X1=(0, 1),
+        X2=(0, 5),
+    )
+    wp.set_dependent(Dfc='1 - Lfc', Dcf='1 - Lcf')
 
     if fcf_features:
         # set global weight scaling
@@ -292,8 +288,7 @@ def read_model_spec(def_file):
     with open(def_file, 'r') as f:
         model_def = json.load(f)
 
-    value = {**model_def['fixed'], **model_def['free'],
-             **model_def['dependent']}
+    value = {**model_def['fixed'], **model_def['free'], **model_def['dependent']}
     kind = {}
     for par in model_def['fixed'].keys():
         kind[par] = 'fixed'

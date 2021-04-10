@@ -68,15 +68,20 @@ def read_free_recall(csv_file):
     recall = data.query('trial_type == "recall"').copy()
 
     # merge study and recall events
-    study_keys = ['item_index', 'category', 'block', 'n_block', 'block_pos',
-                  'block_len']
+    study_keys = [
+        'item_index',
+        'category',
+        'block',
+        'n_block',
+        'block_pos',
+        'block_len',
+    ]
     list_keys = ['session']
     fields = ['list_type', 'list_category', 'distractor']
     for field in fields:
         if field in data:
             list_keys += [field]
-    merged = fr.merge_lists(study, recall, list_keys=list_keys,
-                            study_keys=study_keys)
+    merged = fr.merge_lists(study, recall, list_keys=list_keys, study_keys=study_keys)
     return merged
 
 
@@ -126,9 +131,7 @@ def save_patterns_sem(use_file, h5_file):
     use_z = stats.zscore(patterns, axis=1) / np.sqrt(patterns.shape[1])
 
     # write to standard format hdf5 file
-    network.save_patterns(
-        h5_file, items, loc=loc_patterns, cat=cat_patterns, use=use_z
-    )
+    network.save_patterns(h5_file, items, loc=loc_patterns, cat=cat_patterns, use=use_z)
 
 
 def read_pool_cfr(image_dir):
@@ -156,8 +159,9 @@ def read_pool_cfr(image_dir):
             tags.append(m.group(2))
             filepaths.append(match)
             item_category.append(category)
-    pool = pd.DataFrame({'item': names, 'category': item_category,
-                         'tag': tags, 'filepath': filepaths})
+    pool = pd.DataFrame(
+        {'item': names, 'category': item_category, 'tag': tags, 'filepath': filepaths}
+    )
     return pool
 
 
@@ -186,8 +190,7 @@ def load_pool_images(pool, image_dir, rescale=None):
 
     images = {}
     for i, item in pool.iterrows():
-        image_file = os.path.join(image_dir, item['category'],
-                                  item['item'] + '.jpg')
+        image_file = os.path.join(image_dir, item['category'], item['item'] + '.jpg')
         image = plt.imread(image_file)
         if len(image.shape) == 2:
             image = np.tile(image[:, :, None], 3)
@@ -267,9 +270,7 @@ def label_block(data):
     labeled = data.copy()
     list_keys = ['subject', 'list', 'trial_type']
     block_keys = list_keys + ['block']
-    labeled['block'] = (
-        data.groupby(list_keys)['category'].transform(fr.block_index)
-    )
+    labeled['block'] = data.groupby(list_keys)['category'].transform(fr.block_index)
     # get the number of blocks for each study list
     n_block = labeled.groupby(list_keys)['block'].max()
     n_block.name = 'n_block'
@@ -280,9 +281,7 @@ def label_block(data):
     )
 
     # position within block
-    labeled.loc[:, 'block_pos'] = labeled.groupby(
-        block_keys
-    )['position'].cumcount() + 1
+    labeled.loc[:, 'block_pos'] = labeled.groupby(block_keys)['position'].cumcount() + 1
     block_len = labeled.groupby(block_keys)['block_pos'].max()
     block_len.name = 'block_len'
     labeled = pd.merge(
