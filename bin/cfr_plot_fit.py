@@ -13,7 +13,7 @@ from cfr import task
 from cfr import figures
 
 
-def main(data_file, patterns_file, fit_dir):
+def main(data_file, patterns_file, fit_dir, ext='pdf'):
     log_file = os.path.join(fit_dir, 'log_plot.txt')
     logging.basicConfig(
         filename=log_file, filemode='w', level=logging.INFO,
@@ -40,38 +40,39 @@ def main(data_file, patterns_file, fit_dir):
 
     # make plots
     fig_dir = os.path.join(fit_dir, 'figs')
+    kwargs = {'ext': ext}
     logging.info(f'Saving figures to {fig_dir}.')
 
     # scalar stats
     logging.info('Plotting fits to individual scalar statistics.')
     figures.plot_fit_scatter(
         full, 'source', 'use_rank', fr.distance_rank,
-        {'index_key': 'item_index', 'distances': rsm}, 'rank', fig_dir
+        {'index_key': 'item_index', 'distances': rsm}, 'rank', fig_dir, **kwargs
     )
     figures.plot_fit_scatter(
         full, 'source', 'use_rank_within', fr.distance_rank,
         {'index_key': 'item_index', 'distances': rsm,
-         'test_key': 'category', 'test': lambda x, y: x == y}, 'rank', fig_dir
+         'test_key': 'category', 'test': lambda x, y: x == y}, 'rank', fig_dir, **kwargs
     )
     figures.plot_fit_scatter(
         full, 'source', 'use_rank_across', fr.distance_rank,
         {'index_key': 'item_index', 'distances': rsm,
-         'test_key': 'category', 'test': lambda x, y: x != y}, 'rank', fig_dir
+         'test_key': 'category', 'test': lambda x, y: x != y}, 'rank', fig_dir, **kwargs
     )
     figures.plot_fit_scatter(
-        full, 'source', 'lag_rank', fr.lag_rank, {}, 'rank', fig_dir
+        full, 'source', 'lag_rank', fr.lag_rank, {}, 'rank', fig_dir, **kwargs
     )
     figures.plot_fit_scatter(
         full, 'source', 'lag_rank_within', fr.lag_rank,
-        {'test_key': 'category', 'test': lambda x, y: x == y}, 'rank', fig_dir
+        {'test_key': 'category', 'test': lambda x, y: x == y}, 'rank', fig_dir, **kwargs
     )
     figures.plot_fit_scatter(
         full, 'source', 'lag_rank_across', fr.lag_rank,
-        {'test_key': 'category', 'test': lambda x, y: x != y}, 'rank', fig_dir
+        {'test_key': 'category', 'test': lambda x, y: x != y}, 'rank', fig_dir, **kwargs
     )
     figures.plot_fit_scatter(
         full, 'source', 'cat_crp', fr.category_crp,
-        {'category_key': 'category'}, 'prob', fig_dir
+        {'category_key': 'category'}, 'prob', fig_dir, **kwargs
     )
 
     # curves
@@ -79,42 +80,42 @@ def main(data_file, patterns_file, fit_dir):
     figures.plot_fit(
         full, 'source', 'use_crp', fr.distance_crp,
         {'index_key': 'item_index', 'distances': rsm, 'edges': edges},
-        'prob', fr.plot_distance_crp, {'min_samples': 10}, fig_dir
+        'prob', fr.plot_distance_crp, {'min_samples': 10}, fig_dir, **kwargs
     )
     figures.plot_fit(
         full, 'source', 'use_crp_within', fr.distance_crp,
         {'index_key': 'item_index', 'distances': rsm, 'edges': edges,
          'test_key': 'category', 'test': lambda x, y: x == y},
-        'prob', fr.plot_distance_crp, {'min_samples': 10}, fig_dir
+        'prob', fr.plot_distance_crp, {'min_samples': 10}, fig_dir, **kwargs
     )
     figures.plot_fit(
         full, 'source', 'use_crp_across', fr.distance_crp,
         {'index_key': 'item_index', 'distances': rsm, 'edges': edges,
          'test_key': 'category', 'test': lambda x, y: x != y},
-        'prob', fr.plot_distance_crp, {'min_samples': 10}, fig_dir
+        'prob', fr.plot_distance_crp, {'min_samples': 10}, fig_dir, **kwargs
     )
     figures.plot_fit(
         full, 'source', 'spc', fr.spc, {}, 'recall',
-        fr.plot_spc, {}, fig_dir
+        fr.plot_spc, {}, fig_dir, **kwargs
     )
     figures.plot_fit(
         full, 'source', 'pfr',
         lambda x: fr.pnr(x).query('output == 1'), {}, 'prob',
-        fr.plot_spc, {}, fig_dir
+        fr.plot_spc, {}, fig_dir, **kwargs
     )
     figures.plot_fit(
         full, 'source', 'lag_crp', fr.lag_crp, {}, 'prob',
-        fr.plot_lag_crp, {}, fig_dir
+        fr.plot_lag_crp, {}, fig_dir, **kwargs
     )
     figures.plot_fit(
         full, 'source', 'lag_crp_within', fr.lag_crp,
         {'test_key': 'category', 'test': lambda x, y: x == y},
-        'prob', fr.plot_lag_crp, {}, fig_dir
+        'prob', fr.plot_lag_crp, {}, fig_dir, **kwargs
     )
     figures.plot_fit(
         full, 'source', 'lag_crp_across', fr.lag_crp,
         {'test_key': 'category', 'test': lambda x, y: x != y},
-        'prob', fr.plot_lag_crp, {}, fig_dir
+        'prob', fr.plot_lag_crp, {}, fig_dir, **kwargs
     )
 
 
@@ -123,6 +124,7 @@ if __name__ == '__main__':
     parser.add_argument('data_file')
     parser.add_argument('patterns_file')
     parser.add_argument('fit_dir')
+    parser.add_argument('--ext', '-e', default="pdf", help="figure file type")
     args = parser.parse_args()
 
-    main(args.data_file, args.patterns_file, args.fit_dir)
+    main(args.data_file, args.patterns_file, args.fit_dir, ext=args.ext)
