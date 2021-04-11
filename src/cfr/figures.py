@@ -116,7 +116,10 @@ def render_fit_html(fit_dir, curves, points, ext='svg'):
     table = table.astype({'subject': int, 'n': int, 'k': int})
 
     # summary statistics
-    summary = table.drop(columns=['subject', 'n', 'k']).agg(['mean', 'sem'])
+    summary = (
+        table.drop(columns=['subject', 'n', 'k'])
+        .agg(['mean', 'sem', 'min', 'max'])
+    )
     tables = {'Summary': summary, 'Parameters': table}
 
     # write html
