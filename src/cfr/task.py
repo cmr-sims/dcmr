@@ -99,7 +99,7 @@ def label_block(data):
     return labeled
 
 
-def read_study_recall(csv_file):
+def read_study_recall(csv_file, block=True, block_category=True):
     """Read study and recall data."""
     if not os.path.exists(csv_file):
         raise ValueError(f'Data file does not exist: {csv_file}')
@@ -107,8 +107,11 @@ def read_study_recall(csv_file):
     data = pd.read_csv(csv_file, dtype={'category': 'category'})
     data.category.cat.as_ordered(inplace=True)
 
-    data = label_block(data)
-    data = label_block_category(data)
+    if block:
+        data = label_block(data)
+
+    if block_category:
+        data = label_block_category(data)
 
     # additional list fields
     list_keys = ['session']
@@ -120,23 +123,20 @@ def read_study_recall(csv_file):
     return data
 
 
-def read_free_recall(csv_file):
+def read_free_recall(csv_file, block=True, block_category=True):
     """Read and score free recall data."""
-    data = read_study_recall(csv_file)
+    data = read_study_recall(csv_file, block=block, block_category=block_category)
 
     # split, add block fields to study
     study = data.query('trial_type == "study"').copy()
     recall = data.query('trial_type == "recall"').copy()
 
     # merge study and recall events
-    study_keys = [
-        'item_index',
-        'category',
-        'block',
-        'n_block',
-        'block_pos',
-        'block_len',
-    ]
+    study_keys = ['item_index', 'category']
+    if block:
+        study_keys += ['block', 'n_block', 'block_pos', 'block_len']
+    if block_category:
+        study_keys += ['curr', 'prev', 'base']
     list_keys = ['session']
     fields = ['list_type', 'list_category', 'distractor']
     for field in fields:
