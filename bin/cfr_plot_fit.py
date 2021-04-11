@@ -24,9 +24,9 @@ def main(data_file, patterns_file, fit_dir):
     # load data and simulated data
     sim_file = os.path.join(fit_dir, 'sim.csv')
     logging.info(f'Loading data from {data_file}.')
-    data = task.read_free_recall(data_file)
+    data = task.read_free_recall(data_file, block=False, block_category=False)
     logging.info(f'Loading simulation from {sim_file}.')
-    sim = task.read_free_recall(sim_file)
+    sim = task.read_free_recall(sim_file, block=False, block_category=False)
 
     # prep semantic similarity
     logging.info(f'Loading network patterns from {patterns_file}.')
