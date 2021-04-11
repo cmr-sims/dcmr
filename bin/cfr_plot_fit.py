@@ -118,6 +118,25 @@ def main(data_file, patterns_file, fit_dir, ext='pdf'):
         'prob', fr.plot_lag_crp, {}, fig_dir, **kwargs
     )
 
+    # report
+    curves = [
+        'spc',
+        'pfr',
+        'lag_crp',
+        'lag_crp_within',
+        'lag_crp_across',
+        'use_crp',
+        'use_crp_within',
+        'use_crp_across',
+    ]
+    points = {
+        'lag_rank': ['lag_rank', 'lag_rank_within', 'lag_rank_across'],
+        'cat_crp': ['cat_crp'],
+        'use_rank': ['use_rank', 'use_rank_within', 'use_rank_across'],
+    }
+    os.chdir(fit_dir)
+    figures.render_fit_html('.', curves, points)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
