@@ -6,7 +6,8 @@ import seaborn as sns
 
 
 def plot_fit(
-    data, group_var, stat_name, f_stat, stat_kws, var_name, f_plot, plot_kws, out_dir
+    data, group_var, stat_name, f_stat, stat_kws, var_name, f_plot, plot_kws, out_dir,
+    ext='pdf'
 ):
     """Plot fit for an analysis and save figures."""
     if not os.path.exists(out_dir):
@@ -17,7 +18,7 @@ def plot_fit(
     # mean stat
     stat = data.groupby(group_var).apply(f_stat, **stat_kws)
     g = f_plot(stat, hue=group_var, palette=palette, height=4, **plot_kws)
-    g.savefig(os.path.join(out_dir, f'{stat_name}.pdf'))
+    g.savefig(os.path.join(out_dir, f'{stat_name}.{ext}'))
     plt.close(g.fig)
 
     # subject stats
@@ -25,7 +26,7 @@ def plot_fit(
         stat, hue=group_var, palette=palette, col='subject', col_wrap=6, height=3,
         **plot_kws
     )
-    g.savefig(os.path.join(out_dir, f'{stat_name}_subject.pdf'))
+    g.savefig(os.path.join(out_dir, f'{stat_name}_subject.{ext}'))
     plt.close(g.fig)
 
     # comparison scatter plot
@@ -41,7 +42,7 @@ def plot_fit(
         data=comp.reset_index(), height=4
     )
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
-    g.savefig(os.path.join(out_dir, f'{stat_name}_comp.pdf'))
+    g.savefig(os.path.join(out_dir, f'{stat_name}_comp.{ext}'))
     plt.close(g.fig)
 
     # by subject
@@ -51,11 +52,13 @@ def plot_fit(
         data=comp.reset_index(), height=4
     )
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
-    g.savefig(os.path.join(out_dir, f'{stat_name}_comp_subject.pdf'))
+    g.savefig(os.path.join(out_dir, f'{stat_name}_comp_subject.{ext}'))
     plt.close(g.fig)
 
 
-def plot_fit_scatter(data, group_var, stat_name, f_stat, stat_kws, var_name, out_dir):
+def plot_fit_scatter(
+    data, group_var, stat_name, f_stat, stat_kws, var_name, out_dir, ext='pdf'
+):
     """Plot fit scatterplot for a scalar statistic."""
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
@@ -69,5 +72,5 @@ def plot_fit_scatter(data, group_var, stat_name, f_stat, stat_kws, var_name, out
         kind='scatter', x=groups[0], y=groups[1], data=comp.reset_index(), height=4
     )
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
-    g.savefig(os.path.join(out_dir, f'{stat_name}_comp_subject.pdf'))
+    g.savefig(os.path.join(out_dir, f'{stat_name}_comp_subject.{ext}'))
     plt.close(g.fig)
