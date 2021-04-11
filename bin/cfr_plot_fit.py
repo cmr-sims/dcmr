@@ -7,6 +7,8 @@ import argparse
 import logging
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 from psifr import fr
 from cymr import network
 from cfr import task
