@@ -74,10 +74,12 @@ def label_block_category(data):
 
 
 def label_block(data):
+    # get the index of each contiguous block of same-category items
     labeled = data.copy()
     list_keys = ['subject', 'list', 'trial_type']
     block_keys = list_keys + ['block']
     labeled['block'] = data.groupby(list_keys)['category'].transform(fr.block_index)
+
     # get the number of blocks for each study list
     n_block = labeled.groupby(list_keys)['block'].max()
     n_block.name = 'n_block'
