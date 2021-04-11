@@ -3,6 +3,7 @@
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
+import jinja2 as jn
 
 
 def plot_fit(
@@ -74,3 +75,41 @@ def plot_fit_scatter(
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
     g.savefig(os.path.join(out_dir, f'{stat_name}_comp_subject.{ext}'))
     plt.close(g.fig)
+
+
+def render_fit_html(fit_dir, curves, points, ext='svg'):
+    env = jn.Environment(
+        loader=jn.PackageLoader('cfr', 'templates'),
+        autoescape=jn.select_autoescape(['html']),
+    )
+    template = env.get_template('report.html')
+    model = os.path.basename(os.path.abspath(fit_dir))
+
+    # define curve plots to include
+    d_curve = {}
+    for curve in curves:
+        entry = {
+            'mean': os.path.join(fit_dir, 'figs', f'{curve}.{ext}'),
+            'comp': os.path.join(fit_dir, 'figs', f'{curve}_comp.{ext}'),
+            'subj': os.path.join(fit_dir, 'figs', f'{curve}_comp_subject.{ext}')
+        }
+        d_curve[curve] = entry
+
+    # define points to include
+    d_point = {
+        point: os.path.join(
+            fit_dir, 'figs', f'{point}_comp_subject.{ext}'
+        ) for point in points
+    }
+
+    # write html
+    page = template.render(model=model, curves=d_curve, points=d_point)
+    html_file = os.path.join(fit_dir, 'report.html')
+    with open(html_file, 'w') as f:
+        f.write(page)
+
+    # copy css
+    css = env.get_template('report.css')
+    css_file = os.path.join(fit_dir, 'report.css')
+    with open(css_file, 'w') as f:
+        f.write(css.render())
