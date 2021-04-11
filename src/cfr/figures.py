@@ -96,11 +96,14 @@ def render_fit_html(fit_dir, curves, points, ext='svg'):
         d_curve[curve] = entry
 
     # define points to include
-    d_point = {
-        point: os.path.join(
-            fit_dir, 'figs', f'{point}_comp_subject.{ext}'
-        ) for point in points
-    }
+    d_point = {}
+    for point, analyses in points.items():
+        entry = {
+            analysis: os.path.join(
+                fit_dir, 'figs', f'{analysis}_comp_subject.{ext}'
+            ) for analysis in analyses
+        }
+        d_point[point] = entry
 
     # write html
     page = template.render(model=model, curves=d_curve, points=d_point)

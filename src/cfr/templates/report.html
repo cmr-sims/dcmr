@@ -25,13 +25,15 @@
         </figure>
     </div>
     {% endfor %}
-    {% for point, file in points.items() %}
-    <h3>{{ point }}</h3>
+    {% for analysis, stats in points.items() %}
+    <h3>{{ analysis }}</h3>
     <div class="panel">
+        {% for stat, file in stats.items() %}
         <figure>
-            <img src="{{ file }}" alt="point comparison for {{ point }}">
-            <figcaption>{{ point }} comparison</figcaption>
+            <img src="{{ file }}" alt="point comparison for {{ stat }}">
+            <figcaption>{{ stat }} comparison</figcaption>
         </figure>
+        {% endfor %}
     </div>
     {% endfor %}
     </body>
