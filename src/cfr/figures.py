@@ -2,6 +2,7 @@
 
 import os
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 import jinja2 as jn
 
@@ -105,8 +106,23 @@ def render_fit_html(fit_dir, curves, points, ext='svg'):
         }
         d_point[point] = entry
 
+    # tables
+    fit = pd.read_csv(os.path.join(fit_dir, 'fit.csv'))
+    opt = {'float_format': '%.2f'}
+    table_opt = {'Summary': {**opt}, 'Parameters': {'index': False, **opt}}
+
+    # subject parameters and stats
+    table = fit.copy().drop(columns=['rep'])
+    table = table.astype({'subject': int, 'n': int, 'k': int})
+
+    # summary statistics
+    summary = table.drop(columns=['subject', 'n', 'k']).agg(['mean', 'sem'])
+    tables = {'Summary': summary, 'Parameters': table}
+
     # write html
-    page = template.render(model=model, curves=d_curve, points=d_point)
+    page = template.render(
+        model=model, curves=d_curve, points=d_point, tables=tables, table_opt=table_opt
+    )
     html_file = os.path.join(fit_dir, 'report.html')
     with open(html_file, 'w') as f:
         f.write(page)
