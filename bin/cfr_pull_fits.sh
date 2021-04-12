@@ -11,9 +11,13 @@ rsync -azvu "$src/cfr/fits/" \
   --include="*/" \
   --include="*/cmr*/" \
   --include="*/cmr*/figs/" \
+  --include="*/cmr*/.css" \
   --include="*.csv" \
   --include="*.json" \
   --include="*.pdf" \
   --include="*.txt" \
+  --include="*.css" \
+  --include="*.html" \
+  --include="*.svg" \
   --exclude="*" \
   "$@"
