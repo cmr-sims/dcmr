@@ -96,8 +96,8 @@ def plot_swarm_bar(
     # plot individual points
     if point_kind == 'swarm':
         sns.swarmplot(
-            data=data.reset_index(), x=x, y=y, hue=hue, palette=dark, size=3,
-            linewidth=0.1, edgecolor='k', ax=ax, zorder=3, dodge=dodge
+            data=data.reset_index(), x=x, y=y, hue=hue, palette=dark, size=4,
+            linewidth=0.1, edgecolor='k', alpha=0.8, ax=ax, zorder=3, dodge=dodge
         )
     elif point_kind == 'strip':
         sns.stripplot(
