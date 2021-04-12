@@ -1,10 +1,12 @@
 """Figures for visualizing behavior and fits."""
 
 import os
+import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import jinja2 as jn
+from cfr import framework
 
 
 def plot_fit(
@@ -191,3 +193,54 @@ def render_fit_html(fit_dir, curves, points, ext='svg'):
     css_file = os.path.join(fit_dir, '.css', 'report.css')
     with open(css_file, 'w') as f:
         f.write(css.render())
+
+
+def get_param_latex():
+    latex_names = {
+        'Lfc': 'L_{FC}',
+        'Lcf': 'L_{CF}',
+        'P1': 'P_1',
+        'P2': 'P_2',
+        'B_enc': r'\beta_{\mathrm{enc}}',
+        'B_start': r'\beta_{\mathrm{start}}',
+        'B_rec': r'\beta_{\mathrm{rec}}',
+        'X1': 'X_1',
+        'X2': 'X_2',
+        'w0': 'w_1',
+        'w1': 'w_2',
+    }
+    return latex_names
+
+
+def create_model_table(fit_dir, models, model_names):
+    """Create a summary table to compare models."""
+    # get free parameters
+    df = framework.read_model_specs(fit_dir, models, model_names)
+    free_param = df.reset_index().query("kind == 'free'")['param'].unique()
+
+    # get parameter values and likelihood
+    res = framework.read_model_fits(fit_dir, models, model_names)
+    table = pd.DataFrame(index=free_param, columns=model_names)
+
+    # parameter means and sem
+    model_stats = res.groupby('model').agg(['mean', 'sem'])
+    for model in model_names:
+        m = model_stats.loc[model]
+        for field in free_param:
+            f = m[field]
+            if np.isnan(f['mean']):
+                table.loc[field, model] = '---'
+            else:
+                table.loc[field, model] = f"{f['mean']:.2f} ({f['sem']:.2f})"
+
+    # summary stats
+    total = res[['logl', 'n', 'k']].groupby('model').sum()
+    total = total.astype({'n': int, 'k': int})
+    total['aic'] = framework.aic(total['logl'], total['n'], total['k'])
+    total['waic'] = framework.waic(total['aic'].to_numpy(), 0)
+    output = pd.concat((table, total.T), axis=0)
+
+    # rename parameters to latex code
+    latex_names = get_param_latex()
+    output.rename(index=latex_names, inplace=True)
+    return output
