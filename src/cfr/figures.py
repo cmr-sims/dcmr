@@ -208,6 +208,9 @@ def get_param_latex():
         'X2': 'X_2',
         'w0': 'w_1',
         'w1': 'w_2',
+        'logl': r'\mathrm{log}(L)',
+        'aic': r'\mathrm{AIC}',
+        'waic': r'\mathrm{wAIC}',
     }
     return latex_names
 
