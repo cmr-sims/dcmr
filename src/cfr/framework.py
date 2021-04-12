@@ -361,3 +361,23 @@ def waic(a, axis=1):
     delta_aic = np.exp(-0.5 * (a - min_aic))
     sum_aic = np.expand_dims(np.sum(delta_aic, axis), axis)
     return delta_aic / sum_aic
+
+
+def model_comp_weights(res, stat='aic'):
+    """Calculate model comparison weights."""
+    # prepare statistic to calculate
+    out = res.copy()
+    if stat == 'aic':
+        f_stat = aic
+    else:
+        raise ValueError(f'Invalid stat: {stat}')
+
+    # calculate statistic and place in a pivot table
+    out[stat] = f_stat(res['logl'], res['n'], res['k'])
+    pivot_stat = out.reset_index().pivot(index='subject', columns='model', values=stat)
+
+    # calculate model weights
+    wstat = pivot_stat.copy()
+    wstat.iloc[:, :] = waic(pivot_stat.to_numpy())
+    out[f'w{stat}'] = wstat.unstack()
+    return out
