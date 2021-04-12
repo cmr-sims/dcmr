@@ -78,6 +78,57 @@ def plot_fit_scatter(
     plt.close(g.fig)
 
 
+def plot_swarm_bar(
+    data, x=None, y=None, hue=None, dark=None, light=None, ax=None, dodge=False,
+    capsize=.425, point_kind='swarm'
+):
+    """Make a bar plot with individual points and error bars."""
+    if dark is None:
+        dark = 'ch:rot=-.5, light=.7, dark=.3, gamma=.6'
+    if light is None:
+        light = 'ch:rot=-.5, light=.7, dark=.3, gamma=.2'
+
+    if ax is None:
+        ax = plt.gca()
+
+    # plot individual points
+    if point_kind == 'swarm':
+        sns.swarmplot(
+            data=data.reset_index(), x=x, y=y, hue=hue, palette=dark, size=3,
+            linewidth=0.1, edgecolor='k', ax=ax, zorder=3, dodge=dodge
+        )
+    elif point_kind == 'strip':
+        sns.stripplot(
+            data=data.reset_index(), x=x, y=y, hue=hue, palette=dark, size=4,
+            linewidth=0.1, edgecolor='k', alpha=0.8, ax=ax, zorder=3, dodge=dodge
+        )
+    else:
+        raise ValueError(f'Invalid point plot kind: {point_kind}')
+
+    # plot error bars for the mean
+    sns.barplot(
+        data=data.reset_index(), x=x, y=y, hue=hue, ax=ax, dodge=dodge, color='k',
+        palette=light, errwidth=.8, capsize=capsize, edgecolor='k', linewidth=.75,
+        errcolor='k'
+    )
+
+    # remove overall xlabel and increase size of x-tick labels
+    ax.set_xlabel('')
+    ax.tick_params(axis='x', labelsize='large')
+
+    # fix ordering of plot elements
+    plt.setp(ax.lines, zorder=100, linewidth=1.25, label=None)
+    plt.setp(ax.collections, zorder=100, label=None)
+
+    # delete legend (redundant with the x-tick labels)
+    legend = ax.get_legend()
+    if legend is not None:
+        legend.remove()
+        if hue is not None:
+            # refresh the legend to remove the swarm points
+            ax.legend()
+
+
 def render_fit_html(fit_dir, curves, points, ext='svg'):
     env = jn.Environment(
         loader=jn.PackageLoader('cfr', 'templates'),
