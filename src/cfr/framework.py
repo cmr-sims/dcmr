@@ -333,7 +333,9 @@ def read_model_fits(fit_dir, models, model_names=None):
     return res
 
 
-def read_model_sims(data_file, fit_dir, models, model_names=None):
+def read_model_sims(
+    data_file, fit_dir, models, model_names=None, block=False, block_category=False
+):
     """Read simulated data for multiple models."""
     if model_names is None:
         model_names = models
@@ -343,7 +345,9 @@ def read_model_sims(data_file, fit_dir, models, model_names=None):
     data_list.append(obs_data)
     for model in models:
         sim_file = os.path.join(fit_dir, model, 'sim.csv')
-        sim_data = task.read_free_recall(sim_file)
+        sim_data = task.read_free_recall(
+            sim_file, block=block, block_category=block_category
+        )
         data_list.append(sim_data)
     data = pd.concat(data_list, axis=0, keys=['data'] + model_names)
     data.index.rename(['source', 'trial'], inplace=True)
