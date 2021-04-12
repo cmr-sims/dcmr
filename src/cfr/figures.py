@@ -220,27 +220,25 @@ def create_model_table(fit_dir, models, model_names):
 
     # get parameter values and likelihood
     res = framework.read_model_fits(fit_dir, models, model_names)
-    table = pd.DataFrame(index=free_param, columns=model_names)
+    res = framework.model_comp_weights(res, stat='aic')
+    fields = np.hstack((free_param, ['n', 'k', 'logl', 'aic', 'waic']))
+    table = pd.DataFrame(index=fields, columns=model_names)
+    mean_only = ['k']
 
     # parameter means and sem
     model_stats = res.groupby('model').agg(['mean', 'sem'])
     for model in model_names:
         m = model_stats.loc[model]
-        for field in free_param:
+        for field in fields:
             f = m[field]
             if np.isnan(f['mean']):
                 table.loc[field, model] = '---'
+            elif field in mean_only:
+                table.loc[field, model] = f"{f['mean']:.0f}"
             else:
                 table.loc[field, model] = f"{f['mean']:.2f} ({f['sem']:.2f})"
 
-    # summary stats
-    total = res[['logl', 'n', 'k']].groupby('model').sum()
-    total = total.astype({'n': int, 'k': int})
-    total['aic'] = framework.aic(total['logl'], total['n'], total['k'])
-    total['waic'] = framework.waic(total['aic'].to_numpy(), 0)
-    output = pd.concat((table, total.T), axis=0)
-
     # rename parameters to latex code
     latex_names = get_param_latex()
-    output.rename(index=latex_names, inplace=True)
-    return output
+    table.rename(index=latex_names, inplace=True)
+    return table
