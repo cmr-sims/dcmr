@@ -349,7 +349,7 @@ def read_model_sims(
             sim_file, block=block, block_category=block_category
         )
         data_list.append(sim_data)
-    data = pd.concat(data_list, axis=0, keys=['data'] + model_names)
+    data = pd.concat(data_list, axis=0, keys=['Data'] + model_names)
     data.index.rename(['source', 'trial'], inplace=True)
     return data
 
