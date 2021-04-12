@@ -132,6 +132,7 @@ def render_fit_html(fit_dir, curves, points, ext='svg'):
 
     # copy css
     css = env.get_template('bootstrap.min.css')
+    os.makedirs(os.path.join(fit_dir, '.css'), exist_ok=True)
     css_file = os.path.join(fit_dir, '.css', 'bootstrap.min.css')
     with open(css_file, 'w') as f:
         f.write(css.render())
