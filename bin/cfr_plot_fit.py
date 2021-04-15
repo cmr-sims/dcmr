@@ -145,7 +145,9 @@ if __name__ == '__main__':
     parser.add_argument('data_file')
     parser.add_argument('patterns_file')
     parser.add_argument('fit_dir')
-    parser.add_argument('--ext', '-e', default="svg", help="figure file type")
+    parser.add_argument(
+        '--ext', '-e', default="svg", help="figure file type (default: svg)"
+    )
     args = parser.parse_args()
 
     main(args.data_file, args.patterns_file, args.fit_dir, ext=args.ext)
