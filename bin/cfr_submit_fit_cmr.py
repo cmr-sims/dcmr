@@ -33,7 +33,7 @@ def main(fcf_features, ff_features, sublayers, res_dir, subpar, fixed,
         res_name += f'_sl-{subpar}'
     if fixed:
         opts += f' -f {fixed}'
-        res_name += f'_fix-{fixed}'
+        res_name += f'_fix-{fixed.replace("=", "")}'
     full_dir = os.path.join(study_dir, 'cfr', res_dir, res_name)
 
     print(f'cfr_fit_cmr.py {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
