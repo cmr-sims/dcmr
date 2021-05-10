@@ -57,8 +57,8 @@ def label_block_category(data):
     study_data = fr.filter_data(data, trial_type='study')
     labeled = data.copy()
     labeled['curr'] = labeled['category']
-    labeled['prev'] = (
-        study_data.groupby(['subject', 'list'])['category'].transform(get_prev_category)
+    labeled['prev'] = study_data.groupby(['subject', 'list'])['category'].transform(
+        get_prev_category
     )
     labeled['base'] = ''
     ucat = study_data['category'].unique()
