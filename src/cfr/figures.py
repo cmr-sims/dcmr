@@ -10,8 +10,16 @@ from cfr import framework
 
 
 def plot_fit(
-    data, group_var, stat_name, f_stat, stat_kws, var_name, f_plot, plot_kws, out_dir,
-    ext='pdf'
+    data,
+    group_var,
+    stat_name,
+    f_stat,
+    stat_kws,
+    var_name,
+    f_plot,
+    plot_kws,
+    out_dir,
+    ext='pdf',
 ):
     """Plot fit for an analysis and save figures."""
     if not os.path.exists(out_dir):
@@ -27,8 +35,13 @@ def plot_fit(
 
     # subject stats
     g = f_plot(
-        stat, hue=group_var, palette=palette, col='subject', col_wrap=6, height=3,
-        **plot_kws
+        stat,
+        hue=group_var,
+        palette=palette,
+        col='subject',
+        col_wrap=6,
+        height=3,
+        **plot_kws,
     )
     g.savefig(os.path.join(out_dir, f'{stat_name}_subject.{ext}'))
     plt.close(g.fig)
@@ -42,8 +55,12 @@ def plot_fit(
     m = stat.groupby([group_var, cond_name]).mean()
     comp = m.unstack(level=0).droplevel(axis=1, level=0)
     g = sns.relplot(
-        kind='scatter', x=groups[0], y=groups[1], hue=cond_name,
-        data=comp.reset_index(), height=4
+        kind='scatter',
+        x=groups[0],
+        y=groups[1],
+        hue=cond_name,
+        data=comp.reset_index(),
+        height=4,
     )
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
     g.savefig(os.path.join(out_dir, f'{stat_name}_comp.{ext}'))
@@ -52,8 +69,12 @@ def plot_fit(
     # by subject
     comp = stat.unstack(level=0).droplevel(axis=1, level=0)
     g = sns.relplot(
-        kind='scatter', x=groups[0], y=groups[1], hue=cond_name,
-        data=comp.reset_index(), height=4
+        kind='scatter',
+        x=groups[0],
+        y=groups[1],
+        hue=cond_name,
+        data=comp.reset_index(),
+        height=4,
     )
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
     g.savefig(os.path.join(out_dir, f'{stat_name}_comp_subject.{ext}'))
@@ -81,8 +102,16 @@ def plot_fit_scatter(
 
 
 def plot_swarm_bar(
-    data, x=None, y=None, hue=None, dark=None, light=None, ax=None, dodge=False,
-    capsize=.425, point_kind='swarm'
+    data,
+    x=None,
+    y=None,
+    hue=None,
+    dark=None,
+    light=None,
+    ax=None,
+    dodge=False,
+    capsize=0.425,
+    point_kind='swarm',
 ):
     """Make a bar plot with individual points and error bars."""
     if dark is None:
@@ -96,22 +125,52 @@ def plot_swarm_bar(
     # plot individual points
     if point_kind == 'swarm':
         sns.swarmplot(
-            data=data.reset_index(), x=x, y=y, hue=hue, palette=dark, size=4,
-            linewidth=0.1, edgecolor='k', alpha=0.8, ax=ax, zorder=3, dodge=dodge
+            data=data.reset_index(),
+            x=x,
+            y=y,
+            hue=hue,
+            palette=dark,
+            size=4,
+            linewidth=0.1,
+            edgecolor='k',
+            alpha=0.8,
+            ax=ax,
+            zorder=3,
+            dodge=dodge,
         )
     elif point_kind == 'strip':
         sns.stripplot(
-            data=data.reset_index(), x=x, y=y, hue=hue, palette=dark, size=4,
-            linewidth=0.1, edgecolor='k', alpha=0.8, ax=ax, zorder=3, dodge=dodge
+            data=data.reset_index(),
+            x=x,
+            y=y,
+            hue=hue,
+            palette=dark,
+            size=4,
+            linewidth=0.1,
+            edgecolor='k',
+            alpha=0.8,
+            ax=ax,
+            zorder=3,
+            dodge=dodge,
         )
     else:
         raise ValueError(f'Invalid point plot kind: {point_kind}')
 
     # plot error bars for the mean
     sns.barplot(
-        data=data.reset_index(), x=x, y=y, hue=hue, ax=ax, dodge=dodge, color='k',
-        palette=light, errwidth=.8, capsize=capsize, edgecolor='k', linewidth=.75,
-        errcolor='k'
+        data=data.reset_index(),
+        x=x,
+        y=y,
+        hue=hue,
+        ax=ax,
+        dodge=dodge,
+        color='k',
+        palette=light,
+        errwidth=0.8,
+        capsize=capsize,
+        edgecolor='k',
+        linewidth=0.75,
+        errcolor='k',
     )
 
     # remove overall xlabel and increase size of x-tick labels
@@ -145,7 +204,7 @@ def render_fit_html(fit_dir, curves, points, ext='svg'):
         entry = {
             'mean': os.path.join(fit_dir, 'figs', f'{curve}.{ext}'),
             'comp': os.path.join(fit_dir, 'figs', f'{curve}_comp.{ext}'),
-            'subj': os.path.join(fit_dir, 'figs', f'{curve}_comp_subject.{ext}')
+            'subj': os.path.join(fit_dir, 'figs', f'{curve}_comp_subject.{ext}'),
         }
         d_curve[curve] = entry
 
@@ -153,9 +212,8 @@ def render_fit_html(fit_dir, curves, points, ext='svg'):
     d_point = {}
     for point, analyses in points.items():
         entry = {
-            analysis: os.path.join(
-                fit_dir, 'figs', f'{analysis}_comp_subject.{ext}'
-            ) for analysis in analyses
+            analysis: os.path.join(fit_dir, 'figs', f'{analysis}_comp_subject.{ext}')
+            for analysis in analyses
         }
         d_point[point] = entry
 
@@ -169,9 +227,8 @@ def render_fit_html(fit_dir, curves, points, ext='svg'):
     table = table.astype({'subject': int, 'n': int, 'k': int})
 
     # summary statistics
-    summary = (
-        table.drop(columns=['subject', 'n', 'k'])
-        .agg(['mean', 'sem', 'min', 'max'])
+    summary = table.drop(columns=['subject', 'n', 'k']).agg(
+        ['mean', 'sem', 'min', 'max']
     )
     tables = {'Summary': summary, 'Parameters': table}
 

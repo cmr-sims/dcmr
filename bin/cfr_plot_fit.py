@@ -15,7 +15,7 @@ from cfr import task
 from cfr import figures
 
 
-def main(data_file, patterns_file, fit_dir, ext='pdf'):
+def main(data_file, patterns_file, fit_dir, ext='svg'):
     log_file = os.path.join(fit_dir, 'log_plot.txt')
     logging.basicConfig(
         filename=log_file, filemode='w', level=logging.INFO,
@@ -145,7 +145,9 @@ if __name__ == '__main__':
     parser.add_argument('data_file')
     parser.add_argument('patterns_file')
     parser.add_argument('fit_dir')
-    parser.add_argument('--ext', '-e', default="pdf", help="figure file type")
+    parser.add_argument(
+        '--ext', '-e', default="svg", help="figure file type (default: svg)"
+    )
     args = parser.parse_args()
 
     main(args.data_file, args.patterns_file, args.fit_dir, ext=args.ext)
