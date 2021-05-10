@@ -2,6 +2,12 @@
 #
 # Pull fit results from TACC.
 
+if [[ $# -lt 2 ]]; then
+    echo "Usage:   cfr_pull_fits.sh src dest [rsync flags]"
+    echo "Example: cfr_pull_fits.sh lonestar:work/cmr_cfr/ ~/Dropbox/work/cmr_cfr"
+    exit 1
+fi
+
 src=$1
 dest=$2
 shift 2
