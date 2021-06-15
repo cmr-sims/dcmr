@@ -12,7 +12,7 @@ conda activate cfr
 
 To install the latest code from GitHub:
 ```bash
-pip install git+git://github.com/mortonne/cmr_cfr
+pip install git+git://github.com/vucml/cmr_cfr
 ```
 
 To install the code in editable mode for development
