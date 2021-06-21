@@ -3,17 +3,25 @@ Analyze categorized free recall data using CMR.
 
 ## Installation
 
-To install Python modules and scripts:
+It's recommended that you first set up a conda environment or Python virtual environment. For example, using Conda:
+
+```bash
+conda create -n cfr python=3.8
+conda activate cfr
+```
+
+To install the latest code from GitHub:
+```bash
+pip install git+git://github.com/vucml/cmr_cfr
+```
+
+To install the code in editable mode for development
+(changes to the local copy of the code will be applied to the installed package without having to reinstall):
 
 ```bash
 git clone https://github.com/vucml/cmr_cfr.git
-cd cmr_cfr
-python setup.py install
+pip install -e cmr_cfr
 ```
-
-or use `python setup.py develop` if you want to make
-edits to the source code and have them take effect
-immediately.
 
 ## Making plots
 
