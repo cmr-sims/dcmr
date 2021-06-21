@@ -342,14 +342,14 @@ def read_model_sims(
 
     data_list = []
     obs_data = task.read_free_recall(data_file)
-    data_list.append(obs_data)
     for model in models:
         sim_file = os.path.join(fit_dir, model, 'sim.csv')
         sim_data = task.read_free_recall(
             sim_file, block=block, block_category=block_category
         )
         data_list.append(sim_data)
-    data = pd.concat(data_list, axis=0, keys=['Data'] + model_names)
+    data_list.append(obs_data)
+    data = pd.concat(data_list, axis=0, keys=model_names + ['Data'])
     data.index.rename(['source', 'trial'], inplace=True)
     return data
 
