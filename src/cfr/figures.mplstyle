@@ -1,0 +1,14 @@
+axes.labelsize : large
+axes.labelweight : 300
+axes.spines.top : False
+axes.spines.right : False
+lines.linewidth : 1
+xtick.labelsize : small
+ytick.labelsize : small
+font.sans-serif : Helvetica Neue LT Com
+font.weight : 300
+font.size : 18
+savefig.bbox : tight
+savefig.pad_inches : 0.01
+pdf.fonttype : 42
+ps.fonttype : 42

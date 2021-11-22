@@ -1,12 +1,20 @@
 """Figures for visualizing behavior and fits."""
 
 import os
+from pkg_resources import resource_filename
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import jinja2 as jn
 from cfr import framework
+
+
+def set_style(style_path=None):
+    """Set default plot style."""
+    if style_path is None:
+        style_path = resource_filename('cfr', 'figures.mplstyle')
+    plt.style.use(style_path)
 
 
 def plot_fit(
