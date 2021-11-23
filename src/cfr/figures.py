@@ -288,14 +288,16 @@ def get_param_latex():
     return latex_names
 
 
-def create_model_table(fit_dir, models, model_names):
+def create_model_table(fit_dir, models, model_names, param_map=None):
     """Create a summary table to compare models."""
     # get free parameters
     df = framework.read_model_specs(fit_dir, models, model_names)
     free_param = df.reset_index().query("kind == 'free'")['param'].unique()
 
     # get parameter values and likelihood
-    res = framework.read_model_fits(fit_dir, models, model_names)
+    res = framework.read_model_fits(fit_dir, models, model_names, param_map)
+    if param_map is not None:
+        free_param = [f for f in free_param if f not in param_map.keys()]
     res = framework.model_comp_weights(res, stat='aic')
     fields = np.hstack((free_param, ['n', 'k', 'logl', 'aic', 'waic']))
     table = pd.DataFrame(index=fields, columns=model_names)
