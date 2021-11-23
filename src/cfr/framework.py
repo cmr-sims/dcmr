@@ -316,7 +316,7 @@ def read_model_specs(fit_dir, models, model_names=None):
     return model_defs
 
 
-def read_model_fits(fit_dir, models, model_names=None):
+def read_model_fits(fit_dir, models, model_names=None, param_map=None):
     """Read fit results for multiple models."""
     if model_names is None:
         model_names = models
@@ -330,6 +330,14 @@ def read_model_fits(fit_dir, models, model_names=None):
     res = res.reset_index(level=1, drop=True)
     res.index.rename('model', inplace=True)
     res = res.set_index('subject', append=True)
+
+    # map overall parameters to subset parameters
+    if param_map is not None:
+        for key, params in param_map.items():
+            inc = res[key].notna()
+            for param in params:
+                res.loc[inc, param] = res.loc[inc, key]
+        res.drop(columns=list(param_map.keys()), inplace=True)
     return res
 
 
