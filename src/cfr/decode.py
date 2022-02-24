@@ -45,18 +45,20 @@ def classify_patterns(trials, patterns, clf='svm'):
     return evidence
 
 
-def label_evidence(data, prefix):
+def label_evidence(data, evidence_keys=None):
     """Label evidence by block category."""
-    cats = data['curr'].dropna().unique()
-    evidence = ['curr', 'prev', 'base']
-    res = data.copy()
-    for cat in cats:
-        for evid in evidence:
-            include = data[evid] == cat
-            evid_key = prefix + evid
-            cat_key = prefix + cat
-            res.loc[include, evid_key] = data.loc[include, cat_key]
-    return res
+    if evidence_keys is None:
+        evidence_keys = ['curr', 'prev', 'base']
+    categories = data[evidence_keys].melt().dropna()['value'].unique()
+    d = {}
+    for evidence in evidence_keys:
+        d[evidence] = np.empty(data.shape[0])
+        d[evidence][:] = np.nan
+        for category in categories:
+            include = data[evidence] == category
+            d[evidence][include] = data.loc[include, category]
+    results = pd.DataFrame(d, index=data.index)
+    return results
 
 
 def regress_evidence_block_pos(data, prefix):
