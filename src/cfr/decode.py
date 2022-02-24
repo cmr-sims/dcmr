@@ -61,17 +61,25 @@ def label_evidence(data, evidence_keys=None):
     return results
 
 
-def regress_evidence_block_pos(data, prefix):
-    """Regress evidence on block position."""
-    data = data.reset_index()
-    evidence = ['curr', 'prev', 'base']
+def _regress_subject(data, evidence_keys):
+    """"Regress evidence for one subject."""
     n = data['n'].to_numpy()
-    x = data['block_pos'].to_numpy().reshape(-1, 1)
+    x = data['block_pos'].to_numpy()[:, np.newaxis]
     d = {}
-    for evid in evidence:
-        y = data[prefix + evid].to_numpy()
+    for evidence in evidence_keys:
+        y = data[evidence].to_numpy()
         model = lm.LinearRegression()
         model.fit(x, y, sample_weight=n)
-        d[prefix + evid + '_slope'] = model.coef_[0]
-    res = pd.Series(d)
-    return res
+        d[evidence] = model.coef_[0]
+    slopes = pd.Series(d)
+    return slopes
+
+
+def regress_evidence_block_pos(data, max_pos=3):
+    """Regress evidence on block position."""
+    data = data.reset_index()
+    if max_pos is not None:
+        data = data.query(f'block_pos <= {max_pos}')
+    evidence_keys = ['curr', 'prev', 'base']
+    slopes = data.groupby('subject').apply(_regress_subject, evidence_keys)
+    return slopes
