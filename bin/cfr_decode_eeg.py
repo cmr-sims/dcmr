@@ -2,7 +2,7 @@
 #
 # Decode CFR EEG patterns.
 
-import os
+from pathlib import Path
 import argparse
 from joblib import Parallel, delayed
 import numpy as np
@@ -11,26 +11,29 @@ from cfr import task
 from cfr import decode
 
 
-def decode_subject(patterns_dir, subject, clf='svm'):
-    pattern_file = os.path.join(patterns_dir, f'sub-{subject}_pattern.txt')
-    events_file = os.path.join(patterns_dir, f'sub-{subject}_events.csv')
-    pattern = np.loadtxt(pattern_file)
+def decode_subject(patterns_dir, out_dir, subject, **kwargs):
+    pattern_file = patterns_dir / f'sub-{subject}_pattern.txt'
+    events_file = patterns_dir / f'sub-{subject}_events.csv'
+    pattern = np.loadtxt(pattern_file.as_posix())
     events = pd.read_csv(events_file)
 
     pattern = decode.impute_samples(pattern)
-    evidence = decode.classify_patterns(events, pattern, clf=clf)
+    evidence = decode.classify_patterns(events, pattern, **kwargs)
 
-    out_file = os.path.join(patterns_dir, f'sub-{subject}_decode.csv')
+    out_file = out_dir / f'sub-{subject}_decode.csv'
     df = pd.concat([events, evidence], axis=1)
-    df.to_csv(out_file)
+    df.to_csv(out_file.as_posix())
 
 
-def main(patterns_dir, n_jobs=1, subjects=None, clf=None):
+def main(patterns_dir, out_dir, n_jobs=1, subjects=None, **kwargs):
     if subjects is None:
         subjects, _ = task.get_subjects()
 
+    out_dir.mkdir(exist_ok=True)
     Parallel(n_jobs=n_jobs)(
-        delayed(decode_subject)(patterns_dir, subject, clf) for subject in subjects
+        delayed(decode_subject)(
+            patterns_dir, out_dir, subject, **kwargs
+        ) for subject in subjects
     )
 
 
@@ -38,6 +41,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'patterns_dir', help="Path to directory with patterns to decode."
+    )
+    parser.add_argument(
+        'out_dir', help="Path to output directory."
     )
     parser.add_argument(
         '--n-jobs', '-n', type=int, default=1,
@@ -49,10 +55,20 @@ if __name__ == '__main__':
     parser.add_argument(
         '--classifier', '-c', default='svm', help="classifier type."
     )
+    parser.add_argument(
+        '--multi-class', '-m', default='auto', help='multi-class method {"auto", "ovr", "multinomial"}'
+    )
     args = parser.parse_args()
 
     if args.subjects is not None:
         inc_subjects = [f'LTP{subject:0>3}' for subject in args.subjects.split(',')]
     else:
         inc_subjects = None
-    main(args.patterns_dir, args.n_jobs, inc_subjects, args.classifier)
+    main(
+        Path(args.patterns_dir),
+        Path(args.out_dir),
+        args.n_jobs,
+        inc_subjects,
+        clf=args.classifier,
+        multi_class=args.multi_class,
+    )
