@@ -58,6 +58,9 @@ if __name__ == '__main__':
     parser.add_argument(
         '--multi-class', '-m', default='auto', help='multi-class method {"auto", "ovr", "multinomial"}'
     )
+    parser.add_argument(
+        '-C', type=float, default=1, help='Regularization parameter (1.0)'
+    )
     args = parser.parse_args()
 
     if args.subjects is not None:
@@ -71,4 +74,5 @@ if __name__ == '__main__':
         inc_subjects,
         clf=args.classifier,
         multi_class=args.multi_class,
+        C=args.C
     )

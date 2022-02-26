@@ -20,7 +20,7 @@ def impute_samples(patterns):
     return fixed
 
 
-def classify_patterns(trials, patterns, clf='svm', multi_class='auto'):
+def classify_patterns(trials, patterns, clf='svm', multi_class='auto', C=1.0):
     """Run cross-validation and return evidence for each category."""
     trials = trials.reset_index()
     labels = trials['category'].to_numpy()
@@ -30,9 +30,9 @@ def classify_patterns(trials, patterns, clf='svm', multi_class='auto'):
     logo = ms.LeaveOneGroupOut()
 
     if clf == 'svm':
-        clf = svm.SVC(probability=True)
+        clf = svm.SVC(probability=True, C=C)
     elif clf == 'logreg':
-        clf = lm.LogisticRegression(max_iter=1000, multi_class=multi_class)
+        clf = lm.LogisticRegression(max_iter=1000, multi_class=multi_class, C=C)
     else:
         raise ValueError(f'Unknown classifier: {clf}')
 
