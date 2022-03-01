@@ -31,9 +31,8 @@ def main(patterns_dir, out_dir, n_jobs=1, subjects=None, **kwargs):
 
     out_dir.mkdir(exist_ok=True)
     Parallel(n_jobs=n_jobs)(
-        delayed(decode_subject)(
-            patterns_dir, out_dir, subject, **kwargs
-        ) for subject in subjects
+        delayed(decode_subject)(patterns_dir, out_dir, subject, **kwargs)
+        for subject in subjects
     )
 
 
@@ -42,21 +41,28 @@ if __name__ == '__main__':
     parser.add_argument(
         'patterns_dir', help="Path to directory with patterns to decode."
     )
+    parser.add_argument('out_dir', help="Path to output directory.")
     parser.add_argument(
-        'out_dir', help="Path to output directory."
-    )
-    parser.add_argument(
-        '--n-jobs', '-n', type=int, default=1,
-        help="Number of processes to run in parallel."
+        '--n-jobs',
+        '-n',
+        type=int,
+        default=1,
+        help="Number of processes to run in parallel.",
     )
     parser.add_argument(
         '--subjects', '-s', default=None, help="Comma-separated list of subjects."
     )
     parser.add_argument(
-        '--classifier', '-c', default='svm', help='classifier type {"svm", "logreg", "plogreg"}'
+        '--classifier',
+        '-c',
+        default='svm',
+        help='classifier type {"svm", "logreg", "plogreg"}',
     )
     parser.add_argument(
-        '--multi-class', '-m', default='auto', help='multi-class method {"auto", "ovr", "multinomial"}'
+        '--multi-class',
+        '-m',
+        default='auto',
+        help='multi-class method {"auto", "ovr", "multinomial"}',
     )
     parser.add_argument(
         '-C', type=float, default=1, help='Regularization parameter (1.0)'
@@ -74,5 +80,5 @@ if __name__ == '__main__':
         inc_subjects,
         clf=args.classifier,
         multi_class=args.multi_class,
-        C=args.C
+        C=args.C,
     )

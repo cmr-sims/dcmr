@@ -17,7 +17,7 @@ def semantic_crp_plots(data, sim_file, out_dir, kwargs, subj_kwargs):
     sim = task.read_similarity(sim_file)
     data = task.set_item_index(data, sim['item'])
 
-    edges = np.arange(0, 1.01, .05)
+    edges = np.arange(0, 1.01, 0.05)
 
     # semantic crps
     crp = fr.distance_crp(data, 'item_index', sim['similarity'], edges)
@@ -28,9 +28,14 @@ def semantic_crp_plots(data, sim_file, out_dir, kwargs, subj_kwargs):
     g.savefig(os.path.join(out_dir, 'sem_crp_subject.pdf'))
 
     # within category
-    crp = fr.distance_crp(data, 'item_index', sim['similarity'],
-                          edges, test_key='category',
-                          test=lambda x, y: x == y)
+    crp = fr.distance_crp(
+        data,
+        'item_index',
+        sim['similarity'],
+        edges,
+        test_key='category',
+        test=lambda x, y: x == y,
+    )
     g = fr.plot_distance_crp(crp, min_samples=10, **kwargs)
     g.savefig(os.path.join(out_dir, 'sem_crp_within.pdf'))
 
@@ -38,9 +43,14 @@ def semantic_crp_plots(data, sim_file, out_dir, kwargs, subj_kwargs):
     g.savefig(os.path.join(out_dir, 'sem_crp_within_subject.pdf'))
 
     # across category
-    crp = fr.distance_crp(data, 'item_index', sim['similarity'],
-                          edges, test_key='category',
-                          test=lambda x, y: x != y)
+    crp = fr.distance_crp(
+        data,
+        'item_index',
+        sim['similarity'],
+        edges,
+        test_key='category',
+        test=lambda x, y: x != y,
+    )
     g = fr.plot_distance_crp(crp, min_samples=10, **kwargs)
     g.savefig(os.path.join(out_dir, 'sem_crp_across.pdf'))
 
@@ -68,13 +78,17 @@ def main(csv_file, out_dir, sim_file=None, query=None):
 
     # category crp
     categories = mixed['category'].cat.categories
-    cat_crp = [fr.category_crp(mixed, 'category', test_key='category',
-                               test=lambda x, y: x == category)
-               for category in categories]
+    cat_crp = [
+        fr.category_crp(
+            mixed, 'category', test_key='category', test=lambda x, y: x == category
+        )
+        for category in categories
+    ]
     crp = pd.concat(cat_crp, keys=categories, axis=0)
     crp.index = crp.index.set_names('category', level=0)
-    g = fr.plot_swarm_error(crp, x='category', y='prob', swarm_color=[.8] * 3,
-                            **kwargs)
+    g = fr.plot_swarm_error(
+        crp, x='category', y='prob', swarm_color=[0.8] * 3, **kwargs
+    )
     g.set_xlabels('')
     g.set_ylabels('P(within)')
     g.set(ylim=(0, 1))
@@ -112,8 +126,10 @@ def main(csv_file, out_dir, sim_file=None, query=None):
 
     # within-category crp by category
     categories = mixed['category'].cat.categories
-    cat_crp = [fr.lag_crp(mixed, item_query=f'category == "{category}"')
-               for category in categories]
+    cat_crp = [
+        fr.lag_crp(mixed, item_query=f'category == "{category}"')
+        for category in categories
+    ]
     crp = pd.concat(cat_crp, keys=categories, axis=0)
     crp.index = crp.index.set_names('category', level=0)
     g = fr.plot_lag_crp(crp, hue='category', **kwargs)
@@ -146,9 +162,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('csv_file', help="csv file with free recall data")
     parser.add_argument('out_dir', help="directory to save figures")
-    parser.add_argument('--similarity', '-s',
-                        help="MAT-file with similarity matrix")
-    parser.add_argument('--query', '-q',
-                        help="query filter to apply before plotting")
+    parser.add_argument('--similarity', '-s', help="MAT-file with similarity matrix")
+    parser.add_argument('--query', '-q', help="query filter to apply before plotting")
     args = parser.parse_args()
     main(args.csv_file, args.out_dir, args.similarity, args.query)

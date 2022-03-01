@@ -31,9 +31,7 @@ def main(data_file, patterns_file, fit_dir, n_rep=1):
     subj_param = framework.read_fit_param(fit_file)
 
     # run simulation
-    sim = model.generate(
-        study_data, {}, subj_param, param_def, patterns, n_rep=n_rep
-    )
+    sim = model.generate(study_data, {}, subj_param, param_def, patterns, n_rep=n_rep)
 
     # save
     sim_file = os.path.join(fit_dir, 'sim.csv')

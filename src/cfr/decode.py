@@ -100,9 +100,7 @@ class LogReg(BaseEstimator, ClassifierMixin):
         for i, c in enumerate(self.classes_):
             t = np.zeros((1, X.shape[0]))
             t[:, y == c] = 1
-            w, ll, n = logistic_regression(
-                X.T, t, self.l, self.tol, self.max_iter
-            )
+            w, ll, n = logistic_regression(X.T, t, self.l, self.tol, self.max_iter)
             self.coef_[:, i] = w.T
 
         # Return the classifier
@@ -210,7 +208,7 @@ def label_evidence(data, evidence_keys=None):
 
 
 def _regress_subject(data, evidence_keys):
-    """"Regress evidence for one subject."""
+    """Regress evidence for one subject."""
     n = data['n'].to_numpy()
     x = data['block_pos'].to_numpy()[:, np.newaxis]
     d = {}

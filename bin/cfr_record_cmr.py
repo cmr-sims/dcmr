@@ -19,8 +19,11 @@ def record_subject(data, subj_param, subject, param_def, patterns):
     model = cmr.CMR()
     subj_data = data.query(f'subject == {subject}').copy()
     state = model.record(
-        subj_data, subj_param[subject], param_def=param_def, patterns=patterns,
-        include=['c', 'c_in']
+        subj_data,
+        subj_param[subject],
+        param_def=param_def,
+        patterns=patterns,
+        include=['c', 'c_in'],
     )
     c = np.array([s.c for s in state])
     c_in = np.array([s.c_in for s in state])
@@ -28,9 +31,8 @@ def record_subject(data, subj_param, subject, param_def, patterns):
     net = state[0]
     sublayers = list(net.c_segment.keys())
     ind = {
-        sublayer: [
-            int(i) for i in net.get_segment('c', sublayer, 'item')
-        ] for sublayer in sublayers
+        sublayer: [int(i) for i in net.get_segment('c', sublayer, 'item')]
+        for sublayer in sublayers
     }
     net_record = {'c': c, 'c_in': c_in}
     record = {'record': net_record, 'ind': ind, 'data': subj_data}
@@ -62,9 +64,8 @@ def main(model_dir, model_version, model_name, n_jobs=1, subjects=None):
 
     # record = record_subject(clean, subj_param, 1, param_def, patterns)
     record = Parallel(n_jobs=n_jobs)(
-        delayed(record_subject)(
-            clean, subj_param, subject, param_def, patterns
-        ) for subject in subjects
+        delayed(record_subject)(clean, subj_param, subject, param_def, patterns)
+        for subject in subjects
     )
 
     # save recording to fit directory
@@ -91,15 +92,19 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('model_dir', help="Path to main model directory.")
     parser.add_argument('model_version', help="Version of the fit.")
+    parser.add_argument('model_name', help="Model name.")
     parser.add_argument(
-        'model_name', help="Model name."
+        '--n-jobs',
+        '-n',
+        type=int,
+        default=1,
+        help="Number of processes to run in parallel.",
     )
     parser.add_argument(
-        '--n-jobs', '-n', type=int, default=1,
-        help="Number of processes to run in parallel."
-    )
-    parser.add_argument(
-        '--subjects', '-s', default=None, help="Comma-separated list of subject numbers."
+        '--subjects',
+        '-s',
+        default=None,
+        help="Comma-separated list of subject numbers.",
     )
     args = parser.parse_args()
 

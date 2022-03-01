@@ -38,8 +38,9 @@ def main(out_dir, csv_file, comp_csv=None, group_var=None):
     g.savefig(os.path.join(out_dir, 'crp_subject.pdf'))
 
     # crp by condition within
-    recall = data.groupby(group_var).apply(fr.lag_crp, test_key='category',
-                                           test=lambda x, y: x == y)
+    recall = data.groupby(group_var).apply(
+        fr.lag_crp, test_key='category', test=lambda x, y: x == y
+    )
     g = fr.plot_lag_crp(recall, hue=group_var, palette=palette, **kwargs)
     g.add_legend()
     g.savefig(os.path.join(out_dir, 'crp_within.pdf'))
@@ -49,8 +50,9 @@ def main(out_dir, csv_file, comp_csv=None, group_var=None):
     g.savefig(os.path.join(out_dir, 'crp_within_subject.pdf'))
 
     # crp by condition across
-    recall = data.groupby(group_var).apply(fr.lag_crp, test_key='category',
-                                           test=lambda x, y: x != y)
+    recall = data.groupby(group_var).apply(
+        fr.lag_crp, test_key='category', test=lambda x, y: x != y
+    )
     g = fr.plot_lag_crp(recall, hue=group_var, palette=palette, **kwargs)
     g.add_legend()
     g.savefig(os.path.join(out_dir, 'crp_across.pdf'))

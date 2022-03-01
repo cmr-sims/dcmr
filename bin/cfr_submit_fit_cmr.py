@@ -7,8 +7,18 @@ import argparse
 import numpy as np
 
 
-def main(fcf_features, ff_features, sublayers, res_dir, subpar, fixed,
-         n_rep=10, n_job=48, tol=0.00001, n_sim_rep=50):
+def main(
+    fcf_features,
+    ff_features,
+    sublayers,
+    res_dir,
+    subpar,
+    fixed,
+    n_rep=10,
+    n_job=48,
+    tol=0.00001,
+    n_sim_rep=50,
+):
     study_dir = os.environ['STUDYDIR']
     if not study_dir:
         raise EnvironmentError('STUDYDIR not defined.')
@@ -83,5 +93,15 @@ if __name__ == '__main__':
         fix_list = [None] * max_n
 
     for fcf, ff, sub, fix in zip(fcf_list, ff_list, sub_list, fix_list):
-        main(fcf, ff, args.sublayers, args.res_dir, sub, fix, args.n_rep,
-             args.n_job, args.tol, args.n_sim_rep)
+        main(
+            fcf,
+            ff,
+            args.sublayers,
+            args.res_dir,
+            sub,
+            fix,
+            args.n_rep,
+            args.n_job,
+            args.tol,
+            args.n_sim_rep,
+        )
