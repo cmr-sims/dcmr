@@ -179,6 +179,8 @@ def classify_patterns(trials, patterns, clf='svm', multi_class='auto', C=1.0):
         clf = svm.SVC(probability=True, C=C)
     elif clf == 'logreg':
         clf = lm.LogisticRegression(max_iter=1000, multi_class=multi_class, C=C)
+    elif clf == 'plogreg':
+        clf = LogReg(l=1 / C, max_iter=1000)
     else:
         raise ValueError(f'Unknown classifier: {clf}')
 
