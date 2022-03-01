@@ -64,7 +64,7 @@ def logistic_regression(x, y, l, tol, max_rounds):
 class LogReg(BaseEstimator, ClassifierMixin):
     """Logistic ridge regression from Princeton MVPA toolbox."""
 
-    def __init__(self, l=10, tol=0.0001, max_iter=5000):
+    def __init__(self, l=10.0, tol=0.0001, max_iter=5000):
         self.l = l
         self.tol = tol
         self.max_iter = max_iter
