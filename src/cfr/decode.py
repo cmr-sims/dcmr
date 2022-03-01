@@ -1,6 +1,7 @@
 """Functions to run classification of EEG data or network representation."""
 
 import numpy as np
+from numpy import linalg
 import pandas as pd
 from sklearn import svm
 from sklearn import model_selection as ms
@@ -18,6 +19,43 @@ def impute_samples(patterns):
             continue
         fixed[isnan, i] = m[i]
     return fixed
+
+
+def _likelihood(x, y, w, l):
+    """Likelihood of data for ridge regression weights."""
+    a = y @ (w.T @ x).T
+    b = np.sum(np.log(1 + np.exp(w.T @ x)))
+    c = l / 2 * w.T @ w
+    ll = a - b - c
+    return ll
+
+
+def logistic_regression(x, y, l, tol, max_rounds):
+    """Logistic regression from Princeton MVPA toolbox."""
+    n_feature, n_sample = x.shape
+    w_old = np.zeros((n_feature, 1))
+    delta_ll = 1
+    rounds = 0
+    old_ll = _likelihood(x, y, w_old, l)
+    C2 = l * np.eye(n_feature)
+    ll = []
+    while delta_ll > tol and rounds < max_rounds:
+        f = np.exp(w_old.T @ x)
+        p = f / (1 + f)
+        A = np.diag(p[0] * (1 - p[0]))
+        C1 = x @ A @ x.T
+        B = C1 + C2
+        w_grad = linalg.lstsq(B, (x @ (y - p).T - l * w_old), rcond=None)[0]
+        w_new = w_old + w_grad
+        new_ll = _likelihood(x, y, w_new, l)
+        w_old = w_new
+        delta_ll = np.abs((old_ll - new_ll) / old_ll)
+        rounds += 1
+        old_ll = new_ll
+        ll.append(new_ll)
+    ll = np.array(ll)
+    w = w_old
+    return w, ll, rounds
 
 
 def classify_patterns(trials, patterns, clf='svm', multi_class='auto', C=1.0):
