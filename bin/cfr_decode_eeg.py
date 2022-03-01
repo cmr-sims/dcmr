@@ -53,7 +53,7 @@ if __name__ == '__main__':
         '--subjects', '-s', default=None, help="Comma-separated list of subjects."
     )
     parser.add_argument(
-        '--classifier', '-c', default='svm', help="classifier type."
+        '--classifier', '-c', default='svm', help='classifier type {"svm", "logreg", "plogreg"}'
     )
     parser.add_argument(
         '--multi-class', '-m', default='auto', help='multi-class method {"auto", "ovr", "multinomial"}'
