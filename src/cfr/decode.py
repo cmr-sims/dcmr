@@ -7,6 +7,9 @@ from sklearn import svm
 from sklearn import model_selection as ms
 import sklearn.linear_model as lm
 from sklearn import preprocessing
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.multiclass import unique_labels
 
 
 def impute_samples(patterns):
@@ -56,6 +59,111 @@ def logistic_regression(x, y, l, tol, max_rounds):
     ll = np.array(ll)
     w = w_old
     return w, ll, rounds
+
+
+class LogReg(BaseEstimator, ClassifierMixin):
+    """Logistic ridge regression from Princeton MVPA toolbox."""
+
+    def __init__(self, l=10, tol=0.0001, max_iter=5000):
+        self.l = l
+        self.tol = tol
+        self.max_iter = max_iter
+
+    def fit(self, X, y):
+        """
+        Estimate regression coefficients.
+
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_features)
+            The training input samples.
+
+        y : array-like, shape (n_samples,)
+            The target values. An array of int.
+
+        Returns
+        -------
+        self : object
+            Returns self.
+        """
+        # Check that X and y have correct shape
+        X, y = check_X_y(X, y)
+
+        # Store the classes seen during fit
+        self.classes_ = unique_labels(y)
+
+        self.X_ = X
+        self.y_ = y
+
+        # Estimate coefficients for each class
+        self.coef_ = np.zeros((X.shape[1], len(self.classes_)))
+        for i, c in enumerate(self.classes_):
+            t = np.zeros((1, X.shape[0]))
+            t[:, y == c] = 1
+            w, ll, n = logistic_regression(
+                X.T, t, self.l, self.tol, self.max_iter
+            )
+            self.coef_[:, i] = w.T
+
+        # Return the classifier
+        return self
+
+    def _proba(self, X):
+        """Calculate class probabilities."""
+        prob = np.zeros((len(self.classes_), X.shape[0]))
+        for i in range(len(self.classes_)):
+            w = self.coef_[:, i]
+            prob[i, :] = np.exp(w.T @ X.T) / (1 + np.exp(w.T @ X.T))
+        return prob
+
+    def predict(self, X):
+        """
+        Predict class labels.
+
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_features)
+            The input samples.
+
+        Returns
+        -------
+        y : ndarray, shape (n_samples,)
+            The label for each sample is the label of the closest sample
+            seen during fit.
+        """
+        # Check is fit had been called
+        check_is_fitted(self, ['X_', 'y_'])
+
+        # Input validation
+        X = check_array(X)
+
+        p = self._proba(X)
+        winner = np.argmax(p, axis=0)
+        return self.classes_[winner]
+
+    def predict_proba(self, X):
+        """
+        Predict class probabilities.
+
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_features)
+            The input samples.
+
+        Returns
+        -------
+        proba : ndarray, shape (n_samples,)
+            The label for each sample is the label of the closest sample
+            seen during fit.
+        """
+        # Check is fit had been called
+        check_is_fitted(self, ['X_', 'y_'])
+
+        # Input validation
+        X = check_array(X)
+
+        proba = self._proba(X).T
+        return proba
 
 
 def classify_patterns(trials, patterns, clf='svm', multi_class='auto', C=1.0):
