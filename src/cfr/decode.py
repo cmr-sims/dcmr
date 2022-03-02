@@ -48,7 +48,7 @@ def logistic_regression(x, y, l, tol, max_rounds):
         A = np.diag(p[0] * (1 - p[0]))
         C1 = x @ A @ x.T
         B = C1 + C2
-        w_grad = linalg.lstsq(B, (x @ (y - p).T - l * w_old), rcond=None)[0]
+        w_grad = linalg.solve(B, (x @ (y - p).T - l * w_old))
         w_new = w_old + w_grad
         new_ll = _likelihood(x, y, w_new, l)
         w_old = w_new
