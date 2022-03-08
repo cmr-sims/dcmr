@@ -16,11 +16,8 @@ def impute_samples(patterns):
     """Impute missing samples for variables in patterns."""
     m = np.nanmean(patterns, 0)
     fixed = patterns.copy()
-    for i in range(fixed.shape[1]):
-        isnan = np.isnan(fixed[:, i])
-        if not np.any(isnan):
-            continue
-        fixed[isnan, i] = m[i]
+    ind = np.where(np.isnan(patterns))
+    fixed[ind] = m[ind[1]]
     return fixed
 
 
