@@ -194,18 +194,17 @@ def classify_patterns(
     else:
         raise ValueError(f'Unknown classifier: {clf}')
 
-    if normalization == 'range':
-        p_min = np.min(patterns, 0)
-        p_max = np.max(patterns, 0)
-        patterns = (patterns - p_min) / (p_max - p_min)
-    elif normalization == 'z':
-        patterns = preprocessing.scale(patterns)
-    else:
-        raise ValueError(f'Invalid normalization: {normalization}')
+    if np.any(np.all(np.isnan(patterns), 1)):
+        raise ValueError('One or more observations has only undefined features.')
 
     for train, test in logo.split(patterns, labels, groups):
-        clf.fit(patterns[train], labels[train])
-        prob = clf.predict_proba(patterns[test])
+        # deal with undefined features and scale feature ranges
+        train_patterns = normalize(impute_samples(patterns[train]), normalization)
+        test_patterns = normalize(impute_samples(patterns[test]), normalization)
+
+        # calculate class probabilities in test data based on training data
+        clf.fit(train_patterns, labels[train])
+        prob = clf.predict_proba(test_patterns)
         xval = pd.DataFrame(prob, index=test, columns=clf.classes_)
         evidence.loc[test, :] = xval
     return evidence
