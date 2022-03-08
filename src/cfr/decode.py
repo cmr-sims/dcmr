@@ -161,6 +161,19 @@ class LogReg(BaseEstimator, ClassifierMixin):
         return proba
 
 
+def normalize(patterns, normalization):
+    """Normalize variable ranges across observations."""
+    if normalization == 'range':
+        p_min = np.min(patterns, 0)
+        p_max = np.max(patterns, 0)
+        normalized = (patterns - p_min) / (p_max - p_min)
+    elif normalization == 'z':
+        normalized = preprocessing.scale(patterns)
+    else:
+        raise ValueError(f'Invalid normalization: {normalization}')
+    return normalized
+
+
 def classify_patterns(
     trials, patterns, normalization='z', clf='svm', multi_class='auto', C=1.0
 ):
