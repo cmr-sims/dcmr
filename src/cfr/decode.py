@@ -1,5 +1,6 @@
 """Functions to run classification of EEG data or network representation."""
 
+import logging
 import numpy as np
 from numpy import linalg
 import pandas as pd
@@ -197,7 +198,8 @@ def classify_patterns(
     if np.any(np.all(np.isnan(patterns), 1)):
         raise ValueError('One or more observations has only undefined features.')
 
-    for train, test in logo.split(patterns, labels, groups):
+    for i, (train, test) in enumerate(logo.split(patterns, labels, groups)):
+        logging.info(f'Running cross-validation fold {i + 1}.')
         # deal with undefined features and scale feature ranges
         train_patterns = normalize(impute_samples(patterns[train]), normalization)
         test_patterns = normalize(impute_samples(patterns[test]), normalization)

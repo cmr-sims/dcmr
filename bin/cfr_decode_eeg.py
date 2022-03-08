@@ -3,6 +3,7 @@
 # Decode CFR EEG patterns.
 
 from pathlib import Path
+import logging
 import argparse
 from joblib import Parallel, delayed
 import numpy as np
@@ -12,15 +13,29 @@ from cfr import decode
 
 
 def decode_subject(patterns_dir, out_dir, subject, **kwargs):
+    log_dir = out_dir / 'logs'
+    log_dir.mkdir(exist_ok=True)
+    log_file = log_dir / f'sub-{subject}_log.txt'
+    logging.basicConfig(
+        filename=log_file,
+        filemode='w',
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
+    )
+
     pattern_file = patterns_dir / f'sub-{subject}_pattern.txt'
-    events_file = patterns_dir / f'sub-{subject}_events.csv'
+    logging.info(f'Loading pattern from {pattern_file}.')
     pattern = np.loadtxt(pattern_file.as_posix())
+
+    events_file = patterns_dir / f'sub-{subject}_events.csv'
+    logging.info(f'Loading events from {events_file}.')
     events = pd.read_csv(events_file)
 
-    pattern = decode.impute_samples(pattern)
+    logging.info(f'Running classification.')
     evidence = decode.classify_patterns(events, pattern, **kwargs)
 
     out_file = out_dir / f'sub-{subject}_decode.csv'
+    logging.info(f'Writing results to {out_file}.')
     df = pd.concat([events, evidence], axis=1)
     df.to_csv(out_file.as_posix())
 
@@ -29,7 +44,7 @@ def main(patterns_dir, out_dir, n_jobs=1, subjects=None, **kwargs):
     if subjects is None:
         subjects, _ = task.get_subjects()
 
-    out_dir.mkdir(exist_ok=True)
+    out_dir.mkdir(exist_ok=True, parents=True)
     Parallel(n_jobs=n_jobs)(
         delayed(decode_subject)(patterns_dir, out_dir, subject, **kwargs)
         for subject in subjects
