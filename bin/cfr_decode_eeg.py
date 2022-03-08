@@ -53,6 +53,12 @@ if __name__ == '__main__':
         '--subjects', '-s', default=None, help="Comma-separated list of subjects."
     )
     parser.add_argument(
+        '--normalization',
+        '-l',
+        default='z',
+        help='Normalization to apply before classification {"z", "range"}',
+    )
+    parser.add_argument(
         '--classifier',
         '-c',
         default='svm',
@@ -78,6 +84,7 @@ if __name__ == '__main__':
         Path(args.out_dir),
         args.n_jobs,
         inc_subjects,
+        normalization=args.normalization,
         clf=args.classifier,
         multi_class=args.multi_class,
         C=args.C,
