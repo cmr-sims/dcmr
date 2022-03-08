@@ -16,26 +16,27 @@ def decode_subject(patterns_dir, out_dir, subject, **kwargs):
     log_dir = out_dir / 'logs'
     log_dir.mkdir(exist_ok=True)
     log_file = log_dir / f'sub-{subject}_log.txt'
-    logging.basicConfig(
-        filename=log_file,
-        filemode='w',
-        level=logging.INFO,
-        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
-    )
+
+    logger = logging.getLogger(subject)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s:%(name)s:%(message)s')
+    fileHandler = logging.FileHandler(log_file, mode='w')
+    fileHandler.setFormatter(formatter)
+    logger.setLevel(logging.INFO)
+    logger.addHandler(fileHandler)
 
     pattern_file = patterns_dir / f'sub-{subject}_pattern.txt'
-    logging.info(f'Loading pattern from {pattern_file}.')
+    logger.info(f'Loading pattern from {pattern_file}.')
     pattern = np.loadtxt(pattern_file.as_posix())
 
     events_file = patterns_dir / f'sub-{subject}_events.csv'
-    logging.info(f'Loading events from {events_file}.')
+    logger.info(f'Loading events from {events_file}.')
     events = pd.read_csv(events_file)
 
-    logging.info(f'Running classification.')
-    evidence = decode.classify_patterns(events, pattern, **kwargs)
+    logger.info(f'Running classification.')
+    evidence = decode.classify_patterns(events, pattern, logger=logger, **kwargs)
 
     out_file = out_dir / f'sub-{subject}_decode.csv'
-    logging.info(f'Writing results to {out_file}.')
+    logger.info(f'Writing results to {out_file}.')
     df = pd.concat([events, evidence], axis=1)
     df.to_csv(out_file.as_posix())
 
