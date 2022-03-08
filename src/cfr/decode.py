@@ -164,7 +164,9 @@ class LogReg(BaseEstimator, ClassifierMixin):
         return proba
 
 
-def classify_patterns(trials, patterns, clf='svm', multi_class='auto', C=1.0):
+def classify_patterns(
+    trials, patterns, normalization='z', clf='svm', multi_class='auto', C=1.0
+):
     """Run cross-validation and return evidence for each category."""
     trials = trials.reset_index()
     labels = trials['category'].to_numpy()
@@ -182,7 +184,15 @@ def classify_patterns(trials, patterns, clf='svm', multi_class='auto', C=1.0):
     else:
         raise ValueError(f'Unknown classifier: {clf}')
 
-    patterns = preprocessing.scale(patterns)
+    if normalization == 'range':
+        p_min = np.min(patterns, 0)
+        p_max = np.max(patterns, 0)
+        patterns = (patterns - p_min) / (p_max - p_min)
+    elif normalization == 'z':
+        patterns = preprocessing.scale(patterns)
+    else:
+        raise ValueError(f'Invalid normalization: {normalization}')
+
     for train, test in logo.split(patterns, labels, groups):
         clf.fit(patterns[train], labels[train])
         prob = clf.predict_proba(patterns[test])
