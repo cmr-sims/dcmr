@@ -14,9 +14,16 @@ from sklearn.utils.multiclass import unique_labels
 
 def impute_samples(patterns):
     """Impute missing samples for variables in patterns."""
-    m = np.nanmean(patterns, 0)
     fixed = patterns.copy()
-    ind = np.where(np.isnan(patterns))
+
+    # replace missing variables
+    missing = np.all(np.isnan(patterns), 0)
+    n = np.nanmean(patterns, 1)
+    fixed[:, missing] = n[:, np.newaxis]
+
+    # replace missing observations
+    m = np.nanmean(fixed, 0)
+    ind = np.where(np.isnan(fixed))
     fixed[ind] = m[ind[1]]
     return fixed
 
