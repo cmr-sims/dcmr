@@ -173,7 +173,9 @@ def normalize(patterns, normalization):
     if normalization == 'range':
         p_min = np.min(patterns, 0)
         p_max = np.max(patterns, 0)
-        normalized = (patterns - p_min) / (p_max - p_min)
+        i = p_min != p_max
+        normalized = np.ones(patterns.shape)
+        normalized[:, i] = (patterns[:, i] - p_min[i]) / (p_max[i] - p_min[i])
     elif normalization == 'z':
         normalized = preprocessing.scale(patterns)
     else:
