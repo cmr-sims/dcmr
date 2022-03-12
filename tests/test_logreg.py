@@ -1,6 +1,7 @@
 """Test implementation of logistic ridge regression classifier."""
 
 import numpy as np
+import pandas as pd
 from cfr import decode
 import pytest
 
@@ -88,3 +89,28 @@ def test_preprocessing(patterns):
         ]
     )
     np.testing.assert_allclose(normalized, expected, atol=0.0001)
+
+
+def test_class(patterns):
+    """Test full classification procedure."""
+    trials = pd.DataFrame({'list': patterns['chunks'], 'category': patterns['labels']})
+    evidence = decode.classify_patterns(
+        trials, patterns['vectors'], normalization='range', clf='plogreg', C=0.1
+    )
+    expected = np.array(
+        [
+            [0.4912, 0.5019, 0.4743],
+            [0.4933, 0.5007, 0.4832],
+            [0.4870, 0.4919, 0.4816],
+            [0.4816, 0.4771, 0.4776],
+            [0.4982, 0.4957, 0.4978],
+            [0.4850, 0.4869, 0.4689],
+            [0.4870, 0.4977, 0.4901],
+            [0.4702, 0.4932, 0.4780],
+            [0.4883, 0.4930, 0.4812],
+            [0.4777, 0.4893, 0.4768],
+            [0.4835, 0.5006, 0.4941],
+            [0.4736, 0.5071, 0.4845],
+        ]
+    )
+    np.testing.assert_allclose(evidence, expected, atol=0.0001)
