@@ -63,3 +63,28 @@ def test_prob(patterns):
     X_ = patterns['vectors'][test, :]
     prob = clf.predict_proba(X_)
     np.testing.assert_allclose(prob, expected, atol=0.0001)
+
+
+def test_preprocessing(patterns):
+    """Test pattern preprocessing."""
+    flattened = patterns['vectors']
+    flattened[[0, 2, 2, 6], [1, 0, 2, 0]] = np.nan
+    imputed = decode.impute_samples(patterns['vectors'])
+    normalized = decode.normalize(imputed, 'range')
+    expected = np.array(
+        [
+            [0.3863, 0.4724, 0.7851],
+            [0.3158, 0.0000, 0.3966],
+            [0.4947, 0.4182, 0.3940],
+            [0.5966, 1.0000, 0.1759],
+            [0.0000, 0.1299, 0.0908],
+            [0.4229, 0.5612, 1.0000],
+            [0.4947, 0.3356, 0.2096],
+            [0.7561, 0.8431, 0.5730],
+            [0.9919, 0.0092, 0.3224],
+            [1.0000, 0.4331, 0.6105],
+            [0.0006, 0.6296, 0.1699],
+            [0.4773, 0.8367, 0.0000],
+        ]
+    )
+    np.testing.assert_allclose(normalized, expected, atol=0.0001)
