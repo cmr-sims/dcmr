@@ -215,9 +215,14 @@ def classify_patterns(
     for i, (train, test) in enumerate(logo.split(patterns, labels, groups)):
         if logger is not None:
             logger.info(f'Running cross-validation fold {i + 1}.')
+
         # deal with undefined features and scale feature ranges
-        train_patterns = normalize(impute_samples(patterns[train]), normalization)
-        test_patterns = normalize(impute_samples(patterns[test]), normalization)
+        train_patterns = impute_samples(patterns[train])
+        test_patterns = impute_samples(patterns[test])
+        normalized = normalize(np.vstack((train_patterns, test_patterns)), normalization)
+        n = train_patterns.shape[0]
+        train_patterns = normalized[:n]
+        test_patterns = normalized[n:]
 
         # calculate class probabilities in test data based on training data
         clf.fit(train_patterns, labels[train])
