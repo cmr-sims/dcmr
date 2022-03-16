@@ -5,7 +5,7 @@ axes.spines.right : False
 lines.linewidth : 1
 xtick.labelsize : small
 ytick.labelsize : small
-font.sans-serif : Helvetica Neue LT Com
+font.sans-serif : Helvetica
 font.weight : 300
 font.size : 18
 savefig.bbox : tight
