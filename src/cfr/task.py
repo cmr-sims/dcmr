@@ -168,7 +168,7 @@ def label_clean_trials(data):
     rmerged['intrusion'] = rmerged['intrusion'].fillna(False)
     clean = rmerged.query('(trial_type == "study") | (~intrusion & repeat == 0)')
     label = np.zeros(data.shape[0], dtype=bool)
-    label[clean.index] = True
+    label[clean.index.to_numpy()] = True
     labeled = data.copy()
     labeled['clean'] = label
     return labeled
