@@ -131,7 +131,7 @@ def main(
 
     # full search information
     search = pd.concat(search_list, keys=np.arange(1, n_folds + 1))
-    summary.index.rename(['fold', 'subject'], inplace=True)
+    search.index.rename(['fold', 'subject'], inplace=True)
     search_file = os.path.join(res_dir, f'xval_search.csv')
     logging.info(f'Saving full search results to {search_file}.')
     search.to_csv(search_file)
