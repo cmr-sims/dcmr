@@ -141,6 +141,12 @@ def main(
         xval['logl_test'] = stats['logl']
         xval['n_train'] = xval['n']
         xval['n_test'] = stats['n']
+        m_train = train_data.groupby('subject')['list'].nunique()
+        m_test = test_data.groupby('subject')['list'].nunique()
+        xval['logl_train_list'] = xval['logl_train'] / m_train
+        xval['logl_test_list'] = xval['logl_test'] / m_test
+        xval['m_train'] = m_train
+        xval['m_test'] = m_test
         xval.drop(columns=['logl', 'n'], inplace=True)
         xval_list.append(xval)
 
