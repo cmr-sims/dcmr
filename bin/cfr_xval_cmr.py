@@ -30,12 +30,18 @@ def main(
     res_dir,
     sublayer_param=None,
     fixed_param=None,
-    n_folds=2,
+    n_folds=None,
+    fold_key=None,
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
     include=None,
 ):
+    if (
+        (n_folds is None and fold_key is None)
+        or (n_folds is not None and fold_key is not None)
+    ):
+        raise ValueError('Must specify one of either n_folds or fold_key.')
 
     os.makedirs(res_dir, exist_ok=True)
     log_file = os.path.join(res_dir, 'log_xval.txt')
@@ -82,16 +88,29 @@ def main(
     logging.info(f'Using {n_jobs} core(s).')
 
     n_lists = data.groupby('subject')['list'].nunique().max()
-    fold = np.tile(np.arange(n_folds), int(np.ceil(n_lists / n_folds)))
+    if fold_key is not None:
+        # get folds from the events
+        n_folds_all = data.groupby('subject')[fold_key].nunique()
+        if len(n_folds_all.unique()) != 1:
+            raise ValueError('All subjects must have same number of folds.')
+        folds = data[fold_key].unique()
+        n_folds = len(folds)
+    else:
+        # interleave folds over lists
+        folds = np.arange(1, n_folds + 1)
+        list_fold = np.tile(folds, int(np.ceil(n_lists / n_folds)))
     xval_list = []
     search_list = []
-    for i in range(n_folds):
+    for fold in folds:
         # fit the training dataset
-        train_data = (
-            data.groupby('subject')
-            .apply(apply_list_mask, fold != i)
-            .droplevel('subject')
-        )
+        if fold_key is not None:
+            train_data = data[data[fold_key] != fold]
+        else:
+            train_data = (
+                data.groupby('subject')
+                .apply(apply_list_mask, list_fold != fold)
+                .droplevel('subject')
+            )
         results = model.fit_indiv(
             train_data,
             param_def,
@@ -106,11 +125,14 @@ def main(
         # evaluate on left-out fold
         best = fit.get_best_results(results)
         subj_param = best.T.to_dict()
-        test_data = (
-            data.groupby('subject')
-            .apply(apply_list_mask, fold == i)
-            .droplevel('subject')
-        )
+        if fold_key is not None:
+            test_data = data[data[fold_key] == fold]
+        else:
+            test_data = (
+                data.groupby('subject')
+                .apply(apply_list_mask, list_fold == fold)
+                .droplevel('subject')
+            )
         stats = model.likelihood(
             test_data, {}, subj_param, param_def, patterns=patterns
         )
@@ -187,8 +209,12 @@ if __name__ == '__main__':
         '--n-folds',
         '-d',
         type=int,
-        default=2,
         help='number of cross-validation folds to run',
+    )
+    parser.add_argument(
+        '--fold-key',
+        '-k',
+        help='events column to use when defining cross-validation folds',
     )
     parser.add_argument(
         '--n-reps',
@@ -230,6 +256,7 @@ if __name__ == '__main__':
         subpar,
         fixed,
         args.n_folds,
+        args.fold_key,
         args.n_reps,
         args.n_jobs,
         args.tol,
