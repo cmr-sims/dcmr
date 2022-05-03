@@ -141,7 +141,7 @@ def main(
         xval['logl_test'] = stats['logl']
         xval['n_train'] = xval['n']
         xval['n_test'] = stats['n']
-        xval.drop(columns=['logl', 'n'])
+        xval.drop(columns=['logl', 'n'], inplace=True)
         xval_list.append(xval)
 
     # cross-validation summary
