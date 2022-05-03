@@ -38,7 +38,7 @@ def main(
 ):
 
     os.makedirs(res_dir, exist_ok=True)
-    log_file = os.path.join(res_dir, 'log_fit.txt')
+    log_file = os.path.join(res_dir, 'log_xval.txt')
     logging.basicConfig(
         filename=log_file,
         filemode='w',
