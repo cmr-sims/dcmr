@@ -70,7 +70,7 @@ def main(
             del param_def.free[param_name]
 
     # save model information
-    json_file = os.path.join(res_dir, 'parameters_xval.json')
+    json_file = os.path.join(res_dir, 'xval_parameters.json')
     logging.info(f'Saving parameter definition to {json_file}.')
     param_def.to_json(json_file)
 
@@ -84,6 +84,7 @@ def main(
     n_lists = data.groupby('subject')['list'].nunique().max()
     fold = np.tile(np.arange(n_folds), int(np.ceil(n_lists / n_folds)))
     xval_list = []
+    search_list = []
     for i in range(n_folds):
         # fit the training dataset
         train_data = (
@@ -100,19 +101,10 @@ def main(
             n_rep=n_reps,
             tol=tol,
         )
-
-        # full search information
-        res_file = os.path.join(res_dir, f'search_fold{i}.csv')
-        logging.info(f'Saving full search results to {res_file}.')
-        results.to_csv(res_file)
-
-        # best results
-        best = fit.get_best_results(results)
-        best_file = os.path.join(res_dir, f'fit_fold{i}.csv')
-        logging.info(f'Saving best fitting results to {best_file}.')
-        best.to_csv(best_file)
+        search_list.append(results)
 
         # evaluate on left-out fold
+        best = fit.get_best_results(results)
         subj_param = best.T.to_dict()
         test_data = (
             data.groupby('subject')
@@ -129,11 +121,20 @@ def main(
         xval['n_test'] = stats['n']
         xval.drop(columns=['logl', 'n'])
         xval_list.append(xval)
-    summary = pd.concat(xval_list, keys=np.arange(n_folds))
+
+    # cross-validation summary
+    summary = pd.concat(xval_list, keys=np.arange(1, n_folds + 1))
     summary.index.rename(['fold', 'subject'], inplace=True)
     xval_file = os.path.join(res_dir, 'xval.csv')
     logging.info(f'Saving best fitting results to {xval_file}.')
     summary.to_csv(xval_file)
+
+    # full search information
+    search = pd.concat(search_list, keys=np.arange(1, n_folds + 1))
+    summary.index.rename(['fold', 'subject'], inplace=True)
+    search_file = os.path.join(res_dir, f'xval_search.csv')
+    logging.info(f'Saving full search results to {search_file}.')
+    search.to_csv(search_file)
 
 
 def split_arg(arg):
