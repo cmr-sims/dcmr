@@ -408,7 +408,7 @@ def generate_restricted_models():
 
 
 def print_restricted_models():
-    """Print restricted models in a space-separated list."""
+    """Print restricted models in a comma-separated list."""
     fixed = generate_restricted_models()
-    s = ' '.join(fixed)
+    s = ','.join(fixed)
     print(s)
