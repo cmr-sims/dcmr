@@ -342,6 +342,23 @@ def read_model_fits(fit_dir, models, model_names=None, param_map=None):
     return res
 
 
+def read_model_xvals(fit_dir, models, model_names=None):
+    """Read cross-validation results for multiple models."""
+    if model_names is None:
+        model_names = models
+
+    res_list = []
+    for model in models:
+        fit_file = os.path.join(fit_dir, model, 'xval.csv')
+        res_model = pd.read_csv(fit_file)
+        res_list.append(res_model)
+    res = pd.concat(res_list, axis=0, keys=model_names)
+    res = res.reset_index(level=1, drop=True)
+    res.index.rename('model', inplace=True)
+    res = res.set_index('subject', append=True)
+    return res
+
+
 def read_model_sims(
     data_file, fit_dir, models, model_names=None, block=False, block_category=False
 ):
