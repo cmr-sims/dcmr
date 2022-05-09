@@ -416,16 +416,19 @@ def model_comp_weights(res, stat='aic'):
 def generate_restricted_models():
     """Generate restricted model definitions."""
     params = ['B_enc_cat', 'B_enc_use', 'B_rec_cat', 'B_rec_use']
-    c1 = [f'{p[0]}=1' for p in combinations(params, 1)]
-    c2 = [f'{p[0]}=1-{p[1]}=1' for p in combinations(params, 2)]
-    c3 = [f'{p[0]}=1-{p[1]}=1-{p[2]}=1' for p in combinations(params, 3)]
-    c4 = [f'{p[0]}=1-{p[1]}=1-{p[2]}=1-{p[3]}=1' for p in combinations(params, 4)]
-    fixed = c1 + c2 + c3 + c4
-    return fixed
+    fixed = [
+        '-'.join([f'{p}=1' for p in c])
+        for n in [1, 2, 3, 4]
+        for c in combinations(params, n)
+    ]
+
+    short = ['EC', 'ED', 'RC', 'RD']
+    names = ['-'.join(c) for n in [1, 2, 3, 4] for c in combinations(short, n)]
+    return fixed, names
 
 
 def print_restricted_models():
     """Print restricted models in a comma-separated list."""
-    fixed = generate_restricted_models()
+    fixed, _ = generate_restricted_models()
     s = ','.join(fixed)
     print(s)
