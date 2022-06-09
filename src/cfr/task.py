@@ -76,6 +76,7 @@ def label_block_category(data):
 
 
 def label_block(data):
+    """Label features of category blocks."""
     # get the index of each contiguous block of same-category items
     labeled = data.copy()
     list_keys = ['subject', 'list', 'trial_type']
