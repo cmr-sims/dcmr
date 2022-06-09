@@ -11,6 +11,8 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
 
+from cfr import task
+
 
 def impute_samples(patterns):
     """Impute missing samples for variables in patterns."""
@@ -230,6 +232,24 @@ def classify_patterns(
         xval = pd.DataFrame(prob, index=test, columns=clf.classes_)
         evidence.loc[test, :] = xval
     return evidence
+
+
+def mark_included_eeg_events(data, eeg_dir, subjects=None):
+    """Mark events that were included in the EEG data."""
+    # load EEG events and use to label whether included or not
+    if subjects is None:
+        subjects, _ = task.get_subjects()
+    events = pd.concat(
+        [pd.read_csv(eeg_dir / f'sub-{subject}_events.csv') for subject in subjects]
+    )
+    events['include'] = True
+
+    # merge to get an array of included trials
+    columns = ['subject', 'list', 'position', 'trial_type']
+    included_columns = columns + ['include']
+    merged = pd.merge(data, events[included_columns], how='outer', on=columns)
+    merged['include'].fillna(False, inplace=True)
+    return merged
 
 
 def label_evidence(data, evidence_keys=None):
