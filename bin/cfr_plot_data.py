@@ -15,7 +15,7 @@ def semantic_crp_plots(data, sim_file, out_dir, kwargs, subj_kwargs):
 
     # read pool information
     sim = task.read_similarity(sim_file)
-    data = task.set_item_index(data, sim['item'])
+    data['item_index'] = fr.pool_index(data['item'], sim['item'])
 
     edges = np.arange(0, 1.01, 0.05)
 

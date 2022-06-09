@@ -190,18 +190,6 @@ def read_similarity(sim_file):
     return sim
 
 
-def set_item_index(data, items):
-    """Set item index based on a pool."""
-    data_index = np.empty(data.shape[0])
-    data_index.fill(np.nan)
-    for idx, item in enumerate(items):
-        match = data['item'] == item
-        if match.any():
-            data_index[match.to_numpy()] = idx
-    data.loc[:, 'item_index'] = data_index
-    return data
-
-
 def save_patterns_sem(use_file, h5_file):
     """Read wiki2USE data and write semantic patterns."""
     patterns, items = vector.load_vectors(use_file)
