@@ -185,6 +185,18 @@ def normalize(patterns, normalization):
     return normalized
 
 
+def _train_test(clf, patterns, labels, train, test, normalization):
+    # deal with undefined features and scale feature ranges
+    train_patterns = normalize(impute_samples(patterns[train]), normalization)
+    test_patterns = normalize(impute_samples(patterns[test]), normalization)
+
+    # calculate class probabilities in test data based on training data
+    clf.fit(train_patterns, labels[train])
+    prob = clf.predict_proba(test_patterns)
+    results = pd.DataFrame(prob, index=test, columns=clf.classes_)
+    return results
+
+
 def classify_patterns(
     trials,
     patterns,
