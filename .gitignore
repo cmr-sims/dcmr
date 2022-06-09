@@ -133,3 +133,6 @@ docs/savefig
 
 # Pycharm
 .idea/
+
+# development Jupyter notebooks
+jupyter/dev/
