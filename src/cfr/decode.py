@@ -214,6 +214,10 @@ def classify_patterns(
     if np.any(np.all(np.isnan(patterns), 1)):
         raise ValueError('One or more observations has only undefined features.')
 
+    logger.info(f'Using {normalization} normalization.')
+    logger.info(
+        f'Using {clf} classifier with {C=} and multiclass strategy {multi_class}.'
+    )
     for i, (train, test) in enumerate(logo.split(patterns, labels, groups)):
         if logger is not None:
             logger.info(f'Running cross-validation fold {i + 1}.')
