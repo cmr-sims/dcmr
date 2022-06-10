@@ -188,7 +188,7 @@ def normalize(patterns, normalization):
 def classify_patterns(
     trials,
     patterns,
-    normalization='z',
+    normalization='range',
     clf='svm',
     multi_class='auto',
     C=1.0,

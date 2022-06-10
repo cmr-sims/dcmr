@@ -71,7 +71,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--normalization',
         '-l',
-        default='z',
+        default='range',
         help='Normalization to apply before classification {"z", "range"}',
     )
     parser.add_argument(
