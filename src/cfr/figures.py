@@ -198,6 +198,21 @@ def plot_swarm_bar(
             ax.legend()
 
 
+def remove_subject_variance(data, var_name, id_vars):
+    """
+    Remove subject variance from a variable for plotting.
+
+    This approach is taken from Loftus & Masson 1994. After removing
+    subject variance, only condition variance and interaction variance
+    will remain; these are generally the components of interest in
+    within-subject designs.
+    """
+    mean = data.groupby(id_vars)[var_name].transform('mean')
+    deviation = mean - data[var_name].mean()
+    normalized = data[var_name] - deviation
+    return normalized
+
+
 def render_fit_html(fit_dir, curves, points, ext='svg'):
     env = jn.Environment(
         loader=jn.PackageLoader('cfr', 'templates'),
