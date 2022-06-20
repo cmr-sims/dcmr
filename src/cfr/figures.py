@@ -297,13 +297,14 @@ def get_param_latex():
         'w1': 'w_2',
         's0': 's_1',
         'logl': r'\mathrm{log}(L)',
+        'logl_test_list': r'\mathrm{log}(L)',
         'aic': r'\mathrm{AIC}',
         'waic': r'\mathrm{wAIC}',
     }
     return latex_names
 
 
-def create_model_table(fit_dir, models, model_names, param_map=None):
+def create_model_table(fit_dir, models, model_names, param_map=None, model_comp='xval'):
     """Create a summary table to compare models."""
     # get free parameters
     df = framework.read_model_specs(fit_dir, models, model_names)
@@ -313,10 +314,16 @@ def create_model_table(fit_dir, models, model_names, param_map=None):
     res = framework.read_model_fits(fit_dir, models, model_names, param_map)
     if param_map is not None:
         free_param = [f for f in free_param if f not in param_map.keys()]
-    res = framework.model_comp_weights(res, stat='aic')
-    fields = np.hstack((free_param, ['n', 'k', 'logl', 'aic', 'waic']))
+
+    if model_comp == 'aic':
+        res = framework.model_comp_weights(res, stat='aic')
+        fields = np.hstack((free_param, ['n', 'k', 'logl', 'aic', 'waic']))
+        mean_only = ['k']
+    elif model_comp == 'xval':
+        res = framework.read_model_xvals(fit_dir, models, model_names)
+        fields = np.hstack((free_param, ['k', 'logl_test_list']))
+        mean_only = ['k']
     table = pd.DataFrame(index=fields, columns=model_names)
-    mean_only = ['k']
 
     # parameter means and sem
     model_stats = res.groupby('model').agg(['mean', 'sem'])
