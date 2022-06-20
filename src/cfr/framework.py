@@ -310,6 +310,10 @@ def read_model_specs(fit_dir, models, model_names=None):
     spec_list = []
     for model in models:
         spec_file = os.path.join(fit_dir, model, 'parameters.json')
+        if not os.path.exists(spec_file):
+            spec_file = os.path.join(fit_dir, model, 'xval_parameters.json')
+            if not os.path.exists(spec_file):
+                raise IOError(f'Parameters file not found: {spec_file}')
         spec = read_model_spec(spec_file)
         spec_list.append(spec)
     model_defs = pd.concat(spec_list, keys=model_names)
