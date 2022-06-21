@@ -301,7 +301,8 @@ def get_param_latex():
         'aic': r'\mathrm{AIC}',
         'waic': r'\mathrm{wAIC}',
     }
-    return latex_names
+    math_format = {k: f'${v}$' for k, v in latex_names.items()}
+    return math_format
 
 
 def create_model_table(fit_dir, models, model_names, param_map=None, model_comp='xval'):
