@@ -329,12 +329,14 @@ def create_model_table(fit_dir, models, model_names, param_map=None, model_comp=
     # parameter means and sem
     model_stats = res.groupby('model').agg(['mean', 'sem'])
     for model in model_names:
+        subset = df.reset_index().query(f"model == '{model}'")
+        not_free_param = subset.query("kind != 'free'")['param'].unique().tolist()
         m = model_stats.loc[model]
         for field in fields:
             f = m[field]
             if np.isnan(f['mean']):
                 table.loc[field, model] = '---'
-            elif field in mean_only:
+            elif field in mean_only + not_free_param:
                 table.loc[field, model] = f"{f['mean']:.0f}"
             else:
                 table.loc[field, model] = f"{f['mean']:.2f} ({f['sem']:.2f})"
