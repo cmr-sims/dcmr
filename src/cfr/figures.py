@@ -296,6 +296,7 @@ def get_param_latex():
         'w0': 'w_1',
         'w1': 'w_2',
         's0': 's_1',
+        'k': 'k',
         'logl': r'\mathrm{log}(L)',
         'logl_test_list': r'\mathrm{log}(L)',
         'aic': r'\mathrm{AIC}',
@@ -318,11 +319,13 @@ def create_model_table(fit_dir, models, model_names, param_map=None, model_comp=
 
     if model_comp == 'aic':
         res = framework.model_comp_weights(res, stat='aic')
-        fields = np.hstack((free_param, ['n', 'k', 'logl', 'aic', 'waic']))
+        stats = ['n', 'k', 'logl', 'aic', 'waic']
+        fields = np.hstack((free_param, stats))
         mean_only = ['k']
     elif model_comp == 'xval':
         res = framework.read_model_xvals(fit_dir, models, model_names)
-        fields = np.hstack((free_param, ['k', 'logl_test_list']))
+        stats = ['k', 'logl_test_list']
+        fields = np.hstack((free_param, stats))
         mean_only = ['k']
     table = pd.DataFrame(index=fields, columns=model_names)
 
@@ -343,5 +346,6 @@ def create_model_table(fit_dir, models, model_names, param_map=None, model_comp=
 
     # rename parameters to latex code
     latex_names = get_param_latex()
-    table.rename(index=latex_names, inplace=True)
-    return table
+    order = [n for n in latex_names.keys() if n in table.index]
+    reordered = table.reindex(order).rename(index=latex_names)
+    return reordered
