@@ -245,7 +245,7 @@ def mark_included_eeg_events(data, eeg_dir, subjects=None):
     if subjects is None:
         subjects, _ = task.get_subjects()
     events = pd.concat(
-        [pd.read_csv(eeg_dir / f'sub-{subject}_events.csv') for subject in subjects]
+        [pd.read_csv(eeg_dir / f'sub-{subject}_decode.csv') for subject in subjects]
     )
     events['include'] = True
 
