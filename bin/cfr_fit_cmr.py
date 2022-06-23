@@ -53,7 +53,8 @@ def main(
     patterns = network.load_patterns(patterns_file)
     if 'item_index' not in data.columns:
         data['item_index'] = fr.pool_index(data['item'], patterns['items'])
-        if data['item_index'].isna().any():
+        study = fr.filter_data(data, trial_type='study')
+        if study['item_index'].isna().any():
             raise ValueError('Patterns not found for one or more items.')
 
     # fix parameters if specified
