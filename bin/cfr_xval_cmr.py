@@ -7,6 +7,7 @@ import argparse
 import logging
 import numpy as np
 import pandas as pd
+from psifr import fr
 from cymr import cmr
 from cymr import network
 from cymr import fit
@@ -65,6 +66,11 @@ def main(
     )
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = network.load_patterns(patterns_file)
+    if 'item_index' not in data.columns:
+        data['item_index'] = fr.pool_index(data['item'], patterns['items'])
+        study = fr.filter_data(data, trial_type='study')
+        if study['item_index'].isna().any():
+            raise ValueError('Patterns not found for one or more items.')
 
     # fix parameters if specified
     if fixed_param is not None:
