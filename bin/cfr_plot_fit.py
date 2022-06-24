@@ -32,12 +32,14 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
     data = task.read_free_recall(data_file, block=False, block_category=False)
     logging.info(f'Loading simulation from {sim_file}.')
     sim = task.read_free_recall(sim_file, block=False, block_category=False)
+    category = 'category' in sim.columns
 
     # prep semantic similarity
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = network.load_patterns(patterns_file)
     rsm = patterns['similarity']['use']
     edges = np.linspace(0.05, 0.95, 10)
+    data['item_index'] = fr.pool_index(data['item'], patterns['items'])
 
     # concatenate for analysis
     full = pd.concat((data, sim), axis=0, keys=['Data', 'Model'])
@@ -60,69 +62,71 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
         fig_dir,
         **kwargs,
     )
-    figures.plot_fit_scatter(
-        full,
-        'source',
-        'use_rank_within',
-        fr.distance_rank,
-        {
-            'index_key': 'item_index',
-            'distances': rsm,
-            'test_key': 'category',
-            'test': lambda x, y: x == y,
-        },
-        'rank',
-        fig_dir,
-        **kwargs,
-    )
-    figures.plot_fit_scatter(
-        full,
-        'source',
-        'use_rank_across',
-        fr.distance_rank,
-        {
-            'index_key': 'item_index',
-            'distances': rsm,
-            'test_key': 'category',
-            'test': lambda x, y: x != y,
-        },
-        'rank',
-        fig_dir,
-        **kwargs,
-    )
+    if category:
+        figures.plot_fit_scatter(
+            full,
+            'source',
+            'use_rank_within',
+            fr.distance_rank,
+            {
+                'index_key': 'item_index',
+                'distances': rsm,
+                'test_key': 'category',
+                'test': lambda x, y: x == y,
+            },
+            'rank',
+            fig_dir,
+            **kwargs,
+        )
+        figures.plot_fit_scatter(
+            full,
+            'source',
+            'use_rank_across',
+            fr.distance_rank,
+            {
+                'index_key': 'item_index',
+                'distances': rsm,
+                'test_key': 'category',
+                'test': lambda x, y: x != y,
+            },
+            'rank',
+            fig_dir,
+            **kwargs,
+        )
     figures.plot_fit_scatter(
         full, 'source', 'lag_rank', fr.lag_rank, {}, 'rank', fig_dir, **kwargs
     )
-    figures.plot_fit_scatter(
-        full,
-        'source',
-        'lag_rank_within',
-        fr.lag_rank,
-        {'test_key': 'category', 'test': lambda x, y: x == y},
-        'rank',
-        fig_dir,
-        **kwargs,
-    )
-    figures.plot_fit_scatter(
-        full,
-        'source',
-        'lag_rank_across',
-        fr.lag_rank,
-        {'test_key': 'category', 'test': lambda x, y: x != y},
-        'rank',
-        fig_dir,
-        **kwargs,
-    )
-    figures.plot_fit_scatter(
-        full,
-        'source',
-        'cat_crp',
-        fr.category_crp,
-        {'category_key': 'category'},
-        'prob',
-        fig_dir,
-        **kwargs,
-    )
+    if category:
+        figures.plot_fit_scatter(
+            full,
+            'source',
+            'lag_rank_within',
+            fr.lag_rank,
+            {'test_key': 'category', 'test': lambda x, y: x == y},
+            'rank',
+            fig_dir,
+            **kwargs,
+        )
+        figures.plot_fit_scatter(
+            full,
+            'source',
+            'lag_rank_across',
+            fr.lag_rank,
+            {'test_key': 'category', 'test': lambda x, y: x != y},
+            'rank',
+            fig_dir,
+            **kwargs,
+        )
+        figures.plot_fit_scatter(
+            full,
+            'source',
+            'cat_crp',
+            fr.category_crp,
+            {'category_key': 'category'},
+            'prob',
+            fig_dir,
+            **kwargs,
+        )
 
     # curves
     logging.info('Plotting fits to curves.')
@@ -138,42 +142,43 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
         fig_dir,
         **kwargs,
     )
-    figures.plot_fit(
-        full,
-        'source',
-        'use_crp_within',
-        fr.distance_crp,
-        {
-            'index_key': 'item_index',
-            'distances': rsm,
-            'edges': edges,
-            'test_key': 'category',
-            'test': lambda x, y: x == y,
-        },
-        'prob',
-        fr.plot_distance_crp,
-        {'min_samples': 10},
-        fig_dir,
-        **kwargs,
-    )
-    figures.plot_fit(
-        full,
-        'source',
-        'use_crp_across',
-        fr.distance_crp,
-        {
-            'index_key': 'item_index',
-            'distances': rsm,
-            'edges': edges,
-            'test_key': 'category',
-            'test': lambda x, y: x != y,
-        },
-        'prob',
-        fr.plot_distance_crp,
-        {'min_samples': 10},
-        fig_dir,
-        **kwargs,
-    )
+    if category:
+        figures.plot_fit(
+            full,
+            'source',
+            'use_crp_within',
+            fr.distance_crp,
+            {
+                'index_key': 'item_index',
+                'distances': rsm,
+                'edges': edges,
+                'test_key': 'category',
+                'test': lambda x, y: x == y,
+            },
+            'prob',
+            fr.plot_distance_crp,
+            {'min_samples': 10},
+            fig_dir,
+            **kwargs,
+        )
+        figures.plot_fit(
+            full,
+            'source',
+            'use_crp_across',
+            fr.distance_crp,
+            {
+                'index_key': 'item_index',
+                'distances': rsm,
+                'edges': edges,
+                'test_key': 'category',
+                'test': lambda x, y: x != y,
+            },
+            'prob',
+            fr.plot_distance_crp,
+            {'min_samples': 10},
+            fig_dir,
+            **kwargs,
+        )
     figures.plot_fit(
         full, 'source', 'spc', fr.spc, {}, 'recall', fr.plot_spc, {}, fig_dir, **kwargs
     )
@@ -201,47 +206,54 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
         fig_dir,
         **kwargs,
     )
-    figures.plot_fit(
-        full,
-        'source',
-        'lag_crp_within',
-        fr.lag_crp,
-        {'test_key': 'category', 'test': lambda x, y: x == y},
-        'prob',
-        fr.plot_lag_crp,
-        {},
-        fig_dir,
-        **kwargs,
-    )
-    figures.plot_fit(
-        full,
-        'source',
-        'lag_crp_across',
-        fr.lag_crp,
-        {'test_key': 'category', 'test': lambda x, y: x != y},
-        'prob',
-        fr.plot_lag_crp,
-        {},
-        fig_dir,
-        **kwargs,
-    )
+    if category:
+        figures.plot_fit(
+            full,
+            'source',
+            'lag_crp_within',
+            fr.lag_crp,
+            {'test_key': 'category', 'test': lambda x, y: x == y},
+            'prob',
+            fr.plot_lag_crp,
+            {},
+            fig_dir,
+            **kwargs,
+        )
+        figures.plot_fit(
+            full,
+            'source',
+            'lag_crp_across',
+            fr.lag_crp,
+            {'test_key': 'category', 'test': lambda x, y: x != y},
+            'prob',
+            fr.plot_lag_crp,
+            {},
+            fig_dir,
+            **kwargs,
+        )
 
     # report
-    curves = [
-        'spc',
-        'pfr',
-        'lag_crp',
-        'lag_crp_within',
-        'lag_crp_across',
-        'use_crp',
-        'use_crp_within',
-        'use_crp_across',
-    ]
-    points = {
-        'lag_rank': ['lag_rank', 'lag_rank_within', 'lag_rank_across'],
-        'cat_crp': ['cat_crp'],
-        'use_rank': ['use_rank', 'use_rank_within', 'use_rank_across'],
-    }
+    if category:
+        curves = [
+            'spc',
+            'pfr',
+            'lag_crp',
+            'lag_crp_within',
+            'lag_crp_across',
+            'use_crp',
+            'use_crp_within',
+            'use_crp_across',
+        ]
+        points = {
+            'lag_rank': ['lag_rank', 'lag_rank_within', 'lag_rank_across'],
+            'cat_crp': ['cat_crp'],
+            'use_rank': ['use_rank', 'use_rank_within', 'use_rank_across'],
+        }
+    else:
+        curves = ['spc', 'pfr', 'lag_crp', 'use_crp']
+        points = {
+            'lag_rank': ['lag_rank'], 'cat_crp': ['cat_crp'], 'use_rank': ['use_rank']
+        }
     os.chdir(fit_dir)
     figures.render_fit_html('.', curves, points)
 
