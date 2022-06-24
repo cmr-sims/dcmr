@@ -51,7 +51,7 @@ def main(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Fit multiple models to a dataset. See cfr_fit_cmr.py for details.'
+        description='Print commands to fit multiple models to a dataset.'
     )
     parser.add_argument('fcf_features')
     parser.add_argument('ff_features')

@@ -51,6 +51,8 @@ def main(
     )
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = network.load_patterns(patterns_file)
+
+    # make sure item indices are defined for looking up patterns
     if 'item_index' not in data.columns:
         data['item_index'] = fr.pool_index(data['item'], patterns['items'])
         study = fr.filter_data(data, trial_type='study')

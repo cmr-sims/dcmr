@@ -50,7 +50,7 @@ def main(model_dir, model_version, model_name, n_jobs=1, subjects=None):
     param_file = os.path.join(fit_dir, 'parameters.json')
     fit_file = os.path.join(fit_dir, 'fit.csv')
 
-    # load best-fitting paramters
+    # load best-fitting parameters
     param_def = parameters.read_json(param_file)
     results = pd.read_csv(fit_file, index_col=0)
     subj_param = results.T.to_dict()
@@ -89,7 +89,9 @@ def main(model_dir, model_version, model_name, n_jobs=1, subjects=None):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Run a simulation and record states of context."
+    )
     parser.add_argument('model_dir', help="Path to main model directory.")
     parser.add_argument('model_version', help="Version of the fit.")
     parser.add_argument('model_name', help="Model name.")

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Pull fit results from TACC.
+# Pull fit results from a local or remote directory.
 
 if [[ $# -lt 2 ]]; then
     echo "Usage:   cfr_pull_fits.sh src dest [rsync flags]"

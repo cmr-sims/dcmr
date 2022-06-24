@@ -63,7 +63,9 @@ def main(out_dir, csv_file, comp_csv=None, group_var=None):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Create plots comparing free recall data from one or more conditions."
+    )
     parser.add_argument('out_dir')
     parser.add_argument('csv_file')
     parser.add_argument('--comp', '-c', help="Comparison data file")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Fit CMR to CFR data.
+# Run cross-validation evaluation of a CMR model.
 
 import os
 import argparse
@@ -66,6 +66,8 @@ def main(
     )
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = network.load_patterns(patterns_file)
+
+    # make sure item index is defined for looking up weight patterns
     if 'item_index' not in data.columns:
         data['item_index'] = fr.pool_index(data['item'], patterns['items'])
         study = fr.filter_data(data, trial_type='study')
@@ -188,7 +190,7 @@ def split_arg(arg):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Run a parameter search to fit a model, then simulate data.'
+        description='Evaluate a model using cross-validation.'
     )
     parser.add_argument('data_file', help='path to Psifr csv data file')
     parser.add_argument('patterns_file', help='path to network patterns')

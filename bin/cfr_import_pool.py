@@ -24,7 +24,9 @@ def main(image_dir, map_file, output_dir, pool_file):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Write a pool information spreadsheet and a standardized image directory."
+    )
     parser.add_argument('image_dir', help="Path to directory with pool images")
     parser.add_argument('map_file', help="Path to pool map file")
     parser.add_argument('output_dir', help="Path to output directory")

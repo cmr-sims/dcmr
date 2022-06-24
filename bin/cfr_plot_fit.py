@@ -264,7 +264,9 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Create an HTML report to evaluate model fit."
+    )
     parser.add_argument('data_file')
     parser.add_argument('patterns_file')
     parser.add_argument('fit_dir')

@@ -159,7 +159,9 @@ def main(csv_file, out_dir, sim_file=None, query=None):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Plot analyses of categorized free recall data."
+    )
     parser.add_argument('csv_file', help="csv file with free recall data")
     parser.add_argument('out_dir', help="directory to save figures")
     parser.add_argument('--similarity', '-s', help="MAT-file with similarity matrix")

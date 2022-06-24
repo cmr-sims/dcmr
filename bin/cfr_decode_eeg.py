@@ -13,6 +13,7 @@ from cfr import decode
 
 
 def decode_subject(patterns_dir, out_dir, subject, **kwargs):
+    """Decode category from EEG patterns for one suject."""
     log_dir = out_dir / 'logs'
     log_dir.mkdir(exist_ok=True)
     log_file = log_dir / f'sub-{subject}_log.txt'
@@ -53,7 +54,9 @@ def main(patterns_dir, out_dir, n_jobs=1, subjects=None, **kwargs):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Decode category from EEG patterns measured during the CFR study."
+    )
     parser.add_argument(
         'patterns_dir', help="Path to directory with patterns to decode."
     )

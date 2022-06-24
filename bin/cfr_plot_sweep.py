@@ -129,7 +129,9 @@ def main(data_file, patterns_file, param1, sweep1, param2, sweep2, res_dir, n_re
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Run a parameter sweep over two parameters and plot results."
+    )
     parser.add_argument('data_file')
     parser.add_argument('patterns_file')
     parser.add_argument('param1')

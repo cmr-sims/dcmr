@@ -22,7 +22,9 @@ def main(fit_name, model_names, n_rep=1):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        "Print commands to simulate multiple models based on best-fitting parameters."
+    )
     parser.add_argument('fit_name')
     parser.add_argument('model_names')
     parser.add_argument('--n-rep', '-r', type=int, default=1)

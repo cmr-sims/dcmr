@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Print commands to run fitting of CFR data.
+# Print commands to run cross-validation of CFR data.
 
 import os
 import argparse
@@ -56,7 +56,7 @@ def main(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Fit multiple models to a dataset. See cfr_fit_cmr.py for details.'
+        description='Print commands to run cross-validation for multiple models.'
     )
     parser.add_argument('fcf_features')
     parser.add_argument('ff_features')
