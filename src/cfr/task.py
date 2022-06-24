@@ -111,6 +111,9 @@ def read_study_recall(csv_file, block=True, block_category=True):
     if 'category' in data.columns:
         data = data.astype({'category': 'category'})
         data.category.cat.as_ordered(inplace=True)
+    else:
+        block = False
+        block_category = False
 
     if block:
         data = label_block(data)
