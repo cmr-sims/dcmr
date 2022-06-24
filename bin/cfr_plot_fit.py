@@ -252,13 +252,15 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
             'cat_crp': ['cat_crp'],
             'use_rank': ['use_rank', 'use_rank_within', 'use_rank_across'],
         }
+        grids = curves.copy()
     else:
         curves = ['spc', 'pfr', 'lag_crp', 'use_crp']
         points = {
             'lag_rank': ['lag_rank'], 'use_rank': ['use_rank']
         }
+        grids = curves.copy()
     os.chdir(fit_dir)
-    figures.render_fit_html('.', curves, points)
+    figures.render_fit_html('.', curves, points, grids)
 
 
 if __name__ == '__main__':

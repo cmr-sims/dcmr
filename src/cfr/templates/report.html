@@ -42,6 +42,20 @@
         </div>
         {% endfor %}
 
+        {% if grids is not none %}
+        <h2>Subject plots</h2>
+
+        {% for analysis, file in grids.items() %}
+        <h3>{{ analysis }}</h3>
+        <div class="panel">
+            <figure>
+                <img src="{{ file }}" alt="{{ analysis }} for each subject">
+                <figcaption>{{ analysis }} for each subject</figcaption>
+            </figure>
+        </div>
+        {% endfor %}
+        {% endif %}
+
         <h2>Tables</h2>
 
         {% for name, table in tables.items() %}

@@ -213,7 +213,7 @@ def remove_subject_variance(data, var_name, id_vars):
     return normalized
 
 
-def render_fit_html(fit_dir, curves, points, ext='svg'):
+def render_fit_html(fit_dir, curves, points, grids=None, ext='svg'):
     env = jn.Environment(
         loader=jn.PackageLoader('cfr', 'templates'),
         autoescape=jn.select_autoescape(['html']),
@@ -240,6 +240,15 @@ def render_fit_html(fit_dir, curves, points, ext='svg'):
         }
         d_point[point] = entry
 
+    # define subject curves to include
+    if grids is not None:
+        d_grid = {
+            grid: os.path.join(fit_dir, 'figs', f'{grid}_subject.{ext}')
+            for grid in grids
+        }
+    else:
+        d_grid = None
+
     # tables
     fit = pd.read_csv(os.path.join(fit_dir, 'fit.csv'))
     opt = {'float_format': '%.2f'}
@@ -257,7 +266,12 @@ def render_fit_html(fit_dir, curves, points, ext='svg'):
 
     # write html
     page = template.render(
-        model=model, curves=d_curve, points=d_point, tables=tables, table_opt=table_opt
+        model=model,
+        curves=d_curve,
+        points=d_point,
+        grids=d_grid,
+        tables=tables,
+        table_opt=table_opt,
     )
     html_file = os.path.join(fit_dir, 'report.html')
     with open(html_file, 'w') as f:
