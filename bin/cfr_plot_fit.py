@@ -6,6 +6,7 @@ import os
 import argparse
 import logging
 import numpy as np
+from scipy.spatial import distance
 import pandas as pd
 import matplotlib
 
@@ -37,7 +38,9 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
     # prep semantic similarity
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = network.load_patterns(patterns_file)
-    rsm = patterns['similarity']['use']
+    distances = distance.squareform(
+        distance.pdist(patterns['vector']['use'], 'correlation')
+    )
     edges = np.linspace(0.05, 0.95, 10)
     data['item_index'] = fr.pool_index(data['item'], patterns['items'])
 
@@ -57,7 +60,7 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
         'source',
         'use_rank',
         fr.distance_rank,
-        {'index_key': 'item_index', 'distances': rsm},
+        {'index_key': 'item_index', 'distances': distances},
         'rank',
         fig_dir,
         **kwargs,
@@ -70,7 +73,7 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
             fr.distance_rank,
             {
                 'index_key': 'item_index',
-                'distances': rsm,
+                'distances': distances,
                 'test_key': 'category',
                 'test': lambda x, y: x == y,
             },
@@ -85,7 +88,7 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
             fr.distance_rank,
             {
                 'index_key': 'item_index',
-                'distances': rsm,
+                'distances': distances,
                 'test_key': 'category',
                 'test': lambda x, y: x != y,
             },
@@ -135,7 +138,7 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
         'source',
         'use_crp',
         fr.distance_crp,
-        {'index_key': 'item_index', 'distances': rsm, 'edges': edges},
+        {'index_key': 'item_index', 'distances': distances, 'edges': edges},
         'prob',
         fr.plot_distance_crp,
         {'min_samples': 10},
@@ -150,7 +153,7 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
             fr.distance_crp,
             {
                 'index_key': 'item_index',
-                'distances': rsm,
+                'distances': distances,
                 'edges': edges,
                 'test_key': 'category',
                 'test': lambda x, y: x == y,
@@ -168,7 +171,7 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
             fr.distance_crp,
             {
                 'index_key': 'item_index',
-                'distances': rsm,
+                'distances': distances,
                 'edges': edges,
                 'test_key': 'category',
                 'test': lambda x, y: x != y,
