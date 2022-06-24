@@ -159,14 +159,14 @@ def main(
         xval_list.append(xval)
 
     # cross-validation summary
-    summary = pd.concat(xval_list, keys=np.arange(1, n_folds + 1))
+    summary = pd.concat(xval_list, keys=folds)
     summary.index.rename(['fold', 'subject'], inplace=True)
     xval_file = os.path.join(res_dir, 'xval.csv')
     logging.info(f'Saving best fitting results to {xval_file}.')
     summary.to_csv(xval_file)
 
     # full search information
-    search = pd.concat(search_list, keys=np.arange(1, n_folds + 1))
+    search = pd.concat(search_list, keys=folds)
     search.index.rename(['fold', 'subject', 'rep'], inplace=True)
     search_file = os.path.join(res_dir, f'xval_search.csv')
     logging.info(f'Saving full search results to {search_file}.')
