@@ -170,7 +170,7 @@ def label_clean_trials(data):
 
     # filter to label clean recalls
     rmerged['intrusion'] = rmerged['intrusion'].fillna(False)
-    clean = rmerged.query('(trial_type == "study") | (~intrusion & repeat == 0)')
+    clean = rmerged.query('(trial_type == "study") | (~intrusion & (repeat == 0))')
     label = np.zeros(data.shape[0], dtype=bool)
     label[clean.index.to_numpy()] = True
     labeled = data.copy()
