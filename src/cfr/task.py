@@ -107,8 +107,10 @@ def read_study_recall(csv_file, block=True, block_category=True):
     if not os.path.exists(csv_file):
         raise ValueError(f'Data file does not exist: {csv_file}')
 
-    data = pd.read_csv(csv_file, dtype={'category': 'category'})
-    data.category.cat.as_ordered(inplace=True)
+    data = pd.read_csv(csv_file)
+    if 'category' in data.columns:
+        data = data.astype({'category': 'category'})
+        data.category.cat.as_ordered(inplace=True)
 
     if block:
         data = label_block(data)
@@ -135,16 +137,14 @@ def read_free_recall(csv_file, block=True, block_category=True):
     recall = data.query('trial_type == "recall"').copy()
 
     # merge study and recall events
-    study_keys = ['item_index', 'category']
+    study_keys = [i for i in ['item_index', 'category'] if i in data]
     if block:
         study_keys += ['block', 'n_block', 'block_pos', 'block_len']
     if block_category:
         study_keys += ['curr', 'prev', 'base']
-    list_keys = ['session']
-    fields = ['list_type', 'list_category', 'distractor']
-    for field in fields:
-        if field in data:
-            list_keys += [field]
+    list_keys = [
+        i for i in ['session', 'list_type', 'list_category', 'distractor'] if i in data
+    ]
     merged = fr.merge_lists(study, recall, list_keys=list_keys, study_keys=study_keys)
     return merged
 
