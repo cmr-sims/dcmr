@@ -6,41 +6,47 @@
         <link rel="stylesheet" href="./.css/bootstrap.min.css" type="text/css">
         <link rel="stylesheet" href="./.css/report.css" type="text/css">
     </head>
+
     <body>
-    <h1>Fit report for {{ model }}</h1>
-    <h2>Figures</h2>
-    {% for curve, files in curves.items() %}
-    <h3>{{ curve }}</h3>
-    <div class="panel">
-        <figure>
-            <img src="{{ files.mean }}" alt="mean {{ curve }} curve">
-            <figcaption>{{ curve }} curves</figcaption>
-        </figure>
-        <figure>
-            <img src="{{ files.comp }}" alt="point comparison of {{ curve }} curve">
-            <figcaption>{{ curve }} point comparison</figcaption>
-        </figure>
-        <figure>
-            <img src="{{ files.subj }}" alt="subject point comparison of {{ curve }} curve">
-            <figcaption>{{ curve }} subject point comparison</figcaption>
-        </figure>
-    </div>
-    {% endfor %}
-    {% for analysis, stats in points.items() %}
-    <h3>{{ analysis }}</h3>
-    <div class="panel">
-        {% for stat, file in stats.items() %}
-        <figure>
-            <img src="{{ file }}" alt="point comparison for {{ stat }}">
-            <figcaption>{{ stat }} comparison</figcaption>
-        </figure>
+        <h1>Fit report for {{ model }}</h1>
+
+        <h2>Summary plots</h2>
+
+        {% for curve, files in curves.items() %}
+        <h3>{{ curve }}</h3>
+        <div class="panel">
+            <figure>
+                <img src="{{ files.mean }}" alt="mean {{ curve }} curve">
+                <figcaption>{{ curve }} curves</figcaption>
+            </figure>
+            <figure>
+                <img src="{{ files.comp }}" alt="point comparison of {{ curve }} curve">
+                <figcaption>{{ curve }} point comparison</figcaption>
+            </figure>
+            <figure>
+                <img src="{{ files.subj }}" alt="subject point comparison of {{ curve }} curve">
+                <figcaption>{{ curve }} subject point comparison</figcaption>
+            </figure>
+        </div>
         {% endfor %}
-    </div>
-    {% endfor %}
-    <h2>Tables</h2>
-    {% for name, table in tables.items() %}
-    <h3>{{ name }}</h3>
-    {{ table.to_html(classes=['table', 'table-hover'], border=0, justify='left', **table_opt[name])|safe }}
-    {% endfor %}
+
+        {% for analysis, stats in points.items() %}
+        <h3>{{ analysis }}</h3>
+        <div class="panel">
+            {% for stat, file in stats.items() %}
+            <figure>
+                <img src="{{ file }}" alt="point comparison for {{ stat }}">
+                <figcaption>{{ stat }} comparison</figcaption>
+            </figure>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <h2>Tables</h2>
+
+        {% for name, table in tables.items() %}
+        <h3>{{ name }}</h3>
+        {{ table.to_html(classes=['table', 'table-hover'], border=0, justify='left', **table_opt[name])|safe }}
+        {% endfor %}
     </body>
 </html>
