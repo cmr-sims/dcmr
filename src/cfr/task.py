@@ -16,6 +16,7 @@ from wikivector import vector
 
 
 def get_subjects():
+    """Get subject IDs and numbers for the CFR study."""
     subject_nos = np.hstack(
         [
             [1, 2, 3, 5, 8],
@@ -179,6 +180,7 @@ def label_clean_trials(data):
 
 
 def unpack_array(x):
+    """Recursively unpack an array with one element."""
     if isinstance(x, np.ndarray):
         x = unpack_array(x[0])
     return x

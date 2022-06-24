@@ -290,6 +290,7 @@ def render_fit_html(fit_dir, curves, points, grids=None, ext='svg'):
 
 
 def get_param_latex():
+    """Get the mapping from parameter names to LaTeX form."""
     latex_names = {
         'Lfc': 'L_{FC}',
         'Lcf': 'L_{CF}',
