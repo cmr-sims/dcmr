@@ -226,7 +226,9 @@ def classify_patterns(
         # deal with undefined features and scale feature ranges
         train_patterns = impute_samples(patterns[train])
         test_patterns = impute_samples(patterns[test])
-        normalized = normalize(np.vstack((train_patterns, test_patterns)), normalization)
+        normalized = normalize(
+            np.vstack((train_patterns, test_patterns)), normalization
+        )
         n = train_patterns.shape[0]
         train_patterns = normalized[:n]
         test_patterns = normalized[n:]

@@ -38,9 +38,8 @@ def main(
     tol=0.00001,
     include=None,
 ):
-    if (
-        (n_folds is None and fold_key is None)
-        or (n_folds is not None and fold_key is not None)
+    if (n_folds is None and fold_key is None) or (
+        n_folds is not None and fold_key is not None
     ):
         raise ValueError('Must specify one of either n_folds or fold_key.')
 

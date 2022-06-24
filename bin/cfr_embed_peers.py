@@ -12,6 +12,7 @@ def main(data_file, out_file, sem_file):
     import pandas as pd
     from psifr import fr
     from cymr import network
+
     try:
         import tensorflow_hub as hub
     except ModuleNotFoundError:
@@ -36,7 +37,9 @@ def main(data_file, out_file, sem_file):
     use_z = stats.zscore(patterns, axis=1) / np.sqrt(patterns.shape[1])
 
     # write patterns to standard format hdf5 file
-    network.save_patterns(out_file, items, loc=loc_patterns, cat=cat_patterns, use=use_z)
+    network.save_patterns(
+        out_file, items, loc=loc_patterns, cat=cat_patterns, use=use_z
+    )
 
 
 if __name__ == "__main__":
