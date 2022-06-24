@@ -4,6 +4,7 @@ from cfr import framework
 
 
 def test_weight_param1():
+    """Weight parameters with one sublayer."""
     wp = framework.model_variant(['loc'], None, sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
     assert wp.weights['fc'] == {(('task', 'item'), ('task', 'loc')): 'Dfc * loc'}
@@ -11,6 +12,7 @@ def test_weight_param1():
 
 
 def test_weight_param2():
+    """Weight parameters with two sublayers."""
     wp = framework.model_variant(['loc', 'cat'], None, sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
     assert wp.weights['fc'] == {
@@ -24,6 +26,7 @@ def test_weight_param2():
 
 
 def test_weight_param3():
+    """Weight parameters with three sublayers."""
     wp = framework.model_variant(['loc', 'cat', 'use'], None, sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
     assert wp.weights['fc'] == {
@@ -39,18 +42,21 @@ def test_weight_param3():
 
 
 def test_item_weight_param1():
+    """Item-item weight parameters with one sublayer."""
     wp = framework.model_variant(['loc'], ['loc'], sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
     assert wp.weights['ff'] == {('task', 'item'): 'Dff * (loc)'}
 
 
 def test_item_weight_param2():
+    """Item-item weight parameters with two sublayers."""
     wp = framework.model_variant(['loc'], ['loc', 'cat'], sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
     assert wp.weights['ff'] == {('task', 'item'): 'Dff * (s_loc * loc + s_cat * cat)'}
 
 
 def test_item_weight_param3():
+    """Item-item weight parameters with three sublayers."""
     wp = framework.model_variant(['loc'], ['loc', 'cat', 'use'], sublayers=False)
     assert wp.sublayers == {'f': ['task'], 'c': ['task']}
     assert wp.weights['ff'] == {
@@ -103,6 +109,7 @@ def test_weight_param_sublayers3():
 
 
 def test_param_sublayers1():
+    """Free sublayer parameter with one sublayer."""
     wp = framework.model_variant(
         ['loc'], None, sublayers=True, sublayer_param=['B_enc']
     )
@@ -113,6 +120,7 @@ def test_param_sublayers1():
 
 
 def test_param_sublayers3():
+    """Free sublayer parameter with three sublayers."""
     wp = framework.model_variant(
         ['loc', 'cat', 'use'], None, sublayers=True, sublayer_param=['B_enc']
     )
@@ -129,6 +137,7 @@ def test_param_sublayers3():
 
 
 def test_learning_param_sublayers():
+    """Free sublayer learning parameter modifies weights."""
     wp = framework.model_variant(
         ['loc', 'cat', 'use'], None, sublayers=True, sublayer_param=['Lcf']
     )

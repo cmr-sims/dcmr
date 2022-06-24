@@ -4,6 +4,7 @@ from cfr import framework
 
 
 def test_scaling_param_w1():
+    """Set one item-context scaling parameter."""
     wp = framework.WeightParameters()
     spar = wp.set_scaling_param('vector', ['loc'])
     assert spar == {'loc': None}
@@ -12,6 +13,7 @@ def test_scaling_param_w1():
 
 
 def test_scaling_param_w2():
+    """Set two item-context scaling parameters."""
     wp = framework.WeightParameters()
     spar = wp.set_scaling_param('vector', ['loc', 'cat'])
     assert spar == {'loc': 'w_loc', 'cat': 'w_cat'}
@@ -25,6 +27,7 @@ def test_scaling_param_w2():
 
 
 def test_scaling_param_w3():
+    """Set three item-context scaling parameters."""
     wp = framework.WeightParameters()
     spar = wp.set_scaling_param('vector', ['loc', 'cat', 'use'], upper=100)
     assert spar == {'loc': 'w_loc', 'cat': 'w_cat', 'use': 'w_use'}
@@ -40,6 +43,7 @@ def test_scaling_param_w3():
 
 
 def test_scaling_param_s1():
+    """Set one item-item scaling parameter."""
     wp = framework.WeightParameters()
     spar = wp.set_scaling_param('similarity', ['loc'])
     assert spar == {'loc': None}
@@ -48,6 +52,7 @@ def test_scaling_param_s1():
 
 
 def test_scaling_param_s2():
+    """Set two item-item scaling parameters."""
     wp = framework.WeightParameters()
     spar = wp.set_scaling_param('similarity', ['loc', 'cat'])
     assert spar == {'loc': 's_loc', 'cat': 's_cat'}
@@ -61,6 +66,7 @@ def test_scaling_param_s2():
 
 
 def test_scaling_param_s3():
+    """Set three item-item scaling parameters."""
     wp = framework.WeightParameters()
     spar = wp.set_scaling_param('similarity', ['loc', 'cat', 'use'], upper=100)
     assert spar == {'loc': 's_loc', 'cat': 's_cat', 'use': 's_use'}
@@ -76,6 +82,7 @@ def test_scaling_param_s3():
 
 
 def test_region_weights():
+    """Set region weights with component scaling."""
     wp = framework.WeightParameters()
     spar = wp.set_scaling_param('vector', ['loc', 'cat', 'use'])
     wp.set_region_weights('fc', spar, 'Dfc')
@@ -87,6 +94,7 @@ def test_region_weights():
 
 
 def test_sublayer_weights():
+    """Set sublayer weights with component scaling."""
     wp = framework.WeightParameters()
     spar = wp.set_scaling_param('vector', ['loc', 'cat', 'use'])
     wp.set_sublayer_weights('fc', spar, 'Dfc')
@@ -98,6 +106,7 @@ def test_sublayer_weights():
 
 
 def test_item_weights():
+    """Set item-item weights with component scaling."""
     wp = framework.WeightParameters()
     spar = wp.set_scaling_param('similarity', ['loc', 'cat', 'use'])
     wp.set_item_weights(spar, 'Dff')

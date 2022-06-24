@@ -8,6 +8,7 @@ import pytest
 
 @pytest.fixture()
 def patterns():
+    """Create test patterns and labels."""
     vectors = np.array(
         [
             [-0.1022, -1.2141, 1.5442],
@@ -31,9 +32,12 @@ def patterns():
 
 
 def test_logreg1(patterns):
+    """Test logistic regression of one class vs others."""
     train = patterns['chunks'] == 1
     labels = patterns['labels'][train]
     x = patterns['vectors'][train, :].T
+
+    # taken from Matlab implementation of Princeton MVPA toolbox
     expected = np.array([[0.0016], [-0.1482], [0.0955]])
     y = np.zeros((1, len(labels)))
     y[:, labels == 1] = 1
@@ -45,6 +49,8 @@ def test_logreg1(patterns):
 
 
 def test_prob(patterns):
+    """Test probability based on logistic regression."""
+    # taken from Matlab implementation of Princeton MVPA toolbox
     expected = [
         [0.4936, 0.5165, 0.4898],
         [0.4767, 0.5264, 0.5107],
@@ -69,6 +75,7 @@ def test_prob(patterns):
 def test_preprocessing(patterns):
     """Test pattern preprocessing."""
     flattened = patterns['vectors']
+    # set samples to impute
     flattened[[0, 2, 2, 6], [1, 0, 2, 0]] = np.nan
     imputed = decode.impute_samples(patterns['vectors'])
     normalized = decode.normalize(imputed, 'range')
