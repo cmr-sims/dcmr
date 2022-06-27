@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from cymr import cmr
-from cymr import network
 from cfr import framework
 from psifr import fr
 
@@ -19,7 +18,7 @@ def main(data_file, patterns_file, param1, sweep1, param2, sweep2, res_dir, n_re
     data = pd.read_csv(data_file)
     model = cmr.CMR()
     param_def = framework.model_variant(['loc', 'cat', 'use'], None)
-    patterns = network.load_patterns(patterns_file)
+    patterns = cmr.load_patterns(patterns_file)
 
     # fixed parameters
     fixed = {
