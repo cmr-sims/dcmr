@@ -12,7 +12,7 @@ import matplotlib
 
 matplotlib.use('Agg')
 from psifr import fr
-from cymr import network
+from cymr import cmr
 from cfr import task
 from cfr import figures
 
@@ -37,7 +37,7 @@ def main(data_file, patterns_file, fit_dir, ext='svg'):
 
     # prep semantic similarity
     logging.info(f'Loading network patterns from {patterns_file}.')
-    patterns = network.load_patterns(patterns_file)
+    patterns = cmr.load_patterns(patterns_file)
     distances = distance.squareform(
         distance.pdist(patterns['vector']['use'], 'correlation')
     )

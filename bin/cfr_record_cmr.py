@@ -9,8 +9,6 @@ import json
 import numpy as np
 import pandas as pd
 
-from cymr import parameters
-from cymr import network
 from cymr import cmr
 from cfr import task
 
@@ -51,12 +49,12 @@ def main(model_dir, model_version, model_name, n_jobs=1, subjects=None):
     fit_file = os.path.join(fit_dir, 'fit.csv')
 
     # load best-fitting parameters
-    param_def = parameters.read_json(param_file)
+    param_def = cmr.read_config(param_file)
     results = pd.read_csv(fit_file, index_col=0)
     subj_param = results.T.to_dict()
 
     # prepare simulation
-    patterns = network.load_patterns(pattern_file)
+    patterns = cmr.load_patterns(pattern_file)
     data = pd.read_csv(data_file)
     labeled = task.label_clean_trials(data)
     clean = labeled.query('clean').reset_index()

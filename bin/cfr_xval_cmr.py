@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 from psifr import fr
 from cymr import cmr
-from cymr import network
 from cymr import fit
 from cfr import framework
 
@@ -64,7 +63,7 @@ def main(
         fcf_features, ff_features, sublayers=sublayers, sublayer_param=sublayer_param
     )
     logging.info(f'Loading network patterns from {patterns_file}.')
-    patterns = network.load_patterns(patterns_file)
+    patterns = cmr.load_patterns(patterns_file)
 
     # make sure item index is defined for looking up weight patterns
     if 'item_index' not in data.columns:

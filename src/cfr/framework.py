@@ -5,11 +5,11 @@ import json
 from itertools import combinations
 import numpy as np
 import pandas as pd
-from cymr.parameters import Parameters
+from cymr.cmr import CMRParameters
 from cfr import task
 
 
-class WeightParameters(Parameters):
+class WeightParameters(CMRParameters):
     """
     Manage CFR parameters.
 

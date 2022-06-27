@@ -6,8 +6,6 @@ import os
 import argparse
 import pandas as pd
 from cymr import cmr
-from cymr import network
-from cymr import parameters
 from cfr import framework
 
 
@@ -22,9 +20,9 @@ def main(data_file, patterns_file, fit_dir, n_rep=1):
 
     # get model, patterns, and weights
     model = cmr.CMR()
-    patterns = network.load_patterns(patterns_file)
+    patterns = cmr.load_patterns(patterns_file)
     param_file = os.path.join(fit_dir, 'parameters.json')
-    param_def = parameters.read_json(param_file)
+    param_def = cmr.read_config(param_file)
 
     # load parameters
     fit_file = os.path.join(fit_dir, 'fit.csv')
