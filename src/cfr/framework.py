@@ -371,7 +371,9 @@ def read_model_sims(
         model_names = models
 
     data_list = []
-    obs_data = task.read_free_recall(data_file)
+    obs_data = task.read_free_recall(
+        data_file, block=block, block_category=block_category
+    )
     for model in models:
         sim_file = os.path.join(fit_dir, model, 'sim.csv')
         sim_data = task.read_free_recall(
