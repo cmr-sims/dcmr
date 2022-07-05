@@ -117,6 +117,15 @@ class WeightParameters(CMRParameters):
         self.set_dependent(rescaled)
         return scaling_param
 
+    def set_intercept_param(self, connects, lower, upper):
+        """Set intercept parameters."""
+        intercept_param = {}
+        for connect in connects:
+            new_param = f'A{connect}'
+            intercept_param[connect] = new_param
+            self.set_free({new_param: (lower, upper)})
+        return intercept_param
+
     def set_region_weights(self, connect, scaling_param, pre_param):
         """Sets weights within sublayer regions."""
         for weight, scaling in scaling_param.items():
