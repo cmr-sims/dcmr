@@ -242,7 +242,13 @@ class WeightParameters(CMRParameters):
                 del self.free[param]
 
 
-def model_variant(fcf_features, ff_features=None, sublayers=False, sublayer_param=None):
+def model_variant(
+    fcf_features,
+    ff_features=None,
+    sublayers=False,
+    sublayer_param=None,
+    intercept=False,
+):
     """Define parameters for a model variant."""
     wp = WeightParameters()
     wp.set_fixed(T=0.1)
@@ -258,6 +264,11 @@ def model_variant(fcf_features, ff_features=None, sublayers=False, sublayer_para
         X2=(0, 5),
     )
     wp.set_dependent(Dfc='1 - Lfc', Dcf='1 - Lcf')
+
+    if intercept:
+        intercept_param = wp.set_intercept_param(['ff'], -1, 1)
+    else:
+        intercept_param = None
 
     if fcf_features:
         # set global weight scaling
@@ -294,8 +305,12 @@ def model_variant(fcf_features, ff_features=None, sublayers=False, sublayer_para
 
     if ff_features:
         scaling_param = wp.set_scaling_param('similarity', ff_features)
-        wp.set_item_weights(scaling_param, 'Dff')
+        wp.set_item_weights(scaling_param, 'Dff', intercept_param)
         wp.set_free(Dff=(0, 10))
+    elif intercept_param is not None:
+        intercept = intercept_param['ff']
+        expr = f'{intercept} * ones(loc.shape)'
+        wp.set_weights('ff', {('task', 'item'): expr})
     return wp
 
 
