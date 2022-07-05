@@ -135,17 +135,36 @@ class WeightParameters(CMRParameters):
                 expr = f'{pre_param} * {weight}'
             self.set_weights(connect, {(('task', 'item'), ('task', weight)): expr})
 
-    def set_sublayer_weights(self, connect, scaling_param, pre_param):
+    def set_sublayer_weights(
+        self, connect, scaling_param, pre_param, intercept_param=None
+    ):
         """Set weights for different sublayers."""
         for weight, scaling in scaling_param.items():
+            # get pre weighting parameter
             if isinstance(pre_param, str):
                 pre = pre_param
             else:
                 pre = pre_param[weight]
-            if scaling is not None:
-                expr = f'{pre} * {scaling} * {weight}'
+
+            # get intercept parameter, if any
+            if intercept_param is None:
+                intercept = None
+            elif isinstance(intercept_param, str):
+                intercept = intercept_param
             else:
-                expr = f'{pre} * {weight}'
+                intercept = intercept_param[weight]
+
+            # set weights expression
+            if scaling is not None:
+                if intercept is not None:
+                    expr = f'{intercept} + {pre} * {scaling} * {weight}'
+                else:
+                    expr = f'{pre} * {scaling} * {weight}'
+            else:
+                if intercept is not None:
+                    expr = f'{intercept} + {pre} * {weight}'
+                else:
+                    expr = f'{pre} * {weight}'
             self.set_weights(connect, {(('task', 'item'), (weight, 'item')): expr})
 
     def set_item_weights(self, scaling_param, pre_param):
