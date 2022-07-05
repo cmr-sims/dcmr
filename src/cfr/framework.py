@@ -167,7 +167,7 @@ class WeightParameters(CMRParameters):
                     expr = f'{pre} * {weight}'
             self.set_weights(connect, {(('task', 'item'), (weight, 'item')): expr})
 
-    def set_item_weights(self, scaling_param, pre_param):
+    def set_item_weights(self, scaling_param, pre_param, intercept_param=None):
         """Set item-item weights."""
         weight_expr = []
         for weight, scaling in scaling_param.items():
@@ -177,7 +177,10 @@ class WeightParameters(CMRParameters):
                 expr = weight
             weight_expr.append(expr)
         expr = ' + '.join(weight_expr)
-        w_expr = f'{pre_param} * ({expr})'
+        if intercept_param is None:
+            w_expr = f'{pre_param} * ({expr})'
+        else:
+            w_expr = f'{intercept_param["ff"]} + {pre_param} * ({expr})'
         self.set_weights('ff', {('task', 'item'): w_expr})
 
     def set_learning_sublayer_param(self, L_name, D_name):
