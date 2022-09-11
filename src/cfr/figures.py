@@ -470,7 +470,15 @@ def plot_slope_evidence(slope):
         ax=ax,
     )
     g = sns.pointplot(
-        data=ml_slopes, x='category', y='slope', color='k', join=False, zorder=2, ax=ax
+        data=ml_slopes,
+        x='category',
+        y='slope',
+        color='k',
+        join=False,
+        zorder=2,
+        ax=ax,
+        capsize=.4,
+        scale=1.25,
     )
     g.set_xticklabels(['Current', 'Previous', 'Baseline'], fontsize='large')
     g.set(xlabel='', ylabel='Evidence slope')
