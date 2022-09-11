@@ -447,3 +447,29 @@ def plot_mean_block_pos_evidence(mean_evidence):
     ax[0].set(ylabel='Evidence', xlabel='Block position', xticks=[1, 2, 3])
     ax[1].set(ylabel='', xlabel='Block position', xticks=[1, 2, 3], xlim=[0.75, 3.25])
     return fig, ax
+
+
+def plot_slope_evidence(slope):
+    """Plot evidence slope by category type."""
+    ml_slopes = pd.melt(
+        slope,
+        value_vars=['curr', 'prev', 'base'],
+        var_name='category',
+        value_name='slope',
+    )
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    sns.stripplot(
+        data=ml_slopes, x='category', y='slope', palette=['C2', 'C0', 'C1'],
+        zorder=1, ax=ax
+    )
+    g = sns.pointplot(
+        data=ml_slopes, x='category', y='slope', color='k', join=False,
+        zorder=2, ax=ax
+    )
+    g.set_xticklabels(['Current', 'Previous', 'Baseline'], fontsize='large')
+    g.set(xlabel='', ylabel='Evidence slope')
+    x_lim = ax.get_xlim()
+    ax.hlines(0, *x_lim, colors='k')
+    ax.set(xlim=x_lim)
+    return fig, ax
