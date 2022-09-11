@@ -241,6 +241,18 @@ def classify_patterns(
     return evidence
 
 
+def read_evidence(class_dir, subjects):
+    """Read classifier evidence for multiple subjects."""
+    evidence = pd.concat(
+        [
+            pd.read_csv(
+                class_dir / f'sub-{subject}_decode.csv', index_col=0
+            ) for subject in subjects
+        ], axis=0, ignore_index=True
+    )
+    return evidence
+
+
 def mark_included_eeg_events(data, eeg_dir, subjects=None):
     """Mark events that were included in the EEG data."""
     # load EEG events and use to label whether included or not
