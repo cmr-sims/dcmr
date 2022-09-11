@@ -389,3 +389,26 @@ def plot_trial_evidence(evidence, subject):
     g.set_xlabels('Serial position')
     g.set_ylabels('Evidence')
     return g
+
+
+def plot_block_pos_evidence(mean_evidence):
+    """Plot mean evidence by block position."""
+    ml = pd.melt(
+        mean_evidence.reset_index(),
+        id_vars=['subject', 'block_pos'],
+        value_vars=['curr', 'prev', 'base'],
+        var_name='category', value_name='evidence',
+    )
+    g = sns.relplot(
+        data=ml,
+        x='block_pos',
+        y='evidence',
+        hue='category',
+        col='subject',
+        col_wrap=5,
+        kind='line',
+        height=4,
+    )
+    g.set_xlabels('Block position')
+    g.set_ylabels('Evidence')
+    return g
