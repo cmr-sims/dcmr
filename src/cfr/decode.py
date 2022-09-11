@@ -275,6 +275,24 @@ def label_evidence(data, evidence_keys=None):
     return results
 
 
+def evidence_block_pos(data):
+    """Get mean evidence by block position."""
+    # get study events, excluding the first blocks where previous
+    # and baseline categories are undefined
+    included = data.query('block > 1 and trial_type == "study"')
+
+    # reorganize classifier evidence by block category (curr, prev, base)
+    labeled = label_evidence(included)
+    labeled['subject'] = included['subject']
+    labeled['block_pos'] = included['block_pos']
+
+    # get average evidence and event counts
+    block_pos = labeled.groupby(['subject', 'block_pos'])
+    mean_evidence = block_pos[['curr', 'prev', 'base']].mean()
+    mean_evidence['n'] = block_pos['curr'].count()
+    return mean_evidence
+
+
 def _regress_subject(data, evidence_keys):
     """Regress evidence for one subject."""
     n = data['n'].to_numpy()
