@@ -427,7 +427,7 @@ def plot_mean_block_pos_evidence(mean_evidence):
     ml['Category'] = ml['category'].map(
         {'curr': 'Current', 'prev': 'Previous', 'base': 'Baseline'}
     )
-    fig, ax = plt.subplots(1, 2, figsize=(10, 4.5), sharex=True)
+    fig, ax = plt.subplots(1, 2, figsize=(10, 5), sharex=True)
     sns.lineplot(
         data=ml.query('category == "curr" and block_pos <= 3'),
         x='block_pos',
