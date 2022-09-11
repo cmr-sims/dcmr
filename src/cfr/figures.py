@@ -412,3 +412,38 @@ def plot_block_pos_evidence(mean_evidence):
     g.set_xlabels('Block position')
     g.set_ylabels('Evidence')
     return g
+
+
+def plot_mean_block_pos_evidence(mean_evidence):
+    """Plot group mean evidence by block position."""
+    ml = pd.melt(
+        mean_evidence.reset_index(),
+        id_vars=['subject', 'block_pos'],
+        value_vars=['curr', 'prev', 'base'],
+        var_name='category', value_name='evidence',
+    )
+    ml['Category'] = ml['category'].map(
+        {'curr': 'Current', 'prev': 'Previous', 'base': 'Baseline'}
+    )
+    fig, ax = plt.subplots(1, 2, figsize=(10, 4.5), sharex=True)
+    sns.lineplot(
+        data=ml.query('category == "curr" and block_pos <= 3'),
+        x='block_pos',
+        y='evidence',
+        hue='Category',
+        palette=['C2'],
+        ci=None,
+        ax=ax[0]
+    )
+    sns.lineplot(
+        data=ml.query('category != "curr" and block_pos <= 3'),
+        x='block_pos',
+        y='evidence',
+        hue='Category',
+        palette=['C0', 'C1'],
+        ci=None,
+        ax=ax[1]
+    )
+    ax[0].set(ylabel='Evidence', xlabel='Block position', xticks=[1, 2, 3])
+    ax[1].set(ylabel='', xlabel='Block position', xticks=[1, 2, 3], xlim=[0.75, 3.25])
+    return fig, ax
