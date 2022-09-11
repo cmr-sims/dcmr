@@ -461,7 +461,7 @@ def plot_slope_evidence(slope):
     )
 
     fig, ax = plt.subplots(figsize=(5, 5))
-    sns.stripplot(
+    sns.swarmplot(
         data=ml_slopes,
         x='category',
         y='slope',
