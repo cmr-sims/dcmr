@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import jinja2 as jn
+from psifr import fr
 from cfr import framework
 
 
@@ -364,3 +365,27 @@ def create_model_table(fit_dir, models, model_names, param_map=None, model_comp=
     order = [n for n in latex_names.keys() if n in table.index]
     reordered = table.reindex(order).rename(index=latex_names)
     return reordered
+
+
+def plot_trial_evidence(evidence, subject):
+    """Plot evidence for each category by trial."""
+    ml = pd.melt(
+        fr.filter_data(evidence, subjects=subject),
+        id_vars=['subject', 'list', 'position', 'trial_type'],
+        value_vars=['cel', 'loc', 'obj'],
+        var_name='category',
+        value_name='evidence',
+    )
+    g = sns.relplot(
+        data=ml,
+        kind='line',
+        x='position',
+        y='evidence',
+        hue='category',
+        col='list',
+        col_wrap=6,
+        height=3,
+    )
+    g.set_xlabels('Serial position')
+    g.set_ylabels('Evidence')
+    return g
