@@ -397,7 +397,8 @@ def plot_block_pos_evidence(mean_evidence):
         mean_evidence.reset_index(),
         id_vars=['subject', 'block_pos'],
         value_vars=['curr', 'prev', 'base'],
-        var_name='category', value_name='evidence',
+        var_name='category',
+        value_name='evidence',
     )
     g = sns.relplot(
         data=ml,
@@ -420,7 +421,8 @@ def plot_mean_block_pos_evidence(mean_evidence):
         mean_evidence.reset_index(),
         id_vars=['subject', 'block_pos'],
         value_vars=['curr', 'prev', 'base'],
-        var_name='category', value_name='evidence',
+        var_name='category',
+        value_name='evidence',
     )
     ml['Category'] = ml['category'].map(
         {'curr': 'Current', 'prev': 'Previous', 'base': 'Baseline'}
@@ -433,7 +435,7 @@ def plot_mean_block_pos_evidence(mean_evidence):
         hue='Category',
         palette=['C2'],
         ci=None,
-        ax=ax[0]
+        ax=ax[0],
     )
     sns.lineplot(
         data=ml.query('category != "curr" and block_pos <= 3'),
@@ -442,7 +444,7 @@ def plot_mean_block_pos_evidence(mean_evidence):
         hue='Category',
         palette=['C0', 'C1'],
         ci=None,
-        ax=ax[1]
+        ax=ax[1],
     )
     ax[0].set(ylabel='Evidence', xlabel='Block position', xticks=[1, 2, 3])
     ax[1].set(ylabel='', xlabel='Block position', xticks=[1, 2, 3], xlim=[0.75, 3.25])
@@ -460,12 +462,15 @@ def plot_slope_evidence(slope):
 
     fig, ax = plt.subplots(figsize=(5, 5))
     sns.stripplot(
-        data=ml_slopes, x='category', y='slope', palette=['C2', 'C0', 'C1'],
-        zorder=1, ax=ax
+        data=ml_slopes,
+        x='category',
+        y='slope',
+        palette=['C2', 'C0', 'C1'],
+        zorder=1,
+        ax=ax,
     )
     g = sns.pointplot(
-        data=ml_slopes, x='category', y='slope', color='k', join=False,
-        zorder=2, ax=ax
+        data=ml_slopes, x='category', y='slope', color='k', join=False, zorder=2, ax=ax
     )
     g.set_xticklabels(['Current', 'Previous', 'Baseline'], fontsize='large')
     g.set(xlabel='', ylabel='Evidence slope')

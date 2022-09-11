@@ -245,10 +245,11 @@ def read_evidence(class_dir, subjects):
     """Read classifier evidence for multiple subjects."""
     evidence = pd.concat(
         [
-            pd.read_csv(
-                class_dir / f'sub-{subject}_decode.csv', index_col=0
-            ) for subject in subjects
-        ], axis=0, ignore_index=True
+            pd.read_csv(class_dir / f'sub-{subject}_decode.csv', index_col=0)
+            for subject in subjects
+        ],
+        axis=0,
+        ignore_index=True,
     )
     return evidence
 
