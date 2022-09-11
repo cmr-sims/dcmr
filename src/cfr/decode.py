@@ -241,6 +241,19 @@ def classify_patterns(
     return evidence
 
 
+def read_evidence(class_dir, subjects):
+    """Read classifier evidence for multiple subjects."""
+    evidence = pd.concat(
+        [
+            pd.read_csv(class_dir / f'sub-{subject}_decode.csv', index_col=0)
+            for subject in subjects
+        ],
+        axis=0,
+        ignore_index=True,
+    )
+    return evidence
+
+
 def mark_included_eeg_events(data, eeg_dir, subjects=None):
     """Mark events that were included in the EEG data."""
     # load EEG events and use to label whether included or not
@@ -273,6 +286,24 @@ def label_evidence(data, evidence_keys=None):
             d[evidence][include] = data.loc[include, category]
     results = pd.DataFrame(d, index=data.index)
     return results
+
+
+def evidence_block_pos(data):
+    """Get mean evidence by block position."""
+    # get study events, excluding the first blocks where previous
+    # and baseline categories are undefined
+    included = data.query('block > 1 and trial_type == "study"')
+
+    # reorganize classifier evidence by block category (curr, prev, base)
+    labeled = label_evidence(included)
+    labeled['subject'] = included['subject']
+    labeled['block_pos'] = included['block_pos']
+
+    # get average evidence and event counts
+    block_pos = labeled.groupby(['subject', 'block_pos'])
+    mean_evidence = block_pos[['curr', 'prev', 'base']].mean()
+    mean_evidence['n'] = block_pos['curr'].count()
+    return mean_evidence
 
 
 def _regress_subject(data, evidence_keys):

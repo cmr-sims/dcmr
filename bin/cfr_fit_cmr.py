@@ -18,6 +18,7 @@ def main(
     fcf_features,
     ff_features,
     sublayers,
+    intercept,
     res_dir,
     sublayer_param=None,
     fixed_param=None,
@@ -46,7 +47,11 @@ def main(
     # set parameter definitions based on model framework
     model = cmr.CMR()
     param_def = framework.model_variant(
-        fcf_features, ff_features, sublayers=sublayers, sublayer_param=sublayer_param
+        fcf_features,
+        ff_features,
+        sublayers=sublayers,
+        sublayer_param=sublayer_param,
+        intercept=intercept,
     )
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
@@ -147,6 +152,11 @@ if __name__ == '__main__':
     )
     parser.add_argument('res_dir', help='directory to save results')
     parser.add_argument(
+        '--intercept',
+        '-c',
+        action='store_true'
+    )
+    parser.add_argument(
         '--sublayers',
         '-s',
         action='store_true',
@@ -207,6 +217,7 @@ if __name__ == '__main__':
         fcf,
         ff,
         args.sublayers,
+        args.intercept,
         args.res_dir,
         subpar,
         fixed,

@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import jinja2 as jn
+from psifr import fr
 from cfr import framework
 
 
@@ -364,3 +365,124 @@ def create_model_table(fit_dir, models, model_names, param_map=None, model_comp=
     order = [n for n in latex_names.keys() if n in table.index]
     reordered = table.reindex(order).rename(index=latex_names)
     return reordered
+
+
+def plot_trial_evidence(evidence, subject):
+    """Plot evidence for each category by trial."""
+    ml = pd.melt(
+        fr.filter_data(evidence, subjects=subject),
+        id_vars=['subject', 'list', 'position', 'trial_type'],
+        value_vars=['cel', 'loc', 'obj'],
+        var_name='category',
+        value_name='evidence',
+    )
+    g = sns.relplot(
+        data=ml,
+        kind='line',
+        x='position',
+        y='evidence',
+        hue='category',
+        col='list',
+        col_wrap=6,
+        height=3,
+    )
+    g.set_xlabels('Serial position')
+    g.set_ylabels('Evidence')
+    return g
+
+
+def plot_block_pos_evidence(mean_evidence):
+    """Plot mean evidence by block position."""
+    ml = pd.melt(
+        mean_evidence.reset_index(),
+        id_vars=['subject', 'block_pos'],
+        value_vars=['curr', 'prev', 'base'],
+        var_name='category',
+        value_name='evidence',
+    )
+    g = sns.relplot(
+        data=ml,
+        x='block_pos',
+        y='evidence',
+        hue='category',
+        col='subject',
+        col_wrap=5,
+        kind='line',
+        height=4,
+    )
+    g.set_xlabels('Block position')
+    g.set_ylabels('Evidence')
+    return g
+
+
+def plot_mean_block_pos_evidence(mean_evidence):
+    """Plot group mean evidence by block position."""
+    ml = pd.melt(
+        mean_evidence.reset_index(),
+        id_vars=['subject', 'block_pos'],
+        value_vars=['curr', 'prev', 'base'],
+        var_name='category',
+        value_name='evidence',
+    )
+    ml['Category'] = ml['category'].map(
+        {'curr': 'Current', 'prev': 'Previous', 'base': 'Baseline'}
+    )
+    fig, ax = plt.subplots(1, 2, figsize=(10, 5), sharex=True)
+    sns.lineplot(
+        data=ml.query('category == "curr" and block_pos <= 3'),
+        x='block_pos',
+        y='evidence',
+        hue='Category',
+        palette=['C2'],
+        ci=None,
+        ax=ax[0],
+    )
+    sns.lineplot(
+        data=ml.query('category != "curr" and block_pos <= 3'),
+        x='block_pos',
+        y='evidence',
+        hue='Category',
+        palette=['C0', 'C1'],
+        ci=None,
+        ax=ax[1],
+    )
+    ax[0].set(ylabel='Evidence', xlabel='Block position', xticks=[1, 2, 3])
+    ax[1].set(ylabel='', xlabel='Block position', xticks=[1, 2, 3], xlim=[0.75, 3.25])
+    return fig, ax
+
+
+def plot_slope_evidence(slope):
+    """Plot evidence slope by category type."""
+    ml_slopes = pd.melt(
+        slope,
+        value_vars=['curr', 'prev', 'base'],
+        var_name='category',
+        value_name='slope',
+    )
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    sns.swarmplot(
+        data=ml_slopes,
+        x='category',
+        y='slope',
+        palette=['C2', 'C0', 'C1'],
+        zorder=1,
+        ax=ax,
+    )
+    g = sns.pointplot(
+        data=ml_slopes,
+        x='category',
+        y='slope',
+        color='k',
+        join=False,
+        zorder=2,
+        ax=ax,
+        capsize=.4,
+        scale=1.25,
+    )
+    g.set_xticklabels(['Current', 'Previous', 'Baseline'], fontsize='large')
+    g.set(xlabel='', ylabel='Evidence slope')
+    x_lim = ax.get_xlim()
+    ax.hlines(0, *x_lim, colors='k')
+    ax.set(xlim=x_lim)
+    return fig, ax
