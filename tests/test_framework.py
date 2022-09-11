@@ -158,3 +158,17 @@ def test_learning_param_sublayers():
             'use': {'Lfc': 'Lfc_use', 'Lcf': 'Lcf_use'},
         }
     }
+
+
+def test_intercept_param_no_item_weights():
+    """Add an intercept to a model with no item weights."""
+    wp = framework.model_variant(['loc', 'cat'], None, sublayers=True, intercept=True)
+    assert 'Aff' in wp.free
+    assert wp.weights['ff'][('task', 'item')] == 'Aff * ones(loc.shape)'
+
+
+def test_intercept_param_with_item_weights():
+    """Add an intercept to a model with item weights."""
+    wp = framework.model_variant(['loc', 'cat'], ['use'], sublayers=True, intercept=True)
+    assert 'Aff' in wp.free
+    assert wp.weights['ff'][('task', 'item')] == 'Aff + Dff * (use)'
