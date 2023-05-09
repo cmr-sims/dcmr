@@ -1,3 +1,42 @@
+[project]
+name = "cfr"
+version = "0.1.0"
+authors = [
+    {name = "Neal W Morton", email = "mortonne@gmail.com"},
+    {name = "Sean M. Polyn", email = "sean.polyn@vanderbilt.edu"}
+]
+description = "CMR-CFR: Context Maintenance and Retrieval model of categorized free recall"
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["modeling", "memory", "EEG"]
+license = {text = "GPL-3.0-or-later"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+    "numpy",
+    "scipy",
+    "pandas",
+    "joblib",
+    "matplotlib>=3.5",
+    "seaborn",
+    "scikit-image",
+    "scikit-learn",
+    "psifr",
+    "cymr",
+    "wikivector",
+    "jinja2",
+    "pingouin",
+    "ezlaunch",
+    "mindstorm",
+    "watermark"
+]
+
+[project.scripts]
+cfr_restricted_models = "cfr.framework:print_restricted_models"
+
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
