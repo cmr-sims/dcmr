@@ -946,6 +946,30 @@ def expand_variants(fcf_features, ff_features, sublayer_param, fixed_param):
     return fcf_list, ff_list, sub_list, fix_list
 
 
+def generate_model_name(
+    fcf_features,
+    ff_features,
+    sublayers,
+    subpar,
+    fixed,
+):
+    """Generate standard model name from configuration."""
+    if sublayers:
+        res_name = 'cmrs'
+    else:
+        res_name = 'cmr'
+
+    if fcf_features and fcf_features != 'none':
+        res_name += f'_fcf-{fcf_features}'
+    if ff_features and ff_features != 'none':
+        res_name += f'_ff-{ff_features}'
+    if subpar:
+        res_name += f'_sl-{subpar}'
+    if fixed:
+        res_name += f'_fix-{fixed.replace("=", "")}'
+    return res_name
+
+
 def command_fit_cmr(
     fcf_features,
     ff_features,
@@ -966,25 +990,18 @@ def command_fit_cmr(
     data_file = os.path.join(study_dir, 'cfr', 'cfr_eeg_mixed.csv')
     patterns_file = os.path.join(study_dir, 'cfr', 'cfr_patterns.hdf5')
     inputs = f'{data_file} {patterns_file}'
+    res_name = generate_model_name(fcf_features, ff_features, sublayers, subpar, fixed)
     opts = f'-t {tol:.6f} -n {n_rep} -j {n_job} -r {n_sim_rep}'
 
     if sublayers:
         opts = f'--sublayers {opts}'
-        res_name = 'cmrs'
     else:
         opts = f'--no-sublayers {opts}'
-        res_name = 'cmr'
 
-    if fcf_features and fcf_features != 'none':
-        res_name += f'_fcf-{fcf_features}'
-    if ff_features and ff_features != 'none':
-        res_name += f'_ff-{ff_features}'
     if subpar:
         opts += f' -p {subpar}'
-        res_name += f'_sl-{subpar}'
     if fixed:
         opts += f' -f {fixed}'
-        res_name += f'_fix-{fixed.replace("=", "")}'
     full_dir = os.path.join(study_dir, 'cfr', res_dir, res_name)
 
     print(f'cfr-fit-cmr {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
