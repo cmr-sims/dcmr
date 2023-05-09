@@ -2,9 +2,14 @@
 
 import os
 import json
+import logging
 from itertools import combinations
 import numpy as np
 import pandas as pd
+import click
+from cymr import cmr
+from cymr import fit
+from psifr import fr
 from cymr.cmr import CMRParameters
 from cfr import task
 
@@ -484,3 +489,387 @@ def print_restricted_models():
     fixed, _ = generate_restricted_models()
     s = ','.join(fixed)
     print(s)
+
+
+def split_arg(arg):
+    """Split a dash-separated argument."""
+    if arg is not None:
+        if isinstance(arg, str):
+            if arg != 'none':
+                split = arg.split('-')
+            else:
+                split = None
+        else:
+            split = arg.split('-')
+    else:
+        split = None
+    return split
+
+
+def apply_list_mask(data, mask):
+    """Apply relative mask of lists to include."""
+    lists = np.sort(data['list'].unique())
+    include_lists = lists[mask]
+    masked = data[data['list'].isin(include_lists)]
+    return masked
+
+
+@click.command()
+@click.argument("data_file", type=click.Path(exists=True))
+@click.argument("patterns_file", type=click.Path(exists=True))
+@click.argument("fcf_features")
+@click.argument("ff_features")
+@click.argument("res_dir", type=click.Path())
+@click.option("--intercept/--no-intercept", default=False)
+@click.option("--sublayers/--no-sublayers", default=False)
+@click.option(
+    "--sublayer-param",
+    "-p",
+    help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
+)
+@click.option(
+    "--fixed-param",
+    "-f",
+    help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
+)
+@click.option(
+    "--n-reps",
+    "-n",
+    type=int,
+    default=1,
+    help="number of times to replicate the search",
+)
+@click.option(
+    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
+)
+@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
+@click.option(
+    "--n-sim-reps",
+    "-r",
+    type=int,
+    default=1,
+    help="number of experiment replications to simulate",
+)
+@click.option(
+    "--include",
+    "-i",
+    help="dash-separated list of subject to include (default: all in data file)",
+)
+def fit_cmr(
+    data_file,
+    patterns_file,
+    fcf_features,
+    ff_features,
+    res_dir,
+    intercept,
+    sublayers,
+    sublayer_param=None,
+    fixed_param=None,
+    n_reps=1,
+    n_jobs=1,
+    tol=0.00001,
+    n_sim_reps=1,
+    include=None,
+):
+    """Run a parameter search to fit a model and simulate data."""
+    fcf_features = split_arg(fcf_features)
+    ff_features = split_arg(ff_features)
+    if include is not None:
+        include = [int(s) for s in split_arg(include)]
+    sublayer_param = split_arg(sublayer_param)
+    fixed_param = split_arg(fixed_param)
+
+    os.makedirs(res_dir, exist_ok=True)
+    log_file = os.path.join(res_dir, 'log_fit.txt')
+    logging.basicConfig(
+        filename=log_file,
+        filemode='w',
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
+    )
+
+    # prepare model for search
+    logging.info(f'Loading data from {data_file}.')
+    data = pd.read_csv(data_file)
+    if include is not None:
+        data = data.loc[data['subject'].isin(include)]
+
+    # set parameter definitions based on model framework
+    model = cmr.CMR()
+    param_def = model_variant(
+        fcf_features,
+        ff_features,
+        sublayers=sublayers,
+        sublayer_param=sublayer_param,
+        intercept=intercept,
+    )
+    logging.info(f'Loading network patterns from {patterns_file}.')
+    patterns = cmr.load_patterns(patterns_file)
+
+    # make sure item indices are defined for looking up patterns
+    if 'item_index' not in data.columns:
+        data['item_index'] = fr.pool_index(data['item'], patterns['items'])
+        study = fr.filter_data(data, trial_type='study')
+        if study['item_index'].isna().any():
+            raise ValueError('Patterns not found for one or more items.')
+
+    # fix parameters if specified
+    if fixed_param is not None:
+        for expr in fixed_param:
+            param_name, val = expr.split('=')
+            param_def.set_fixed({param_name: float(val)})
+            if param_name not in param_def.free:
+                raise ValueError(f'Parameter {param_name} is not free.')
+            del param_def.free[param_name]
+
+    # save model information
+    json_file = os.path.join(res_dir, 'parameters.json')
+    logging.info(f'Saving parameter definition to {json_file}.')
+    param_def.to_json(json_file)
+
+    # run individual subject fits
+    n = data['subject'].nunique()
+    logging.info(
+        f'Running {n_reps} parameter optimization repeat(s) for {n} participant(s).'
+    )
+    logging.info(f'Using {n_jobs} core(s).')
+    results = model.fit_indiv(
+        data,
+        param_def,
+        patterns=patterns,
+        n_jobs=n_jobs,
+        method='de',
+        n_rep=n_reps,
+        tol=tol,
+    )
+
+    # full search information
+    res_file = os.path.join(res_dir, 'search.csv')
+    logging.info(f'Saving full search results to {res_file}.')
+    results.to_csv(res_file)
+
+    # best results
+    best = fit.get_best_results(results)
+    best_file = os.path.join(res_dir, 'fit.csv')
+    logging.info(f'Saving best fitting results to {best_file}.')
+    best.to_csv(best_file)
+
+    # simulate data based on best parameters
+    subj_param = best.T.to_dict()
+    study_data = data.loc[(data['trial_type'] == 'study')]
+    logging.info(
+        f'Simulating {n_sim_reps} replication(s) with best-fitting parameters.'
+    )
+    sim = model.generate(
+        study_data,
+        {},
+        subj_param=subj_param,
+        param_def=param_def,
+        patterns=patterns,
+        n_rep=n_sim_reps,
+    )
+    sim_file = os.path.join(res_dir, 'sim.csv')
+    logging.info(f'Saving simulated data to {sim_file}.')
+    sim.to_csv(sim_file, index=False)
+
+
+@click.command()
+@click.argument("data_file", type=click.Path(exists=True))
+@click.argument("patterns_file", type=click.Path(exists=True))
+@click.argument("fcf_features")
+@click.argument("ff_features")
+@click.argument("res_dir", type=click.Path())
+@click.option("--intercept/--no-intercept", default=False)
+@click.option("--sublayers/--no-sublayers", default=False)
+@click.option(
+    "--sublayer-param",
+    "-p",
+    help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
+)
+@click.option(
+    "--fixed-param",
+    "-f",
+    help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
+)
+@click.option(
+    "--n-folds",
+    "-d",
+    type=int,
+    help="number of cross-validation folds to run",
+)
+@click.option(
+    "--fold-key",
+    "-k",
+    help="events column to use when defining cross-validation folds",
+)
+@click.option(
+    "--n-reps",
+    "-n",
+    type=int,
+    default=1,
+    help="number of times to replicate the search",
+)
+@click.option(
+    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
+)
+@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
+@click.option(
+    "--include",
+    "-i",
+    help="dash-separated list of subject to include (default: all in data file)",
+)
+def xval_cmr(
+    data_file,
+    patterns_file,
+    fcf_features,
+    ff_features,
+    res_dir,
+    intercept,
+    sublayers,
+    sublayer_param=None,
+    fixed_param=None,
+    n_folds=None,
+    fold_key=None,
+    n_reps=1,
+    n_jobs=1,
+    tol=0.00001,
+    include=None,
+):
+    fcf_features = split_arg(fcf_features)
+    ff_features = split_arg(ff_features)
+    if include is not None:
+        include = [int(s) for s in split_arg(include)]
+    sublayer_param = split_arg(sublayer_param)
+    fixed_param = split_arg(fixed_param)
+
+    if (n_folds is None and fold_key is None) or (
+        n_folds is not None and fold_key is not None
+    ):
+        raise ValueError('Must specify one of either n_folds or fold_key.')
+
+    os.makedirs(res_dir, exist_ok=True)
+    log_file = os.path.join(res_dir, 'log_xval.txt')
+    logging.basicConfig(
+        filename=log_file,
+        filemode='w',
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
+    )
+
+    # prepare model for search
+    logging.info(f'Loading data from {data_file}.')
+    data = pd.read_csv(data_file)
+    if include is not None:
+        data = data.loc[data['subject'].isin(include)]
+
+    # set parameter definitions based on model framework
+    model = cmr.CMR()
+    param_def = model_variant(
+        fcf_features, ff_features, sublayers=sublayers, sublayer_param=sublayer_param, intercept=intercept
+    )
+    logging.info(f'Loading network patterns from {patterns_file}.')
+    patterns = cmr.load_patterns(patterns_file)
+
+    # make sure item index is defined for looking up weight patterns
+    if 'item_index' not in data.columns:
+        data['item_index'] = fr.pool_index(data['item'], patterns['items'])
+        study = fr.filter_data(data, trial_type='study')
+        if study['item_index'].isna().any():
+            raise ValueError('Patterns not found for one or more items.')
+
+    # fix parameters if specified
+    if fixed_param is not None:
+        for expr in fixed_param:
+            param_name, val = expr.split('=')
+            param_def.set_fixed({param_name: float(val)})
+            if param_name not in param_def.free:
+                raise ValueError(f'Parameter {param_name} is not free.')
+            del param_def.free[param_name]
+
+    # save model information
+    json_file = os.path.join(res_dir, 'xval_parameters.json')
+    logging.info(f'Saving parameter definition to {json_file}.')
+    param_def.to_json(json_file)
+
+    # run individual subject fits
+    n = data['subject'].nunique()
+    logging.info(
+        f'Running {n_reps} parameter optimization repeat(s) for {n} participant(s).'
+    )
+    logging.info(f'Using {n_jobs} core(s).')
+
+    n_lists = data.groupby('subject')['list'].nunique().max()
+    if fold_key is not None:
+        # get folds from the events
+        n_folds_all = data.groupby('subject')[fold_key].nunique()
+        if len(n_folds_all.unique()) != 1:
+            raise ValueError('All subjects must have same number of folds.')
+        folds = data[fold_key].unique()
+    else:
+        # interleave folds over lists
+        folds = np.arange(1, n_folds + 1)
+        list_fold = np.tile(folds, int(np.ceil(n_lists / n_folds)))
+    xval_list = []
+    search_list = []
+    for fold in folds:
+        # fit the training dataset
+        if fold_key is not None:
+            train_data = data[data[fold_key] != fold]
+        else:
+            train_data = (
+                data.groupby('subject')
+                .apply(apply_list_mask, list_fold != fold)
+                .droplevel('subject')
+            )
+        results = model.fit_indiv(
+            train_data,
+            param_def,
+            patterns=patterns,
+            n_jobs=n_jobs,
+            method='de',
+            n_rep=n_reps,
+            tol=tol,
+        )
+        search_list.append(results)
+
+        # evaluate on left-out fold
+        best = fit.get_best_results(results)
+        subj_param = best.T.to_dict()
+        if fold_key is not None:
+            test_data = data[data[fold_key] == fold]
+        else:
+            test_data = (
+                data.groupby('subject')
+                .apply(apply_list_mask, list_fold == fold)
+                .droplevel('subject')
+            )
+        stats = model.likelihood(
+            test_data, {}, subj_param, param_def, patterns=patterns
+        )
+        xval = best.copy()
+        xval['logl_train'] = xval['logl']
+        xval['logl_test'] = stats['logl']
+        xval['n_train'] = xval['n']
+        xval['n_test'] = stats['n']
+        m_train = train_data.groupby('subject')['list'].nunique()
+        m_test = test_data.groupby('subject')['list'].nunique()
+        xval['logl_train_list'] = xval['logl_train'] / m_train
+        xval['logl_test_list'] = xval['logl_test'] / m_test
+        xval['m_train'] = m_train
+        xval['m_test'] = m_test
+        xval.drop(columns=['logl', 'n'], inplace=True)
+        xval_list.append(xval)
+
+    # cross-validation summary
+    summary = pd.concat(xval_list, keys=folds)
+    summary.index.rename(['fold', 'subject'], inplace=True)
+    xval_file = os.path.join(res_dir, 'xval.csv')
+    logging.info(f'Saving best fitting results to {xval_file}.')
+    summary.to_csv(xval_file)
+
+    # full search information
+    search = pd.concat(search_list, keys=folds)
+    search.index.rename(['fold', 'subject', 'rep'], inplace=True)
+    search_file = os.path.join(res_dir, f'xval_search.csv')
+    logging.info(f'Saving full search results to {search_file}.')
+    search.to_csv(search_file)
