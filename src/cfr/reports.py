@@ -2,6 +2,7 @@
 
 import os
 import logging
+import jinja2 as jn
 import numpy as np
 from scipy.spatial import distance
 import pandas as pd
@@ -12,7 +13,84 @@ matplotlib.use('Agg')
 from psifr import fr
 from cymr import cmr
 from cfr import task
+from cfr import framework
 from cfr import figures
+
+
+def render_fit_html(fit_dir, curves, points, grids=None, ext='svg'):
+    env = jn.Environment(
+        loader=jn.PackageLoader('cfr', 'templates'),
+        autoescape=jn.select_autoescape(['html']),
+    )
+    template = env.get_template('report.html')
+    model = os.path.basename(os.path.abspath(fit_dir))
+
+    # define curve plots to include
+    d_curve = {}
+    for curve in curves:
+        entry = {
+            'mean': os.path.join(fit_dir, 'figs', f'{curve}.{ext}'),
+            'comp': os.path.join(fit_dir, 'figs', f'{curve}_comp.{ext}'),
+            'subj': os.path.join(fit_dir, 'figs', f'{curve}_comp_subject.{ext}'),
+        }
+        d_curve[curve] = entry
+
+    # define points to include
+    d_point = {}
+    for point, analyses in points.items():
+        entry = {
+            analysis: os.path.join(fit_dir, 'figs', f'{analysis}_comp_subject.{ext}')
+            for analysis in analyses
+        }
+        d_point[point] = entry
+
+    # define subject curves to include
+    if grids is not None:
+        d_grid = {
+            grid: os.path.join(fit_dir, 'figs', f'{grid}_subject.{ext}')
+            for grid in grids
+        }
+    else:
+        d_grid = None
+
+    # tables
+    fit = pd.read_csv(os.path.join(fit_dir, 'fit.csv'))
+    opt = {'float_format': '%.2f'}
+    table_opt = {'Summary': {**opt}, 'Parameters': {'index': False, **opt}}
+
+    # subject parameters and stats
+    table = fit.copy().drop(columns=['rep'])
+    table = table.astype({'subject': int, 'n': int, 'k': int})
+
+    # summary statistics
+    summary = table.drop(columns=['subject', 'n', 'k']).agg(
+        ['mean', 'sem', 'min', 'max']
+    )
+    tables = {'Summary': summary, 'Parameters': table}
+
+    # write html
+    page = template.render(
+        model=model,
+        curves=d_curve,
+        points=d_point,
+        grids=d_grid,
+        tables=tables,
+        table_opt=table_opt,
+    )
+    html_file = os.path.join(fit_dir, 'report.html')
+    with open(html_file, 'w') as f:
+        f.write(page)
+
+    # copy css
+    css = env.get_template('bootstrap.min.css')
+    os.makedirs(os.path.join(fit_dir, '.css'), exist_ok=True)
+    css_file = os.path.join(fit_dir, '.css', 'bootstrap.min.css')
+    with open(css_file, 'w') as f:
+        f.write(css.render())
+    css = env.get_template('report.css')
+    css_file = os.path.join(fit_dir, '.css', 'report.css')
+    with open(css_file, 'w') as f:
+        f.write(css.render())
 
 
 @click.command()
@@ -261,4 +339,81 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
         points = {'lag_rank': ['lag_rank'], 'use_rank': ['use_rank']}
         grids = curves.copy()
     os.chdir(fit_dir)
-    figures.render_fit_html('.', curves, points, grids)
+    render_fit_html('.', curves, points, grids)
+
+
+def get_param_latex():
+    """Get the mapping from parameter names to LaTeX form."""
+    latex_names = {
+        'Lfc': 'L_{FC}',
+        'Lcf': 'L_{CF}',
+        'Dff': 'D_{FF}',
+        'P1': r'\phi_s',
+        'P2': r'\phi_d',
+        'B_enc': r'\beta_{\mathrm{enc}}',
+        'B_enc_loc': r'\beta_{\mathrm{enc},I}',
+        'B_enc_cat': r'\beta_{\mathrm{enc},C}',
+        'B_enc_use': r'\beta_{\mathrm{enc},D}',
+        'B_start': r'\beta_{\mathrm{start}}',
+        'B_rec': r'\beta_{\mathrm{rec}}',
+        'B_rec_loc': r'\beta_{\mathrm{rec},I}',
+        'B_rec_cat': r'\beta_{\mathrm{rec},C}',
+        'B_rec_use': r'\beta_{\mathrm{rec},D}',
+        'X1': r'\theta_s',
+        'X2': r'\theta_r',
+        'w0': 'w_1',
+        'w1': 'w_2',
+        's0': 's_1',
+        'k': 'k',
+        'logl': r'\mathrm{log}(L)',
+        'logl_test_list': r'\mathrm{log}(L)',
+        'aic': r'\mathrm{AIC}',
+        'waic': r'\mathrm{wAIC}',
+    }
+    math_format = {k: f'${v}$' for k, v in latex_names.items()}
+    return math_format
+
+
+def create_model_table(fit_dir, models, model_names, param_map=None, model_comp='xval'):
+    """Create a summary table to compare models."""
+    # get free parameters
+    df = framework.read_model_specs(fit_dir, models, model_names)
+    free_param = df.reset_index().query("kind == 'free'")['param'].unique()
+
+    # get parameter values and likelihood
+    res = framework.read_model_fits(fit_dir, models, model_names, param_map)
+    if param_map is not None:
+        free_param = [f for f in free_param if f not in param_map.keys()]
+
+    if model_comp == 'aic':
+        res = framework.model_comp_weights(res, stat='aic')
+        stats = ['n', 'k', 'logl', 'aic', 'waic']
+        fields = np.hstack((free_param, stats))
+        mean_only = ['k']
+    elif model_comp == 'xval':
+        res = framework.read_model_xvals(fit_dir, models, model_names)
+        stats = ['k', 'logl_test_list']
+        fields = np.hstack((free_param, stats))
+        mean_only = ['k']
+    table = pd.DataFrame(index=fields, columns=model_names)
+
+    # parameter means and sem
+    model_stats = res.groupby('model').agg(['mean', 'sem'])
+    for model in model_names:
+        subset = df.reset_index().query(f"model == '{model}'")
+        not_free_param = subset.query("kind != 'free'")['param'].unique().tolist()
+        m = model_stats.loc[model]
+        for field in fields:
+            f = m[field]
+            if np.isnan(f['mean']):
+                table.loc[field, model] = '---'
+            elif field in mean_only + not_free_param:
+                table.loc[field, model] = f"{f['mean']:.0f}"
+            else:
+                table.loc[field, model] = f"{f['mean']:.2f} ({f['sem']:.2f})"
+
+    # rename parameters to latex code
+    latex_names = get_param_latex()
+    order = [n for n in latex_names.keys() if n in table.index]
+    reordered = table.reindex(order).rename(index=latex_names)
+    return reordered
