@@ -913,3 +913,135 @@ def sim_cmr(data_file, patterns_file, fit_dir, n_rep=1):
     # save
     sim_file = os.path.join(fit_dir, 'sim.csv')
     sim.to_csv(sim_file, index=False)
+
+
+def command_fit_cmr(
+    fcf_features,
+    ff_features,
+    sublayers,
+    res_dir,
+    subpar,
+    fixed,
+    n_rep=10,
+    n_job=48,
+    tol=0.00001,
+    n_sim_rep=50,
+):
+    """Generate command line arguments for fitting CMR."""
+    study_dir = os.environ['STUDYDIR']
+    if not study_dir:
+        raise EnvironmentError('STUDYDIR not defined.')
+
+    data_file = os.path.join(study_dir, 'cfr', 'cfr_eeg_mixed.csv')
+    patterns_file = os.path.join(study_dir, 'cfr', 'cfr_patterns.hdf5')
+    inputs = f'{data_file} {patterns_file}'
+    opts = f'-t {tol:.6f} -n {n_rep} -j {n_job} -r {n_sim_rep}'
+
+    if sublayers:
+        opts = f'--sublayers {opts}'
+        res_name = 'cmrs'
+    else:
+        opts = f'--no-sublayers {opts}'
+        res_name = 'cmr'
+
+    if fcf_features and fcf_features != 'none':
+        res_name += f'_fcf-{fcf_features}'
+    if ff_features and ff_features != 'none':
+        res_name += f'_ff-{ff_features}'
+    if subpar:
+        opts += f' -p {subpar}'
+        res_name += f'_sl-{subpar}'
+    if fixed:
+        opts += f' -f {fixed}'
+        res_name += f'_fix-{fixed.replace("=", "")}'
+    full_dir = os.path.join(study_dir, 'cfr', res_dir, res_name)
+
+    print(f'cfr-fit-cmr {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
+
+
+@click.command()
+@click.argument("fcf_features")
+@click.argument("ff_features")
+@click.argument("res_dir", type=click.Path())
+@click.option("--sublayers/--no-sublayers", default=False)
+@click.option(
+    "--sublayer-param",
+    "-p",
+    help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
+)
+@click.option(
+    "--fixed-param",
+    "-f",
+    help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
+)
+@click.option(
+    "--n-reps",
+    "-n",
+    type=int,
+    default=1,
+    help="number of times to replicate the search",
+)
+@click.option(
+    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
+)
+@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
+@click.option(
+    "--n-sim-reps",
+    "-r",
+    type=int,
+    default=1,
+    help="number of experiment replications to simulate",
+)
+def plan_fit_cmr(
+    fcf_features,
+    ff_features,
+    res_dir,
+    sublayers,
+    sublayer_param,
+    fixed_param,
+    n_reps,
+    n_jobs,
+    tol,
+    n_sim_reps,
+):
+    """Print command lines for fitting multiple models."""
+    fcf_list = fcf_features.split(',')
+    ff_list = ff_features.split(',')
+    if sublayer_param is not None:
+        sub_list = sublayer_param.split(',')
+    else:
+        sub_list = []
+    if fixed_param is not None:
+        fix_list = fixed_param.split(',')
+    else:
+        fix_list = []
+
+    max_n = np.max([len(arg) for arg in [fcf_list, ff_list, sub_list, fix_list]])
+    if len(fcf_list) == 1:
+        fcf_list *= max_n
+    if len(ff_list) == 1:
+        ff_list *= max_n
+    if sublayer_param is not None:
+        if len(sub_list) == 1:
+            sub_list *= max_n
+    else:
+        sub_list = [None] * max_n
+    if fixed_param is not None:
+        if len(fix_list) == 1:
+            fix_list *= max_n
+    else:
+        fix_list = [None] * max_n
+
+    for fcf, ff, sub, fix in zip(fcf_list, ff_list, sub_list, fix_list):
+        command_fit_cmr(
+            fcf,
+            ff,
+            sublayers,
+            res_dir,
+            sub,
+            fix,
+            n_reps,
+            n_jobs,
+            tol,
+            n_sim_reps,
+        )
