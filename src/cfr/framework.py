@@ -1069,3 +1069,115 @@ def plan_fit_cmr(
             tol,
             n_sim_reps,
         )
+
+
+def command_xval_cmr(
+    fcf_features,
+    ff_features,
+    sublayers,
+    res_dir,
+    subpar,
+    fixed,
+    n_folds=None,
+    fold_key=None,
+    n_rep=10,
+    n_job=48,
+    tol=0.00001,
+):
+    """Generate command line arguments for fitting CMR."""
+    study_dir = os.environ['STUDYDIR']
+    if not study_dir:
+        raise EnvironmentError('STUDYDIR not defined.')
+
+    data_file = os.path.join(study_dir, 'cfr', 'cfr_eeg_mixed.csv')
+    patterns_file = os.path.join(study_dir, 'cfr', 'cfr_patterns.hdf5')
+    inputs = f'{data_file} {patterns_file}'
+    res_name = generate_model_name(fcf_features, ff_features, sublayers, subpar, fixed)
+    opts = f'-t {tol:.6f} -n {n_rep} -j {n_job}'
+    if n_folds is not None:
+        opts += f' -d {n_folds}'
+    if fold_key is not None:
+        opts += f' -k {fold_key}'
+
+    if sublayers:
+        opts = f'--sublayers {opts}'
+    else:
+        opts = f'--no-sublayers {opts}'
+
+    if subpar:
+        opts += f' -p {subpar}'
+    if fixed:
+        opts += f' -f {fixed}'
+    full_dir = os.path.join(study_dir, 'cfr', res_dir, res_name)
+
+    print(f'cfr-xval-cmr {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
+
+
+@click.command()
+@click.argument("fcf_features")
+@click.argument("ff_features")
+@click.argument("res_dir", type=click.Path())
+@click.option("--sublayers/--no-sublayers", default=False)
+@click.option(
+    "--sublayer-param",
+    "-p",
+    help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
+)
+@click.option(
+    "--fixed-param",
+    "-f",
+    help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
+)
+@click.option(
+    "--n-folds",
+    "-d",
+    type=int,
+    help="number of cross-validation folds to run",
+)
+@click.option(
+    "--fold-key",
+    "-k",
+    help="events column to use when defining cross-validation folds",
+)
+@click.option(
+    "--n-reps",
+    "-n",
+    type=int,
+    default=1,
+    help="number of times to replicate the search",
+)
+@click.option(
+    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
+)
+@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
+def plan_xval_cmr(
+    fcf_features,
+    ff_features,
+    res_dir,
+    sublayers,
+    sublayer_param,
+    fixed_param,
+    n_folds,
+    fold_key,
+    n_reps,
+    n_jobs,
+    tol,
+):
+    """Print command lines for fitting multiple models."""
+    fcf_list, ff_list, sub_list, fix_list = expand_variants(
+        fcf_features, ff_features, sublayer_param, fixed_param
+    )
+    for fcf, ff, sub, fix in zip(fcf_list, ff_list, sub_list, fix_list):
+        command_xval_cmr(
+            fcf,
+            ff,
+            sublayers,
+            res_dir,
+            sub,
+            fix,
+            n_folds,
+            fold_key,
+            n_reps,
+            n_jobs,
+            tol,
+        )
