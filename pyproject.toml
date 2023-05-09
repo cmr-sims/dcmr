@@ -42,6 +42,7 @@ cfr-sim-cmr = "cfr.framework:sim_cmr"
 cfr-plan-fit-cmr = "cfr.framework:plan_fit_cmr"
 cfr-plan-xval-cmr = "cfr.framework:plan_xval_cmr"
 cfr-plan-sim-cmr = "cfr.framework:plan_sim_cmr"
+cfr-plot-fit = "cfr.reports:plot_fit"
 
 [build-system]
 requires = ["setuptools", "wheel"]
