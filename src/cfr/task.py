@@ -111,7 +111,7 @@ def read_study_recall(csv_file, block=True, block_category=True):
     data = pd.read_csv(csv_file)
     if 'category' in data.columns:
         data = data.astype({'category': 'category'})
-        data.category.cat.as_ordered(inplace=True)
+        data.category = data.category.cat.as_ordered()
     else:
         block = False
         block_category = False
