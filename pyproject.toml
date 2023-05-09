@@ -38,6 +38,7 @@ dependencies = [
 cfr_restricted_models = "cfr.framework:print_restricted_models"
 cfr-fit-cmr = "cfr.framework:fit_cmr"
 cfr-xval-cmr = "cfr.framework:xval_cmr"
+cfr-sim-cmr = "cfr.framework:sim_cmr"
 
 [build-system]
 requires = ["setuptools", "wheel"]

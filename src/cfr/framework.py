@@ -884,3 +884,32 @@ def xval_cmr(
     search_file = os.path.join(res_dir, f'xval_search.csv')
     logging.info(f'Saving full search results to {search_file}.')
     search.to_csv(search_file)
+
+
+@click.command()
+@click.argument("data_file", type=click.Path(exists=True))
+@click.argument("patterns_file", type=click.Path(exists=True))
+@click.argument("fit_dir", type=click.Path(exists=True))
+@click.option("--n-rep", "-r", type=int, default=1)
+def sim_cmr(data_file, patterns_file, fit_dir, n_rep=1):
+    """Run a simulation using best-fitting parameters."""
+    # load trials to simulate
+    data = pd.read_csv(data_file)
+    study_data = data.loc[(data['trial_type'] == 'study')]
+
+    # get model, patterns, and weights
+    model = cmr.CMR()
+    patterns = cmr.load_patterns(patterns_file)
+    param_file = os.path.join(fit_dir, 'parameters.json')
+    param_def = cmr.read_config(param_file)
+
+    # load parameters
+    fit_file = os.path.join(fit_dir, 'fit.csv')
+    subj_param = read_fit_param(fit_file)
+
+    # run simulation
+    sim = model.generate(study_data, {}, subj_param, param_def, patterns, n_rep=n_rep)
+
+    # save
+    sim_file = os.path.join(fit_dir, 'sim.csv')
+    sim.to_csv(sim_file, index=False)
