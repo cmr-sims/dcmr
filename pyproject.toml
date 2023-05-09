@@ -43,6 +43,8 @@ cfr-plan-fit-cmr = "cfr.framework:plan_fit_cmr"
 cfr-plan-xval-cmr = "cfr.framework:plan_xval_cmr"
 cfr-plan-sim-cmr = "cfr.framework:plan_sim_cmr"
 cfr-plot-fit = "cfr.reports:plot_fit"
+cfr-decode-eeg = "cfr.decode:decode_eeg"
+cfr-decode-context = "cfr.decode:decode_context"
 
 [build-system]
 requires = ["setuptools", "wheel"]

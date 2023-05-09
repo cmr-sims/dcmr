@@ -1,8 +1,12 @@
 """Functions to run classification of EEG data or network representation."""
 
+import logging
+from pathlib import Path
+import click
 import numpy as np
 from numpy import linalg
 import pandas as pd
+from joblib import Parallel, delayed
 from sklearn import svm
 from sklearn import model_selection as ms
 import sklearn.linear_model as lm
@@ -10,7 +14,9 @@ from sklearn import preprocessing
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
-
+from psifr import fr
+from cymr import cmr
+from cfr import framework
 from cfr import task
 
 
@@ -328,3 +334,215 @@ def regress_evidence_block_pos(data, max_pos=3):
     evidence_keys = ['curr', 'prev', 'base']
     slopes = data.groupby('subject').apply(_regress_subject, evidence_keys)
     return slopes
+
+
+def _decode_eeg_subject(patterns_dir, out_dir, subject, **kwargs):
+    """Decode category from EEG patterns for one suject."""
+    log_dir = out_dir / 'logs'
+    log_dir.mkdir(exist_ok=True)
+    log_file = log_dir / f'sub-{subject}_log.txt'
+
+    logger = logging.getLogger(subject)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s:%(name)s:%(message)s')
+    fileHandler = logging.FileHandler(log_file, mode='w')
+    fileHandler.setFormatter(formatter)
+    logger.setLevel(logging.INFO)
+    logger.addHandler(fileHandler)
+
+    pattern_file = patterns_dir / f'sub-{subject}_pattern.txt'
+    logger.info(f'Loading pattern from {pattern_file}.')
+    pattern = np.loadtxt(pattern_file.as_posix())
+
+    events_file = patterns_dir / f'sub-{subject}_events.csv'
+    logger.info(f'Loading events from {events_file}.')
+    events = pd.read_csv(events_file)
+
+    logger.info(f'Running classification.')
+    evidence = classify_patterns(events, pattern, logger=logger, **kwargs)
+
+    out_file = out_dir / f'sub-{subject}_decode.csv'
+    logger.info(f'Writing results to {out_file}.')
+    df = pd.concat([events, evidence], axis=1)
+    df.to_csv(out_file.as_posix())
+
+
+@click.command()
+@click.argument("patterns_dir")
+@click.argument("out_dir")
+@click.option(
+    "--n-jobs", "-n", type=int, default=1, help="Number of processes to run in parallel"
+)
+@click.option("--subjects", "-s", help="Comma-separated list of subjects")
+@click.option(
+    "--normalization",
+    "-l",
+    default="range",
+    help='Normalization to apply before classification {"z", ["range"]}',
+)
+@click.option(
+    "--classifier",
+    "-c",
+    default="svm",
+    help='classifier type {["svm"], "logreg", "plogreg"}',
+)
+@click.option(
+    "--multi-class",
+    "-m",
+    default="auto",
+    help='multi-class method {["auto"], "ovr", "multinomial"}',
+)
+@click.option("--regularization", "-C", type=float, default=1, help="Regularization parameter (1.0)")
+def decode_eeg(
+    patterns_dir, out_dir, n_jobs, subjects, normalization, classifier, multi_class, regularization
+):
+    "Decode category from EEG patterns measured during the CFR study."
+    if subjects is None:
+        subjects, _ = task.get_subjects()
+    else:
+        subjects = [f'LTP{subject:0>3}' for subject in subjects.split(',')]
+
+    out_dir = Path(out_dir)
+    out_dir.mkdir(exist_ok=True, parents=True)
+    Parallel(n_jobs=n_jobs)(
+        delayed(_decode_eeg_subject)(
+            Path(patterns_dir),
+            Path(out_dir),
+            subject,
+            normalization=normalization,
+            clf=classifier,
+            multi_class=multi_class,
+            C=regularization,
+        )
+        for subject in subjects
+    )
+
+
+def _decode_context_subject(
+    data_file,
+    patterns_file,
+    fit_dir,
+    eeg_class_dir,
+    sublayer,
+    out_dir,
+    subject,
+    **kwargs,
+):
+    """Decode category from simulated context patterns for one suject."""
+    log_dir = out_dir / 'logs'
+    log_dir.mkdir(exist_ok=True)
+    subject_id = f'LTP{subject:03n}'
+    log_file = log_dir / f'sub-{subject_id}_log.txt'
+
+    logger = logging.getLogger(subject_id)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s:%(name)s:%(message)s')
+    fileHandler = logging.FileHandler(log_file, mode='w')
+    fileHandler.setFormatter(formatter)
+    logger.setLevel(logging.INFO)
+    logger.addHandler(fileHandler)
+
+    logger.info(f'Loading data from {data_file}.')
+    data = task.read_study_recall(data_file)
+    study = fr.filter_data(data, subjects=subject, trial_type='study').reset_index()
+    study = mark_included_eeg_events(study, eeg_class_dir, subjects=[subject_id])
+
+    param_file = fit_dir / 'fit.csv'
+    logger.info(f'Loading parameters from {param_file}.')
+    subj_param = framework.read_fit_param(param_file)
+
+    config_file = fit_dir / 'parameters.json'
+    logger.info(f'Loading model configuration from {config_file}.')
+    param_def = cmr.read_config(config_file)
+
+    logger.info(f'Loading model patterns from {patterns_file}.')
+    patterns = cmr.load_patterns(patterns_file)
+
+    logger.info('Recording network states.')
+    model = cmr.CMR()
+    state = model.record(
+        study, {}, subj_param, param_def=param_def, patterns=patterns, include=['c']
+    )
+    net = state[0]
+    context = np.vstack([s.c[net.get_slice('c', sublayer, 'item')] for s in state])
+
+    logger.info(f'Running classification.')
+    include = study['include'].to_numpy()
+    study_include = study.loc[include]
+    evidence = classify_patterns(
+        study_include, context[include], logger=logger, **kwargs
+    )
+    evidence.index = study_include.index
+
+    out_file = out_dir / f'sub-{subject_id}_decode.csv'
+    logger.info(f'Writing results to {out_file}.')
+    df = pd.concat([study, evidence], axis=1)
+    df.to_csv(out_file.as_posix())
+
+
+@click.command()
+@click.argument("data_file")
+@click.argument("patterns_file")
+@click.argument("fit_dir")
+@click.argument("eeg_class_dir")
+@click.argument("sublayer")
+@click.argument("res_name")
+@click.option(
+    "--n-jobs", "-n", type=int, default=1, help="Number of processes to run in parallel"
+)
+@click.option("--subjects", "-s", help="Comma-separated list of subjects")
+@click.option(
+    "--normalization",
+    "-l",
+    default="range",
+    help='Normalization to apply before classification {"z", ["range"]}',
+)
+@click.option(
+    "--classifier",
+    "-c",
+    default="svm",
+    help='classifier type {["svm"], "logreg", "plogreg"}',
+)
+@click.option(
+    "--multi-class",
+    "-m",
+    default="auto",
+    help='multi-class method {["auto"], "ovr", "multinomial"}',
+)
+@click.option("--regularization", "-C", type=float, default=1, help="Regularization parameter (1.0)")
+def decode_context(
+    data_file,
+    patterns_file,
+    fit_dir,
+    eeg_class_dir,
+    sublayer,
+    res_name,
+    n_jobs,
+    subjects,
+    normalization,
+    classifier,
+    multi_class,
+    regularization,
+):
+    "Decode category from simulated context states."
+    if subjects is None:
+        _, subjects = task.get_subjects()
+    else:
+        subjects = [int(s) for s in subjects.split(",")]
+
+    out_dir = Path(fit_dir) / f'decode_{sublayer}' / res_name
+    out_dir.mkdir(exist_ok=True, parents=True)
+    Parallel(n_jobs=n_jobs)(
+        delayed(_decode_context_subject)(
+            Path(data_file),
+            Path(patterns_file),
+            Path(fit_dir),
+            Path(eeg_class_dir),
+            sublayer,
+            out_dir,
+            subject,
+            normalization=normalization,
+            clf=classifier,
+            multi_class=multi_class,
+            C=regularization,
+        )
+        for subject in subjects
+    )
