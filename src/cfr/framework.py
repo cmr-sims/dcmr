@@ -514,6 +514,61 @@ def apply_list_mask(data, mask):
     return masked
 
 
+def configure_model(
+    data_file,
+    patterns_file,
+    fcf_features,
+    ff_features,
+    intercept,
+    sublayers,
+    sublayer_param,
+    fixed_param,
+    include,
+):
+    """Configure a model based on commandline input."""
+    # unpack lists
+    fcf_features = split_arg(fcf_features)
+    ff_features = split_arg(ff_features)
+    if include is not None:
+        include = [int(s) for s in split_arg(include)]
+    sublayer_param = split_arg(sublayer_param)
+    fixed_param = split_arg(fixed_param)
+
+    # load data to simulate
+    logging.info(f'Loading data from {data_file}.')
+    data = pd.read_csv(data_file)
+    if include is not None:
+        data = data.loc[data['subject'].isin(include)]
+
+    # set parameter definitions based on model framework
+    param_def = model_variant(
+        fcf_features,
+        ff_features,
+        sublayers=sublayers,
+        sublayer_param=sublayer_param,
+        intercept=intercept,
+    )
+    logging.info(f'Loading network patterns from {patterns_file}.')
+    patterns = cmr.load_patterns(patterns_file)
+
+    # make sure item index is defined for looking up weight patterns
+    if 'item_index' not in data.columns:
+        data['item_index'] = fr.pool_index(data['item'], patterns['items'])
+        study = fr.filter_data(data, trial_type='study')
+        if study['item_index'].isna().any():
+            raise ValueError('Patterns not found for one or more items.')
+
+    # fix parameters if specified
+    if fixed_param is not None:
+        for expr in fixed_param:
+            param_name, val = expr.split('=')
+            param_def.set_fixed({param_name: float(val)})
+            if param_name not in param_def.free:
+                raise ValueError(f'Parameter {param_name} is not free.')
+            del param_def.free[param_name]
+    return data, param_def, patterns
+
+
 @click.command()
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
@@ -572,13 +627,6 @@ def fit_cmr(
     include=None,
 ):
     """Run a parameter search to fit a model and simulate data."""
-    fcf_features = split_arg(fcf_features)
-    ff_features = split_arg(ff_features)
-    if include is not None:
-        include = [int(s) for s in split_arg(include)]
-    sublayer_param = split_arg(sublayer_param)
-    fixed_param = split_arg(fixed_param)
-
     os.makedirs(res_dir, exist_ok=True)
     log_file = os.path.join(res_dir, 'log_fit.txt')
     logging.basicConfig(
@@ -588,39 +636,18 @@ def fit_cmr(
         format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
     )
 
-    # prepare model for search
-    logging.info(f'Loading data from {data_file}.')
-    data = pd.read_csv(data_file)
-    if include is not None:
-        data = data.loc[data['subject'].isin(include)]
-
-    # set parameter definitions based on model framework
-    model = cmr.CMR()
-    param_def = model_variant(
+    # set up data and model based on script input
+    data, param_def, patterns = configure_model(
+        data_file,
+        patterns_file,
         fcf_features,
         ff_features,
-        sublayers=sublayers,
-        sublayer_param=sublayer_param,
-        intercept=intercept,
+        intercept,
+        sublayers,
+        sublayer_param,
+        fixed_param,
+        include,
     )
-    logging.info(f'Loading network patterns from {patterns_file}.')
-    patterns = cmr.load_patterns(patterns_file)
-
-    # make sure item indices are defined for looking up patterns
-    if 'item_index' not in data.columns:
-        data['item_index'] = fr.pool_index(data['item'], patterns['items'])
-        study = fr.filter_data(data, trial_type='study')
-        if study['item_index'].isna().any():
-            raise ValueError('Patterns not found for one or more items.')
-
-    # fix parameters if specified
-    if fixed_param is not None:
-        for expr in fixed_param:
-            param_name, val = expr.split('=')
-            param_def.set_fixed({param_name: float(val)})
-            if param_name not in param_def.free:
-                raise ValueError(f'Parameter {param_name} is not free.')
-            del param_def.free[param_name]
 
     # save model information
     json_file = os.path.join(res_dir, 'parameters.json')
@@ -633,6 +660,7 @@ def fit_cmr(
         f'Running {n_reps} parameter optimization repeat(s) for {n} participant(s).'
     )
     logging.info(f'Using {n_jobs} core(s).')
+    model = cmr.CMR()
     results = model.fit_indiv(
         data,
         param_def,
@@ -735,18 +763,7 @@ def xval_cmr(
     tol=0.00001,
     include=None,
 ):
-    fcf_features = split_arg(fcf_features)
-    ff_features = split_arg(ff_features)
-    if include is not None:
-        include = [int(s) for s in split_arg(include)]
-    sublayer_param = split_arg(sublayer_param)
-    fixed_param = split_arg(fixed_param)
-
-    if (n_folds is None and fold_key is None) or (
-        n_folds is not None and fold_key is not None
-    ):
-        raise ValueError('Must specify one of either n_folds or fold_key.')
-
+    """Evaluate a model using cross-validation."""
     os.makedirs(res_dir, exist_ok=True)
     log_file = os.path.join(res_dir, 'log_xval.txt')
     logging.basicConfig(
@@ -756,35 +773,23 @@ def xval_cmr(
         format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
     )
 
-    # prepare model for search
-    logging.info(f'Loading data from {data_file}.')
-    data = pd.read_csv(data_file)
-    if include is not None:
-        data = data.loc[data['subject'].isin(include)]
-
-    # set parameter definitions based on model framework
-    model = cmr.CMR()
-    param_def = model_variant(
-        fcf_features, ff_features, sublayers=sublayers, sublayer_param=sublayer_param, intercept=intercept
+    # set up data and model based on script input
+    data, param_def, patterns = configure_model(
+        data_file,
+        patterns_file,
+        fcf_features,
+        ff_features,
+        intercept,
+        sublayers,
+        sublayer_param,
+        fixed_param,
+        include,
     )
-    logging.info(f'Loading network patterns from {patterns_file}.')
-    patterns = cmr.load_patterns(patterns_file)
 
-    # make sure item index is defined for looking up weight patterns
-    if 'item_index' not in data.columns:
-        data['item_index'] = fr.pool_index(data['item'], patterns['items'])
-        study = fr.filter_data(data, trial_type='study')
-        if study['item_index'].isna().any():
-            raise ValueError('Patterns not found for one or more items.')
-
-    # fix parameters if specified
-    if fixed_param is not None:
-        for expr in fixed_param:
-            param_name, val = expr.split('=')
-            param_def.set_fixed({param_name: float(val)})
-            if param_name not in param_def.free:
-                raise ValueError(f'Parameter {param_name} is not free.')
-            del param_def.free[param_name]
+    if (n_folds is None and fold_key is None) or (
+        n_folds is not None and fold_key is not None
+    ):
+        raise ValueError('Must specify one of either n_folds or fold_key.')
 
     # save model information
     json_file = os.path.join(res_dir, 'xval_parameters.json')
@@ -811,6 +816,7 @@ def xval_cmr(
         list_fold = np.tile(folds, int(np.ceil(n_lists / n_folds)))
     xval_list = []
     search_list = []
+    model = cmr.CMR()
     for fold in folds:
         # fit the training dataset
         if fold_key is not None:
