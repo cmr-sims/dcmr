@@ -129,6 +129,7 @@ def read_study_recall(csv_file, block=True, block_category=True):
         if field in data:
             list_keys += [field]
     data = data.groupby(['subject', 'list']).apply(set_list_columns, list_keys)
+    data = data.reset_index(drop=True)
     return data
 
 
