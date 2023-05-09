@@ -915,6 +915,37 @@ def sim_cmr(data_file, patterns_file, fit_dir, n_rep=1):
     sim.to_csv(sim_file, index=False)
 
 
+def expand_variants(fcf_features, ff_features, sublayer_param, fixed_param):
+    """Expand variant lists to make full specifications."""
+    fcf_list = fcf_features.split(',')
+    ff_list = ff_features.split(',')
+    if sublayer_param is not None:
+        sub_list = sublayer_param.split(',')
+    else:
+        sub_list = []
+    if fixed_param is not None:
+        fix_list = fixed_param.split(',')
+    else:
+        fix_list = []
+
+    max_n = np.max([len(arg) for arg in [fcf_list, ff_list, sub_list, fix_list]])
+    if len(fcf_list) == 1:
+        fcf_list *= max_n
+    if len(ff_list) == 1:
+        ff_list *= max_n
+    if sublayer_param is not None:
+        if len(sub_list) == 1:
+            sub_list *= max_n
+    else:
+        sub_list = [None] * max_n
+    if fixed_param is not None:
+        if len(fix_list) == 1:
+            fix_list *= max_n
+    else:
+        fix_list = [None] * max_n
+    return fcf_list, ff_list, sub_list, fix_list
+
+
 def command_fit_cmr(
     fcf_features,
     ff_features,
@@ -1005,33 +1036,9 @@ def plan_fit_cmr(
     n_sim_reps,
 ):
     """Print command lines for fitting multiple models."""
-    fcf_list = fcf_features.split(',')
-    ff_list = ff_features.split(',')
-    if sublayer_param is not None:
-        sub_list = sublayer_param.split(',')
-    else:
-        sub_list = []
-    if fixed_param is not None:
-        fix_list = fixed_param.split(',')
-    else:
-        fix_list = []
-
-    max_n = np.max([len(arg) for arg in [fcf_list, ff_list, sub_list, fix_list]])
-    if len(fcf_list) == 1:
-        fcf_list *= max_n
-    if len(ff_list) == 1:
-        ff_list *= max_n
-    if sublayer_param is not None:
-        if len(sub_list) == 1:
-            sub_list *= max_n
-    else:
-        sub_list = [None] * max_n
-    if fixed_param is not None:
-        if len(fix_list) == 1:
-            fix_list *= max_n
-    else:
-        fix_list = [None] * max_n
-
+    fcf_list, ff_list, sub_list, fix_list = expand_variants(
+        fcf_features, ff_features, sublayer_param, fixed_param
+    )
     for fcf, ff, sub, fix in zip(fcf_list, ff_list, sub_list, fix_list):
         command_fit_cmr(
             fcf,
