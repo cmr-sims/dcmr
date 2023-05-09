@@ -253,6 +253,7 @@ def model_variant(
     sublayers=False,
     sublayer_param=None,
     intercept=False,
+    fixed_param=None,
 ):
     """Define parameters for a model variant."""
     wp = WeightParameters()
@@ -316,6 +317,14 @@ def model_variant(
         intercept = intercept_param['ff']
         expr = f'{intercept} * ones(loc.shape)'
         wp.set_weights('ff', {('task', 'item'): expr})
+
+    # fix parameters if specified
+    if fixed_param is not None:
+        for param_name, val in fixed_param.items():
+            wp.set_fixed({param_name: val})
+            if param_name not in wp.free:
+                raise ValueError(f'Parameter {param_name} is not free.')
+            del wp.free[param_name]
     return wp
 
 
@@ -532,7 +541,11 @@ def configure_model(
     if include is not None:
         include = [int(s) for s in split_arg(include)]
     sublayer_param = split_arg(sublayer_param)
-    fixed_param = split_arg(fixed_param)
+    fixed_param_list = split_arg(fixed_param)
+    fixed_param = {}
+    for expr in fixed_param_list:
+        param_name, val = expr.split('=')
+        fixed_param[param_name] = float(val)
 
     # load data to simulate
     logging.info(f'Loading data from {data_file}.')
@@ -547,6 +560,7 @@ def configure_model(
         sublayers=sublayers,
         sublayer_param=sublayer_param,
         intercept=intercept,
+        fixed_param=fixed_param,
     )
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
@@ -557,15 +571,6 @@ def configure_model(
         study = fr.filter_data(data, trial_type='study')
         if study['item_index'].isna().any():
             raise ValueError('Patterns not found for one or more items.')
-
-    # fix parameters if specified
-    if fixed_param is not None:
-        for expr in fixed_param:
-            param_name, val = expr.split('=')
-            param_def.set_fixed({param_name: float(val)})
-            if param_name not in param_def.free:
-                raise ValueError(f'Parameter {param_name} is not free.')
-            del param_def.free[param_name]
     return data, param_def, patterns
 
 
