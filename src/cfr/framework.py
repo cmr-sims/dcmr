@@ -1,6 +1,7 @@
 """Fit and simulate data using CMR."""
 
 import os
+from pathlib import Path
 import json
 import logging
 from itertools import combinations
@@ -968,6 +969,27 @@ def generate_model_name(
     if fixed:
         res_name += f'_fix-{fixed.replace("=", "")}'
     return res_name
+
+
+def get_study_paths(study):
+    """Get relevant paths based on environment."""
+    study_dir = os.environ['STUDYDIR']
+    if not study_dir:
+        raise EnvironmentError('STUDYDIR not defined.')
+
+    study_dir = Path(study_dir)
+    if not study_dir.exists():
+        raise IOError(f'Study directory does not exist: {study_dir}')
+
+    data_file = study_dir / study / f'{study}_data.csv'
+    if not data_file.exists():
+        raise IOError(f'Data file does not exist: {data_file}')
+
+    patterns_file = study_dir / study / f'{study}_patterns.hdf5'
+    if not patterns_file.exists():
+        raise IOError(f'Patterns file does not exist: {patterns_file}')
+
+    return study_dir, data_file, patterns_file
 
 
 def command_fit_cmr(
