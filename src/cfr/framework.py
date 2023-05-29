@@ -1203,10 +1203,10 @@ def plan_xval_cmr(
         )
 
 
-def command_sim_cmr(study, fit_name, model_name, n_rep=1):
+def command_sim_cmr(study, fit, model, n_rep=1):
     """Generate command line arguments for simulating CMR."""
     study_dir, data_file, patterns_file = get_study_paths(study)
-    fit_dir = study_dir / study / 'fits' / fit_name / model_name
+    fit_dir = study_dir / study / 'fits' / fit / model
     if not fit_dir.exists():
         raise IOError(f'Fit directory does not exist: {fit_dir}')
     print(f'cfr-sim-cmr {data_file} {patterns_file} {fit_dir} -r {n_rep}')
@@ -1214,8 +1214,8 @@ def command_sim_cmr(study, fit_name, model_name, n_rep=1):
 
 @click.command()
 @click.argument("study")
-@click.argument("fit_name")
-@click.argument("model_names")
+@click.argument("fit")
+@click.argument("models")
 @click.option(
     "--n-sim-reps",
     "-r",
@@ -1223,7 +1223,7 @@ def command_sim_cmr(study, fit_name, model_name, n_rep=1):
     default=1,
     help="number of experiment replications to simulate",
 )
-def plan_sim_cmr(study, fit_name, model_names, n_sim_reps):
+def plan_sim_cmr(study, fit, models, n_sim_reps):
     """Print command lines for simulating multiple models."""
-    for model_name in model_names.split(","):
-        command_sim_cmr(study, fit_name, model_name, n_sim_reps)
+    for model in models.split(","):
+        command_sim_cmr(study, fit, model, n_sim_reps)
