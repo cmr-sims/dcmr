@@ -1020,7 +1020,7 @@ def command_fit_cmr(
         opts += f' -p {subpar}'
     if fixed:
         opts += f' -f {fixed}'
-    full_dir = os.path.join(study_dir, 'cfr', res_dir, res_name)
+    full_dir = os.path.join(study_dir, study, res_dir, res_name)
 
     print(f'cfr-fit-cmr {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
 
@@ -1125,7 +1125,7 @@ def command_xval_cmr(
         opts += f' -p {subpar}'
     if fixed:
         opts += f' -f {fixed}'
-    full_dir = os.path.join(study_dir, 'cfr', res_dir, res_name)
+    full_dir = os.path.join(study_dir, study, res_dir, res_name)
 
     print(f'cfr-xval-cmr {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
 
@@ -1206,8 +1206,8 @@ def plan_xval_cmr(
 def command_sim_cmr(study, fit_name, model_name, n_rep=1):
     """Generate command line arguments for simulating CMR."""
     study_dir, data_file, patterns_file = get_study_paths(study)
-    fit_dir = os.path.join(study_dir, 'cfr', 'fits', fit_name, model_name)
-    if not os.path.exists(fit_dir):
+    fit_dir = study_dir / study / 'fits' / fit_name / model_name
+    if not fit_dir.exists():
         raise IOError(f'Fit directory does not exist: {fit_dir}')
     print(f'cfr-sim-cmr {data_file} {patterns_file} {fit_dir} -r {n_rep}')
 
