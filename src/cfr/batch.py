@@ -44,10 +44,10 @@ def command_fit_cmr(
     sublayers,
     subpar,
     fixed,
-    n_rep=10,
-    n_job=48,
+    n_reps=10,
+    n_jobs=48,
     tol=0.00001,
-    n_sim_rep=50,
+    n_sim_reps=50,
 ):
     """Generate command line arguments for fitting CMR."""
     study_dir, data_file, patterns_file = framework.get_study_paths(study)
@@ -55,7 +55,7 @@ def command_fit_cmr(
     res_name = framework.generate_model_name(
         fcf_features, ff_features, sublayers, subpar, fixed
     )
-    opts = f'-t {tol:.6f} -n {n_rep} -j {n_job} -r {n_sim_rep}'
+    opts = f'-t {tol:.6f} -n {n_reps} -j {n_jobs} -r {n_sim_reps}'
 
     if sublayers:
         opts = f'--sublayers {opts}'
@@ -113,10 +113,7 @@ def plan_fit_cmr(
     sublayers,
     sublayer_param,
     fixed_param,
-    n_reps,
-    n_jobs,
-    tol,
-    n_sim_reps,
+    **kwargs,
 ):
     """Print command lines for fitting multiple models."""
     fcf_list, ff_list, sub_list, fix_list = expand_variants(
@@ -131,10 +128,7 @@ def plan_fit_cmr(
             sublayers,
             sub,
             fix,
-            n_reps,
-            n_jobs,
-            tol,
-            n_sim_reps,
+            **kwargs,
         )
 
 
@@ -148,8 +142,8 @@ def command_xval_cmr(
     fixed,
     n_folds=None,
     fold_key=None,
-    n_rep=10,
-    n_job=48,
+    n_reps=10,
+    n_jobs=48,
     tol=0.00001,
 ):
     """Generate command line arguments for fitting CMR."""
@@ -158,7 +152,7 @@ def command_xval_cmr(
     res_name = framework.generate_model_name(
         fcf_features, ff_features, sublayers, subpar, fixed
     )
-    opts = f'-t {tol:.6f} -n {n_rep} -j {n_job}'
+    opts = f'-t {tol:.6f} -n {n_reps} -j {n_jobs}'
     if n_folds is not None:
         opts += f' -d {n_folds}'
     if fold_key is not None:
@@ -224,11 +218,7 @@ def plan_xval_cmr(
     sublayers,
     sublayer_param,
     fixed_param,
-    n_folds,
-    fold_key,
-    n_reps,
-    n_jobs,
-    tol,
+    **kwargs,
 ):
     """Print command lines for fitting multiple models."""
     fcf_list, ff_list, sub_list, fix_list = expand_variants(
@@ -243,11 +233,7 @@ def plan_xval_cmr(
             sublayers,
             sub,
             fix,
-            n_folds,
-            fold_key,
-            n_reps,
-            n_jobs,
-            tol,
+            **kwargs,
         )
 
 
