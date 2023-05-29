@@ -994,10 +994,10 @@ def get_study_paths(study):
 
 def command_fit_cmr(
     study,
+    fit,
     fcf_features,
     ff_features,
     sublayers,
-    res_dir,
     subpar,
     fixed,
     n_rep=10,
@@ -1020,16 +1020,16 @@ def command_fit_cmr(
         opts += f' -p {subpar}'
     if fixed:
         opts += f' -f {fixed}'
-    full_dir = os.path.join(study_dir, study, res_dir, res_name)
+    full_dir = study_dir / study / 'fits' / fit / res_name
 
     print(f'cfr-fit-cmr {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
 
 
 @click.command()
 @click.argument("study")
+@click.argument("fit")
 @click.argument("fcf_features")
 @click.argument("ff_features")
-@click.argument("res_dir", type=click.Path())
 @click.option("--sublayers/--no-sublayers", default=False)
 @click.option(
     "--sublayer-param",
@@ -1061,9 +1061,9 @@ def command_fit_cmr(
 )
 def plan_fit_cmr(
     study,
+    fit,
     fcf_features,
     ff_features,
-    res_dir,
     sublayers,
     sublayer_param,
     fixed_param,
@@ -1079,10 +1079,10 @@ def plan_fit_cmr(
     for fcf, ff, sub, fix in zip(fcf_list, ff_list, sub_list, fix_list):
         command_fit_cmr(
             study,
+            fit,
             fcf,
             ff,
             sublayers,
-            res_dir,
             sub,
             fix,
             n_reps,
@@ -1094,10 +1094,10 @@ def plan_fit_cmr(
 
 def command_xval_cmr(
     study,
+    fit,
     fcf_features,
     ff_features,
     sublayers,
-    res_dir,
     subpar,
     fixed,
     n_folds=None,
@@ -1125,16 +1125,16 @@ def command_xval_cmr(
         opts += f' -p {subpar}'
     if fixed:
         opts += f' -f {fixed}'
-    full_dir = os.path.join(study_dir, study, res_dir, res_name)
+    full_dir = study_dir / study / 'fits' / fit / res_name
 
     print(f'cfr-xval-cmr {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
 
 
 @click.command()
 @click.argument("study")
+@click.argument("fit")
 @click.argument("fcf_features")
 @click.argument("ff_features")
-@click.argument("res_dir", type=click.Path())
 @click.option("--sublayers/--no-sublayers", default=False)
 @click.option(
     "--sublayer-param",
@@ -1170,9 +1170,9 @@ def command_xval_cmr(
 @click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
 def plan_xval_cmr(
     study,
+    fit,
     fcf_features,
     ff_features,
-    res_dir,
     sublayers,
     sublayer_param,
     fixed_param,
@@ -1189,10 +1189,10 @@ def plan_xval_cmr(
     for fcf, ff, sub, fix in zip(fcf_list, ff_list, sub_list, fix_list):
         command_xval_cmr(
             study,
+            fit,
             fcf,
             ff,
             sublayers,
-            res_dir,
             sub,
             fix,
             n_folds,
