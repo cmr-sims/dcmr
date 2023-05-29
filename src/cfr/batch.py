@@ -261,3 +261,23 @@ def plan_sim_cmr(study, fit, models, n_sim_reps):
     """Print command lines for simulating multiple models."""
     for model in models.split(","):
         command_sim_cmr(study, fit, model, n_sim_reps)
+
+
+def command_plot_fit(study, fit, model, ext="svg"):
+    """Generate command line arguments for plotting CMR simulations."""
+    study_dir, data_file, patterns_file = framework.get_study_paths(study)
+    fit_dir = study_dir / study / 'fits' / fit / model
+    if not fit_dir.exists():
+        raise IOError(f'Fit directory does not exist: {fit_dir}')
+    print(f'cfr-plot-fit -e {ext} {data_file} {patterns_file} {fit_dir}')
+
+
+@click.command()
+@click.argument("study")
+@click.argument("fit")
+@click.argument("models")
+@click.option("--ext", "-e", default="svg", help="figure file type (default: svg)")
+def plan_plot_fit(study, fit, models, **kwargs):
+    """Print command lines for plotting fit for multiple models."""
+    for model in models.split(","):
+        command_plot_fit(study, fit, model, **kwargs)

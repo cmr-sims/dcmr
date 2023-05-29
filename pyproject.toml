@@ -43,6 +43,7 @@ cfr-plan-fit-cmr = "cfr.batch:plan_fit_cmr"
 cfr-plan-xval-cmr = "cfr.batch:plan_xval_cmr"
 cfr-plan-sim-cmr = "cfr.batch:plan_sim_cmr"
 cfr-plot-fit = "cfr.reports:plot_fit"
+cfr-plan-plot-fit = "cfr.batch:plan_plot_fit"
 cfr-decode-eeg = "cfr.decode:decode_eeg"
 cfr-decode-context = "cfr.decode:decode_context"
 
