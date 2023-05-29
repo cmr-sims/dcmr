@@ -544,9 +544,10 @@ def configure_model(
     sublayer_param = split_arg(sublayer_param)
     fixed_param_list = split_arg(fixed_param)
     fixed_param = {}
-    for expr in fixed_param_list:
-        param_name, val = expr.split('=')
-        fixed_param[param_name] = float(val)
+    if fixed_param_list is not None:
+        for expr in fixed_param_list:
+            param_name, val = expr.split('=')
+            fixed_param[param_name] = float(val)
 
     # load data to simulate
     logging.info(f'Loading data from {data_file}.')
