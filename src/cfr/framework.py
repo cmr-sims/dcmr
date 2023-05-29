@@ -993,6 +993,7 @@ def get_study_paths(study):
 
 
 def command_fit_cmr(
+    study,
     fcf_features,
     ff_features,
     sublayers,
@@ -1005,12 +1006,7 @@ def command_fit_cmr(
     n_sim_rep=50,
 ):
     """Generate command line arguments for fitting CMR."""
-    study_dir = os.environ['STUDYDIR']
-    if not study_dir:
-        raise EnvironmentError('STUDYDIR not defined.')
-
-    data_file = os.path.join(study_dir, 'cfr', 'cfr_eeg_mixed.csv')
-    patterns_file = os.path.join(study_dir, 'cfr', 'cfr_patterns.hdf5')
+    study_dir, data_file, patterns_file = get_study_paths(study)
     inputs = f'{data_file} {patterns_file}'
     res_name = generate_model_name(fcf_features, ff_features, sublayers, subpar, fixed)
     opts = f'-t {tol:.6f} -n {n_rep} -j {n_job} -r {n_sim_rep}'
@@ -1030,6 +1026,7 @@ def command_fit_cmr(
 
 
 @click.command()
+@click.argument("study")
 @click.argument("fcf_features")
 @click.argument("ff_features")
 @click.argument("res_dir", type=click.Path())
@@ -1063,6 +1060,7 @@ def command_fit_cmr(
     help="number of experiment replications to simulate",
 )
 def plan_fit_cmr(
+    study,
     fcf_features,
     ff_features,
     res_dir,
@@ -1080,6 +1078,7 @@ def plan_fit_cmr(
     )
     for fcf, ff, sub, fix in zip(fcf_list, ff_list, sub_list, fix_list):
         command_fit_cmr(
+            study,
             fcf,
             ff,
             sublayers,
@@ -1094,6 +1093,7 @@ def plan_fit_cmr(
 
 
 def command_xval_cmr(
+    study,
     fcf_features,
     ff_features,
     sublayers,
@@ -1107,12 +1107,7 @@ def command_xval_cmr(
     tol=0.00001,
 ):
     """Generate command line arguments for fitting CMR."""
-    study_dir = os.environ['STUDYDIR']
-    if not study_dir:
-        raise EnvironmentError('STUDYDIR not defined.')
-
-    data_file = os.path.join(study_dir, 'cfr', 'cfr_eeg_mixed.csv')
-    patterns_file = os.path.join(study_dir, 'cfr', 'cfr_patterns.hdf5')
+    study_dir, data_file, patterns_file = get_study_paths(study)
     inputs = f'{data_file} {patterns_file}'
     res_name = generate_model_name(fcf_features, ff_features, sublayers, subpar, fixed)
     opts = f'-t {tol:.6f} -n {n_rep} -j {n_job}'
@@ -1136,6 +1131,7 @@ def command_xval_cmr(
 
 
 @click.command()
+@click.argument("study")
 @click.argument("fcf_features")
 @click.argument("ff_features")
 @click.argument("res_dir", type=click.Path())
@@ -1173,6 +1169,7 @@ def command_xval_cmr(
 )
 @click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
 def plan_xval_cmr(
+    study,
     fcf_features,
     ff_features,
     res_dir,
@@ -1191,6 +1188,7 @@ def plan_xval_cmr(
     )
     for fcf, ff, sub, fix in zip(fcf_list, ff_list, sub_list, fix_list):
         command_xval_cmr(
+            study,
             fcf,
             ff,
             sublayers,
@@ -1205,15 +1203,9 @@ def plan_xval_cmr(
         )
 
 
-def command_sim_cmr(fit_name, model_name, n_rep=1):
+def command_sim_cmr(study, fit_name, model_name, n_rep=1):
     """Generate command line arguments for simulating CMR."""
-    study_dir = os.environ['STUDYDIR']
-    if not study_dir:
-        raise EnvironmentError('STUDYDIR not defined.')
-
-    data_file = os.path.join(study_dir, 'cfr', 'cfr_eeg_mixed.csv')
-    patterns_file = os.path.join(study_dir, 'cfr', 'cfr_patterns.hdf5')
-
+    study_dir, data_file, patterns_file = get_study_paths(study)
     fit_dir = os.path.join(study_dir, 'cfr', 'fits', fit_name, model_name)
     if not os.path.exists(fit_dir):
         raise IOError(f'Fit directory does not exist: {fit_dir}')
@@ -1221,6 +1213,7 @@ def command_sim_cmr(fit_name, model_name, n_rep=1):
 
 
 @click.command()
+@click.argument("study")
 @click.argument("fit_name")
 @click.argument("model_names")
 @click.option(
@@ -1230,7 +1223,7 @@ def command_sim_cmr(fit_name, model_name, n_rep=1):
     default=1,
     help="number of experiment replications to simulate",
 )
-def plan_sim_cmr(fit_name, model_names, n_sim_reps):
+def plan_sim_cmr(study, fit_name, model_names, n_sim_reps):
     """Print command lines for simulating multiple models."""
     for model_name in model_names.split(","):
-        command_sim_cmr(fit_name, model_name, n_sim_reps)
+        command_sim_cmr(study, fit_name, model_name, n_sim_reps)
