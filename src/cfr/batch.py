@@ -1,6 +1,9 @@
 """Utilities for running commands in batches."""
 
+from pathlib import Path
+import shutil
 import numpy as np
+import pandas as pd
 import click
 from cfr import framework
 
@@ -281,3 +284,58 @@ def plan_plot_fit(study, fit, models, **kwargs):
     """Print command lines for plotting fit for multiple models."""
     for model in models.split(","):
         command_plot_fit(study, fit, model, **kwargs)
+
+
+@click.command()
+@click.argument("out_dir", type=click.Path())
+@click.argument("split_dirs", nargs=-1, type=click.Path(exists=True))
+def join_xval(out_dir, split_dirs):
+    """Join a split-up cross-validation."""
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    param_file = out_dir / "parameters.json"
+    search_file = out_dir / "xval_search.csv"
+    xval_file = out_dir / "xval.csv"
+    log_file = out_dir / "log_xval.txt"
+    log = ""
+    search_list = []
+    xval_list = []
+    for split_dir in split_dirs:
+        print(f"Loading data from {split_dir}.")
+        split_dir = Path(split_dir)
+
+        # copy parameters file
+        if not param_file.exists():
+            split_param_file = split_dir / "parameters.json"
+            if split_param_file.exists():
+                shutil.copy(split_param_file, param_file)
+            else:
+                raise IOError(f"Parameters file does not exist: {split_param_file}")
+
+        # add to log
+        split_log_file = split_dir / "log_xval.txt"
+        if not split_log_file.exists():
+            raise IOError(f"Log file does not exist: {split_log_file}")
+        log += split_log_file.read_text()
+
+        # add to search
+        split_search_file = split_dir / "xval_search.csv"
+        if not split_search_file.exists():
+            raise IOError(f"Search file does not exist: {split_search_file}")
+        split_search = pd.read_csv(split_search_file)
+        search_list.append(split_search)
+
+        # add to xval
+        split_xval_file = split_dir / "xval.csv"
+        if not split_xval_file.exists():
+            raise IOError(f"X-val file does not exist: {split_xval_file}")
+        split_xval = pd.read_csv(split_xval_file)
+        xval_list.append(split_xval)
+
+    # write out concatenated files
+    print(f"Writing data to {out_dir}.")
+    log_file.write_text(log)
+    search = pd.concat(search_list, ignore_index=True)
+    search.sort_values(["fold", "subject", "rep"]).to_csv(search_file, index=False)
+    xval = pd.concat(xval_list, ignore_index=True)
+    xval.sort_values(["fold", "subject"]).to_csv(xval_file, index=False)
