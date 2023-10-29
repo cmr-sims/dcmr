@@ -6,6 +6,9 @@ if [[ $USER = morton ]]; then
     export CFR_RESULTS=$HOME/Dropbox/work/cmr_cfr/cfr
     export CFR_FITS=$HOME/Dropbox/work/cmr_cfr/cfr/fits/v5
     export CFR_FIGURES=$HOME/Dropbox/work/cmr_cfr/cfr/figs/v2
+    export PEERS_RESULTS=$HOME/Dropbox/work/cmr_cfr/peers
+    export PEERS_FITS=$HOME/Dropbox/work/cmr_cfr/peers/fits/v5
+    export PEERS_FIGURES=$HOME/Dropbox/work/cmr_cfr/peers/figs/v1
 else
     . /work/03206/mortonne/lonestar/venv/cfr/bin/activate
     unset PYTHONPATH
