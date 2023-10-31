@@ -2,6 +2,7 @@
 
 import os
 from pkg_resources import resource_filename
+import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -208,6 +209,66 @@ def remove_subject_variance(data, var_name, id_vars):
     deviation = mean - data[var_name].mean()
     normalized = data[var_name] - deviation
     return normalized
+
+
+def plot_dist_rank_asym(data, dark, light, ax=None):
+    """Plot distance rank window statistic asymmetry."""
+    if ax is None:
+        ax = plt.gca()
+
+    # plot individual points for all models
+    plot_swarm_bar(
+        data,
+        x='rank',
+        y='source',
+        hue='source',
+        dark=dark,
+        light=light,
+        point_kind='strip',
+        ax=ax,
+    )
+    ax.tick_params(axis='x', labelsize='small')
+    ax.tick_params(axis='y', labelsize='large')
+    ax.axvline(0, *ax.get_ylim(), linewidth=1, color='k')
+    ax.set(
+        ylabel="",
+        xlabel="Semantic clustering asymmetry",
+    )
+
+    # add annotation to help with interpretation
+    prop = dict(
+        rotation='horizontal',
+        xycoords='axes fraction',
+        verticalalignment='center',
+        fontsize='large',
+    )
+    yoffset = -0.2
+    xoffset = 0.1
+    ax.annotate(
+        'Rel. to prev. item',
+        xy=(0, yoffset),
+        horizontalalignment='left',
+        **prop,
+    )
+    ax.annotate(
+        'Rel. to next item',
+        xy=(1, yoffset),
+        horizontalalignment='right',
+        **prop,
+    )
+    ax.annotate(
+        '',
+        xy=(0.5 - xoffset, yoffset),
+        xytext=(0.5 + xoffset, yoffset),
+        arrowprops=dict(arrowstyle="<|-|>", facecolor='k'),
+        xycoords='axes fraction',
+    )
+    ax.xaxis.set_label_coords(0.5, -0.28)
+
+    # plot mean of the data as a line for comparison
+    m = data.loc['Data', 'rank'].mean()
+    ax.axline([m, 0], slope=np.inf, linestyle='--', linewidth=0.5, color='k')
+    return ax
 
 
 def plot_trial_evidence(evidence, subject):
