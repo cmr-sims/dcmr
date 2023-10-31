@@ -176,7 +176,7 @@ def plot_swarm_bar(
         capsize=capsize,
         edgecolor='k',
         linewidth=0.75,
-        err_kws={'color': 'k', 'linewidth': 0.8}
+        err_kws={'color': 'k', 'linewidth': 0.8},
     )
 
     # remove overall xlabel and increase size of x-tick labels
@@ -381,7 +381,7 @@ def plot_slope_evidence(slope):
         join=False,
         zorder=2,
         ax=ax,
-        capsize=.4,
+        capsize=0.4,
         scale=1.25,
     )
     g.set_xticklabels(['Current', 'Previous', 'Baseline'], fontsize='large')
