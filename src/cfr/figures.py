@@ -172,11 +172,10 @@ def plot_swarm_bar(
         dodge=dodge,
         color='k',
         palette=light,
-        errwidth=0.8,
         capsize=capsize,
         edgecolor='k',
         linewidth=0.75,
-        errcolor='k',
+        err_kws={'color': 'k', 'linewidth': 0.8}
     )
 
     # remove overall xlabel and increase size of x-tick labels
