@@ -211,6 +211,24 @@ def remove_subject_variance(data, var_name, id_vars):
     return normalized
 
 
+def plot_xval_comp(xval, aspect=None, height=None):
+    """Plot cross-validation stat comparison."""
+    xval['deviation'] = remove_subject_variance(xval, 'logl_test_list', 'subject')
+    xval['mean_deviation'] = xval.groupby('model')['deviation'].transform('mean')
+    xval_sorted = xval.sort_values('mean_deviation').reset_index()
+    g = sns.catplot(
+        data=xval_sorted,
+        x='deviation',
+        y='model',
+        kind='point',
+        linestyle='none',
+        aspect=aspect,
+        height=height,
+    )
+    g.set(xlabel='Cross-validated log likelihood', ylabel='Model variant')
+    return g
+
+
 def plot_dist_rank_asym(data, dark, light, ax=None):
     """Plot distance rank window statistic asymmetry."""
     if ax is None:
