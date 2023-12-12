@@ -454,7 +454,6 @@ def get_sim2_models(study):
             'DCMR': 'cmrs_fcf-loc-cat-use',
             'DCMR-Variable': 'cmrs_fcf-loc-cat-use_sl-B_enc-B_rec',
             'DCMR-Restricted': 'cmrs_fcf-loc-cat-use_sl-B_enc-B_rec_fix-B_rec_cat1-B_rec_use1',
-            'DCMR-NoSemDrift': 'cmrs_fcf-loc-cat-use_sl-B_enc-B_rec_fix-B_enc_cat1-B_enc_use1-B_rec_cat1-B_rec_use1',
             'CMR MP16': 'cmrs_fcf-loc_ff-cat-use',
         }
     elif study == 'peers':
