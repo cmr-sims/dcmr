@@ -26,7 +26,7 @@
     "DCMR-ICD": {
         "full": "cmrs_fcf-loc-cat-use",
         "set1": "ICD",
-        "set2": "DCMR"
+        "set2": "DCMR-ICD"
     },
     "DCMR-ICD-FE-FR": {
         "full": "cmrs_fcf-loc-cat-use_sl-B_enc-B_rec",

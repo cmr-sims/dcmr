@@ -10,7 +10,7 @@
     "DCMR-ID": {
         "full": "cmrs_fcf-loc-use",
         "set1": "ID",
-        "set2": "DCMR"
+        "set2": "DCMR-ID"
     },
     "DCMR-ID-FE-FR": {
         "full": "cmrs_fcf-loc-use_sl-B_enc-B_rec",
