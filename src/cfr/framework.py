@@ -457,11 +457,13 @@ def get_sim_models(study, model_set, included=None):
             model_dict = {
                 s[model_set]: s['full']
                 for short_name, s in model_list.items()
-                if s[model_set] in included
+                if model_set in s and s[model_set] in included
             }
         else:
             model_dict = {
-                s[model_set]: s['full'] for short_name, s in model_list.items()
+                s[model_set]: s['full']
+                for short_name, s in model_list.items()
+                if model_set in s
             }
         model_names = list(model_dict.keys())
         models = list(model_dict.values())
