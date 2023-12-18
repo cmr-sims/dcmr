@@ -1,0 +1,39 @@
+{
+    "DCMR-I": {
+        "full": "cmrs_fcf-loc",
+        "set1": "I"
+    },
+    "DCMR-D": {
+        "full": "cmrs_fcf-use",
+        "set1": "D"
+    },
+    "DCMR-ID": {
+        "full": "cmrs_fcf-loc-use",
+        "set1": "ID",
+        "set2": "DCMR"
+    },
+    "DCMR-ID-FE-FR": {
+        "full": "cmrs_fcf-loc-use_sl-B_enc-B_rec",
+        "set1": "UR",
+        "set2": "DCMR-Variable"
+    },
+    "DCMR-ID-FE-FR-ED": {
+        "full": "cmrs_fcf-loc-use_sl-B_enc-B_rec_fix-B_enc_use1",
+        "set1": "ED"
+    },
+    "DCMR-ID-FE-FR-RD": {
+        "full": "cmrs_fcf-loc-use_sl-B_enc-B_rec_fix-B_rec_use1",
+        "set1": "RD",
+        "set2": "DCMR-Restricted"
+    },
+    "DCMR-ID-FE-FR-ED-RD": {
+        "full": "cmrs_fcf-loc-use_sl-B_enc-B_rec_fix-B_enc_use1-B_rec_use1",
+        "set1": "ED-RD",
+        "set2": "DCMR-NoSemDrift"
+    },
+    "DCMR-I-D": {
+        "full": "cmrs_fcf-loc_ff-use",
+        "set1": "I-D",
+        "set2": "CMR MP16"
+    }
+}
