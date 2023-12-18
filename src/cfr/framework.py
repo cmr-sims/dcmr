@@ -5,6 +5,7 @@ from pathlib import Path
 import json
 import logging
 from itertools import combinations
+from pkg_resources import resource_filename
 import numpy as np
 import pandas as pd
 import click
@@ -445,6 +446,26 @@ def read_model_sims(
     data = pd.concat(data_list, axis=0, keys=model_names + ['Data'])
     data.index.rename(['source', 'trial'], inplace=True)
     return data
+
+
+def get_sim_models(study, model_set, included=None):
+    """Get a list of models for a study."""
+    list_file = resource_filename('cfr', f'models/{study}.json')
+    with open(list_file, 'r') as f:
+        model_list = json.load(f)
+        if included is not None:
+            model_dict = {
+                s[model_set]: s['full']
+                for short_name, s in model_list.items()
+                if s[model_set] in included
+            }
+        else:
+            model_dict = {
+                s[model_set]: s['full'] for short_name, s in model_list.items()
+            }
+        model_names = list(model_dict.keys())
+        models = list(model_dict.values())
+        return models, model_names
 
 
 def get_sim2_models(study):
