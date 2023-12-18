@@ -470,30 +470,6 @@ def get_sim_models(study, model_set, included=None):
         return models, model_names
 
 
-def get_sim2_models(study):
-    """Get main models used in simulation 2."""
-    if study == 'cfr':
-        model_dict = {
-            'DCMR': 'cmrs_fcf-loc-cat-use',
-            'DCMR-Variable': 'cmrs_fcf-loc-cat-use_sl-B_enc-B_rec',
-            'DCMR-Restricted': 'cmrs_fcf-loc-cat-use_sl-B_enc-B_rec_fix-B_rec_cat1-B_rec_use1',
-            'CMR MP16': 'cmrs_fcf-loc_ff-cat-use',
-        }
-    elif study == 'peers':
-        model_dict = {
-            'DCMR': 'cmrs_fcf-loc-use',
-            'DCMR-Variable': 'cmrs_fcf-loc-use_sl-B_enc-B_rec',
-            'DCMR-Restricted': 'cmrs_fcf-loc-use_sl-B_enc-B_rec_fix-B_rec_use1',
-            'DCMR-NoSemDrift': 'cmrs_fcf-loc-use_sl-B_enc-B_rec_fix-B_enc_use1-B_rec_use1',
-            'CMR MP16': 'cmrs_fcf-loc_ff-use',
-        }
-    else:
-        raise ValueError(f'Invalid study: {study}')
-    models = list(model_dict.values())
-    model_names = list(model_dict.keys())
-    return models, model_names
-
-
 def get_sim2_all_models(study):
     """Get all models used in simulation 2."""
     if study == 'cfr':
