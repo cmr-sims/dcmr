@@ -470,42 +470,6 @@ def get_sim_models(study, model_set, included=None):
         return models, model_names
 
 
-def get_sim2_all_models(study):
-    """Get all models used in simulation 2."""
-    if study == 'cfr':
-        fixed, model_names = generate_restricted_models()
-        models = [
-            f'cmrs_fcf-loc-cat-use_sl-B_enc-B_rec_fix-{f.replace("=", "")}'
-            for f in fixed
-        ]
-        models = (
-            ['cmrs_fcf-loc-cat-use', 'cmrs_fcf-loc-cat-use_sl-B_enc-B_rec']
-            + models
-            + ['cmrs_fcf-loc_ff-cat-use']
-        )
-        model_names = ['ICD', 'UR'] + model_names + ['MP16']
-    elif study == 'peers':
-        models = [
-            'cmrs_fcf-loc-use',
-            'cmrs_fcf-loc-use_sl-B_enc-B_rec',
-            'cmrs_fcf-loc-use_sl-B_enc-B_rec_fix-B_enc_use1',
-            'cmrs_fcf-loc-use_sl-B_enc-B_rec_fix-B_rec_use1',
-            'cmrs_fcf-loc-use_sl-B_enc-B_rec_fix-B_enc_use1-B_rec_use1',
-            'cmrs_fcf-loc_ff-cat-use',
-        ]
-        model_names = [
-            'ID',
-            'UR',
-            'ED',
-            'RD',
-            'ED-RD',
-            'CMR MP16',
-        ]
-    else:
-        raise ValueError(f'Invalid study: {study}')
-    return models, model_names
-
-
 def aic(logl, n, k):
     """Akaike information criterion."""
     return -2 * logl + 2 * k + ((2 * k * (k + 1)) / (n - k - 1))
