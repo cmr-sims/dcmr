@@ -13,7 +13,7 @@ from cymr import cmr
 from cymr import fit
 from psifr import fr
 from cymr.cmr import CMRParameters
-from cfr import task
+from dcmr import task
 
 
 class WeightParameters(CMRParameters):
@@ -450,7 +450,7 @@ def read_model_sims(
 
 def get_sim_models(study, model_set, included=None):
     """Get a list of models for a study."""
-    list_file = resource_filename('cfr', f'models/{study}.json')
+    list_file = resource_filename('dcmr', f'models/{study}.json')
     with open(list_file, 'r') as f:
         model_list = json.load(f)
         if included is not None:

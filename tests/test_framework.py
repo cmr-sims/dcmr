@@ -1,6 +1,6 @@
 """Test code implementing the model framework."""
 
-from cfr import framework
+from dcmr import framework
 
 
 def test_weight_param1():

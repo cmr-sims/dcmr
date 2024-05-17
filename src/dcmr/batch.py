@@ -5,7 +5,7 @@ import shutil
 import numpy as np
 import pandas as pd
 import click
-from cfr import framework
+from dcmr import framework
 
 
 def expand_variants(fcf_features, ff_features, sublayer_param, fixed_param):

@@ -2,7 +2,7 @@
 
 import numpy as np
 import pandas as pd
-from cfr import decode
+from dcmr import decode
 import pytest
 
 

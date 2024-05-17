@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from cymr import cmr
-from cfr import framework
+from dcmr import framework
 from psifr import fr
 
 

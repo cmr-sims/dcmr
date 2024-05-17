@@ -6,7 +6,7 @@ import os
 import argparse
 import seaborn as sns
 from psifr import fr
-from cfr import task
+from dcmr import task
 
 
 def main(out_dir, csv_file, comp_csv=None, group_var=None):

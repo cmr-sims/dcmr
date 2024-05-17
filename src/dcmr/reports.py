@@ -12,14 +12,14 @@ import click
 matplotlib.use('Agg')
 from psifr import fr
 from cymr import cmr
-from cfr import task
-from cfr import framework
-from cfr import figures
+from dcmr import task
+from dcmr import framework
+from dcmr import figures
 
 
 def render_fit_html(fit_dir, curves, points, grids=None, ext='svg'):
     env = jn.Environment(
-        loader=jn.PackageLoader('cfr', 'templates'),
+        loader=jn.PackageLoader('dcmr', 'templates'),
         autoescape=jn.select_autoescape(['html']),
     )
     template = env.get_template('report.html')

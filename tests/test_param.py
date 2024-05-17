@@ -1,6 +1,6 @@
 """Test code defining CMR parameters."""
 
-from cfr import framework
+from dcmr import framework
 
 
 def test_scaling_param_w1():

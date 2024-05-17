@@ -6,7 +6,7 @@
 import argparse
 import numpy as np
 import pandas as pd
-from cfr import task
+from dcmr import task
 
 
 def main(image_dir, map_file, output_dir, pool_file):

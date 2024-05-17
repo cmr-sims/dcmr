@@ -1,7 +1,7 @@
 {
     "language": "eng",
     "license": "GPL-3.0+",
-    "title": "CMR-CFR: Evaluating the context maintenance and retrieval model on categorized free recall data",
+    "title": "DCMR: Evaluating the distributed context maintenance and retrieval model on free recall data",
     "upload_type": "software",
     "creators": [
         {

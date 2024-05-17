@@ -12,7 +12,7 @@ from psifr import fr
 def set_style(style_path=None):
     """Set default plot style."""
     if style_path is None:
-        style_path = resource_filename('cfr', 'figures.mplstyle')
+        style_path = resource_filename('dcmr', 'figures.mplstyle')
     plt.style.use(style_path)
 
 

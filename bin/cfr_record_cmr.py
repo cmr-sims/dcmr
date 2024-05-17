@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from cymr import cmr
-from cfr import task
+from dcmr import task
 
 
 def record_subject(data, subj_param, subject, param_def, patterns):

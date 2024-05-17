@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 import pandas as pd
 from psifr import fr
-from cfr import task
+from dcmr import task
 
 
 def semantic_crp_plots(data, sim_file, out_dir, kwargs, subj_kwargs):
