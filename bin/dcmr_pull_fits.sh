@@ -3,8 +3,7 @@
 # Pull fit results from a local or remote directory.
 
 if [[ $# -lt 2 ]]; then
-    echo "Usage:   cfr_pull_fits.sh src dest [rsync flags]"
-    echo "Example: cfr_pull_fits.sh lonestar:work/cmr_cfr/cfr/fits ~/Dropbox/work/cmr_cfr/cfr/fits"
+    echo "Usage:   dcmr_pull_fits.sh src dest [rsync flags]"
     exit 1
 fi
 
