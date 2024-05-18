@@ -37,12 +37,12 @@ dependencies = [
 
 [project.scripts]
 dcmr_restricted_models = "dcmr.framework:print_restricted_models"
-dcmr-fit-cmr = "dcmr.framework:fit_cmr"
-dcmr-xval-cmr = "dcmr.framework:xval_cmr"
-dcmr-sim-cmr = "dcmr.framework:sim_cmr"
-dcmr-plan-fit-cmr = "dcmr.batch:plan_fit_cmr"
-dcmr-plan-xval-cmr = "dcmr.batch:plan_xval_cmr"
-dcmr-plan-sim-cmr = "dcmr.batch:plan_sim_cmr"
+dcmr-fit = "dcmr.framework:fit_cmr"
+dcmr-xval = "dcmr.framework:xval_cmr"
+dcmr-sim = "dcmr.framework:sim_cmr"
+dcmr-plan-fit = "dcmr.batch:plan_fit_cmr"
+dcmr-plan-xval = "dcmr.batch:plan_xval_cmr"
+dcmr-plan-sim = "dcmr.batch:plan_sim_cmr"
 dcmr-join-xval = "dcmr.batch:join_xval"
 dcmr-plot-fit = "dcmr.reports:plot_fit"
 dcmr-plan-plot-fit = "dcmr.batch:plan_plot_fit"
