@@ -2,17 +2,17 @@
 
 if [[ $USER = morton || $USER = nmorton ]]; then
     . .venv/bin/activate
-    export STUDYDIR=$HOME/Dropbox/work/cmr_cfr
-    export CFR_RESULTS=$HOME/Dropbox/work/cmr_cfr/cfr
-    export CFR_FITS=$HOME/Dropbox/work/cmr_cfr/cfr/fits/v5
-    export CFR_FIGURES=$HOME/Dropbox/work/cmr_cfr/cfr/figs/v2
-    export PEERS_RESULTS=$HOME/Dropbox/work/cmr_cfr/peers
-    export PEERS_FITS=$HOME/Dropbox/work/cmr_cfr/peers/fits/v5
-    export PEERS_FIGURES=$HOME/Dropbox/work/cmr_cfr/peers/figs/v1
+    export STUDYDIR=$HOME/Dropbox/work/dcmr
+    export CFR_RESULTS=$HOME/Dropbox/work/dcmr/cfr
+    export CFR_FITS=$HOME/Dropbox/work/dcmr/cfr/fits/v5
+    export CFR_FIGURES=$HOME/Dropbox/work/dcmr/cfr/figs/v2
+    export PEERS_RESULTS=$HOME/Dropbox/work/dcmr/peers
+    export PEERS_FITS=$HOME/Dropbox/work/dcmr/peers/fits/v5
+    export PEERS_FIGURES=$HOME/Dropbox/work/dcmr/peers/figs/v1
 elif [[ $USER = mortonne ]]; then
     . /work/03206/mortonne/lonestar/venv/cfr/bin/activate
     unset PYTHONPATH
-    export STUDYDIR=/work/03206/mortonne/lonestar/cmr_cfr
+    export STUDYDIR=/work/03206/mortonne/lonestar/dcmr
 else
     echo "Warning: cannot set environment for unknown user $USER. Edit .profile to support your environment."
 fi

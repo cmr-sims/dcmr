@@ -1,11 +1,11 @@
 [project]
-name = "cfr"
+name = "dcmr"
 version = "0.1.0"
 authors = [
     {name = "Neal W Morton", email = "mortonne@gmail.com"},
     {name = "Sean M. Polyn", email = "sean.polyn@vanderbilt.edu"}
 ]
-description = "CMR-CFR: Context Maintenance and Retrieval model of categorized free recall"
+description = "DCMR: Distributed Context Maintenance and Retrieval model"
 readme = "README.md"
 requires-python = ">=3.7"
 keywords = ["modeling", "memory", "EEG"]
@@ -36,18 +36,18 @@ dependencies = [
 ]
 
 [project.scripts]
-cfr_restricted_models = "cfr.framework:print_restricted_models"
-cfr-fit-cmr = "cfr.framework:fit_cmr"
-cfr-xval-cmr = "cfr.framework:xval_cmr"
-cfr-sim-cmr = "cfr.framework:sim_cmr"
-cfr-plan-fit-cmr = "cfr.batch:plan_fit_cmr"
-cfr-plan-xval-cmr = "cfr.batch:plan_xval_cmr"
-cfr-plan-sim-cmr = "cfr.batch:plan_sim_cmr"
-cfr-join-xval = "cfr.batch:join_xval"
-cfr-plot-fit = "cfr.reports:plot_fit"
-cfr-plan-plot-fit = "cfr.batch:plan_plot_fit"
-cfr-decode-eeg = "cfr.decode:decode_eeg"
-cfr-decode-context = "cfr.decode:decode_context"
+dcmr_restricted_models = "dcmr.framework:print_restricted_models"
+dcmr-fit = "dcmr.framework:fit_cmr"
+dcmr-xval = "dcmr.framework:xval_cmr"
+dcmr-sim = "dcmr.framework:sim_cmr"
+dcmr-plan-fit = "dcmr.batch:plan_fit_cmr"
+dcmr-plan-xval = "dcmr.batch:plan_xval_cmr"
+dcmr-plan-sim = "dcmr.batch:plan_sim_cmr"
+dcmr-join-xval = "dcmr.batch:join_xval"
+dcmr-plot-fit = "dcmr.reports:plot_fit"
+dcmr-plan-plot-fit = "dcmr.batch:plan_plot_fit"
+dcmr-decode-eeg = "dcmr.decode:decode_eeg"
+dcmr-decode-context = "dcmr.decode:decode_context"
 
 [build-system]
 requires = ["setuptools", "wheel"]
