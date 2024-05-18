@@ -1,6 +1,6 @@
 # DCMR
 
-Analyze categorized free recall data using the context maintenance and retrieval (CMR) model.
+Analyze free recall data using the distributed context maintenance and retrieval (DCMR) model.
 
 ## Installation
 
