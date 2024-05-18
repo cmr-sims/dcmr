@@ -27,7 +27,7 @@ pip install -e dcmr
 ## Usage
 
 See the 
-[Analysis protocol](https://github.com/vucml/cmr_cfr/wiki/CFR-Analysis-Protocol)
+[Analysis protocol](https://github.com/cmr-sims/dcmr/wiki)
 for details of the analyses for the DCMR paper (in preparation). 
 
 ### Data
