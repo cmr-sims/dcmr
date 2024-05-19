@@ -1,5 +1,7 @@
 # DCMR
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11214414.svg)](https://doi.org/10.5281/zenodo.11214414)
+
 Analyze free recall data using the distributed context maintenance and retrieval (DCMR) model.
 
 ## Installation
