@@ -44,7 +44,7 @@ in a CSV file. Data in EMBAM/behavioral toolbox MAT-file format can be converted
 The CMR model uses weight matrices or "patterns" to define the strength of connections between layers of the model network. 
 To run simulations, you must first define these patterns and save them to a patterns file. 
 See the pattern creation 
-[notebook](https://github.com/cmr-sims/dcmr/blob/master/jupyter/create_patterns.ipynb).
+[notebook](https://github.com/cmr-sims/dcmr/blob/main/jupyter/create_patterns.ipynb).
 A model can make use of multiple patterns representing different types of pre-existing knowledge about a set of stimuli, 
 such as their category or detailed semantic features. 
 
