@@ -108,7 +108,7 @@ def read_study_recall(csv_file, block=True, block_category=True):
     if not os.path.exists(csv_file):
         raise ValueError(f'Data file does not exist: {csv_file}')
 
-    data = pd.read_csv(csv_file)
+    data = pd.read_csv(csv_file, engine='pyarrow', dtype_backend='pyarrow')
     if 'category' in data.columns:
         data = data.astype({'category': 'category'})
         data.category = data.category.cat.as_ordered()

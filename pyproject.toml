@@ -32,7 +32,8 @@ dependencies = [
     "ezlaunch",
     "mindstorm",
     "watermark",
-    "click"
+    "click",
+    "pyarrow"
 ]
 
 [project.scripts]
