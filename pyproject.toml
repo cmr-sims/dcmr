@@ -1,6 +1,6 @@
 [project]
 name = "dcmr"
-version = "0.1.0"
+version = "1.0.0-alpha"
 authors = [
     {name = "Neal W Morton", email = "mortonne@gmail.com"},
     {name = "Sean M. Polyn", email = "sean.polyn@vanderbilt.edu"}
