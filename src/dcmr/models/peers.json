@@ -19,7 +19,8 @@
     },
     "DCMR-ID-FE-FR-ED": {
         "full": "cmrs_fcf-loc-use_sl-B_enc-B_rec_fix-B_enc_use1",
-        "set1": "ED"
+        "set1": "ED",
+        "set2": "DCMR-NoEncSemDrift"
     },
     "DCMR-ID-FE-FR-RD": {
         "full": "cmrs_fcf-loc-use_sl-B_enc-B_rec_fix-B_rec_use1",
