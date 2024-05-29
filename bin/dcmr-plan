@@ -1,0 +1,68 @@
+#!/bin/bash
+#
+#  Print commands to run simulation analyses.
+
+if [[ $# -lt 1 ]]; then
+    echo "Usage: dcmr-plan sim command [jobs]"
+    echo "  sim: 1, 2, or 4"
+    echo "  command: fit, xval, or plot"
+    echo "  jobs: number of threads (only used for fit and xval)"
+    exit 1
+fi
+
+sim=$1
+command=$2
+if [[ $# -lt 3 ]]; then
+    jobs=1
+else
+    jobs=$3
+fi
+
+version=v5
+case $command in
+  fit)
+    program="dcmr-plan-fit"
+    opt="-n 5 -t 0.000010 -r 50 -j $jobs"
+    ;;
+  xval)
+    program="dcmr-plan-xval"
+    opt="-n 5 -t 0.000010 -k session -j $jobs"
+    ;;
+  plot)
+    program=""
+    ;;
+  *)
+    echo "Error: Unknown command: $command."
+    exit 1
+    ;;
+esac
+
+if [[ -n $program ]]; then
+    case $sim in
+      1)
+        $program cfr "$version" loc,cat,use,loc-cat,loc-use,cat-use,loc-cat-use none --sublayers $opt
+        ;;
+      2)
+        $program cfr "$version" loc-cat-use none --sublayers -p B_enc-B_rec $opt
+        $program cfr "$version" loc-cat-use none --sublayers -p B_enc-B_rec -f $(dcmr_restricted_models) $opt
+        $program cfr "$version" loc cat-use --sublayers $opt
+        ;;
+      4)
+        $program peers "$version" loc,use,loc-use none --sublayers $opt
+        $program peers "$version" loc-use none --sublayers -p B_enc-B_rec $opt
+        $program peers "$version" loc-use none --sublayers -p B_enc-B_rec -f B_enc_use=1,B_rec_use=1,B_enc_use=1-B_rec_use=1 $opt
+        $program peers "$version" loc use --sublayers $opt
+        ;;
+      *)
+        echo "Error: Unknown simulation: $sim."
+        exit 1
+    esac
+else
+    if [[ $sim = 4 ]]; then
+        study=peers
+    else
+        study=cfr
+    fi
+    models=$(dcmr-plan "$sim" fit | cut -d ' ' -f 6 | xargs basename | paste -s -d ',' -)
+    dcmr-plan-plot-fit "$study" "$version" "$models"
+fi
