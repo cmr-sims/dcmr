@@ -33,7 +33,8 @@ dependencies = [
     "mindstorm",
     "watermark",
     "click",
-    "pyarrow"
+    "pyarrow",
+    "jupyterlab",
 ]
 
 [project.scripts]
