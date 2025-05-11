@@ -5,7 +5,7 @@ if [[ $USER = morton || $USER = nmorton ]]; then
     export STUDYDIR=$HOME/Dropbox/work/dcmr
     export CFR_RESULTS=$HOME/Dropbox/work/dcmr/cfr
     export CFR_FITS=$HOME/Dropbox/work/dcmr/cfr/fits/v5
-    export CFR_FIGURES=$HOME/Dropbox/work/dcmr/cfr/figs/v2
+    export CFR_FIGURES=$HOME/Dropbox/work/dcmr/cfr/figs/v3
     export PEERS_RESULTS=$HOME/Dropbox/work/dcmr/peers
     export PEERS_FITS=$HOME/Dropbox/work/dcmr/peers/fits/v5
     export PEERS_FIGURES=$HOME/Dropbox/work/dcmr/peers/figs/v1
