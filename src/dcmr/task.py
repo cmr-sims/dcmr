@@ -43,10 +43,10 @@ def set_list_columns(data, columns):
 
 def get_prev_category(category):
     """Given current category for a list, get previous category."""
+    prev = category.copy()
+    prev[:] = None
     category = np.asarray(category)
-    prev = np.empty(category.shape, dtype=object)
-    trial_prev = ''
-    prev[0] = ''
+    trial_prev = None
     for i in range(1, len(category)):
         if category[i - 1] != category[i]:
             # just shifted category; update previous category
@@ -63,16 +63,13 @@ def label_block_category(data):
     labeled['prev'] = study_data.groupby(['subject', 'list'])['category'].transform(
         get_prev_category
     )
-    labeled['base'] = ''
+    labeled['base'] = labeled['category'].copy()
+    labeled.loc[:, 'base'] = None
     ucat = study_data['category'].unique()
-    for (curr, prev), df in labeled.groupby(['curr', 'prev']):
+    for (curr, prev), df in labeled.groupby(['curr', 'prev'], observed=True):
         if not prev:
             continue
         labeled.loc[df.index, 'base'] = np.setdiff1d(ucat, [curr, prev])[0]
-    labeled['prev'] = labeled['prev'].astype('category')
-    labeled['base'] = labeled['base'].astype('category')
-    labeled['prev'][labeled['prev'] == ''] = np.nan
-    labeled['base'][labeled['base'] == ''] = np.nan
     return labeled
 
 
