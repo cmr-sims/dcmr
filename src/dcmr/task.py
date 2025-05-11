@@ -51,7 +51,7 @@ def get_prev_category(category):
         if category[i - 1] != category[i]:
             # just shifted category; update previous category
             trial_prev = category[i - 1]
-        prev[i] = trial_prev
+        prev.iloc[i] = trial_prev
     return prev
 
 
