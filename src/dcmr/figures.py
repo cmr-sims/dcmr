@@ -16,6 +16,16 @@ def set_style(style_path=None):
     plt.style.use(style_path)
 
 
+def save_image(fig, fig_file):
+    """Save an image with no whitespace."""
+    ax = fig.axes[0]
+    ax.set_axis_off()
+    ax.margins(0, 0)
+    ax.xaxis.set_major_locator(plt.NullLocator())
+    ax.yaxis.set_major_locator(plt.NullLocator())
+    fig.savefig(fig_file, pad_inches=0, bbox_inches='tight')
+
+
 def plot_fit(
     data,
     group_var,
