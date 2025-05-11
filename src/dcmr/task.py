@@ -122,21 +122,7 @@ def label_block(data):
     labeled['block_len'] = labeled.groupby(block_keys)['block_pos'].transform('max')
 
     # get the number of blocks for each study list
-    n_block = labeled.groupby(list_keys)['block'].max()
-    n_block.name = 'n_block'
-
-    # merge the n_block field
-    labeled = pd.merge(
-        labeled, n_block, left_on=list_keys, right_on=list_keys, how='outer'
-    )
-
-    # position within block
-    labeled.loc[:, 'block_pos'] = labeled.groupby(block_keys)['position'].cumcount() + 1
-    block_len = labeled.groupby(block_keys)['block_pos'].max()
-    block_len.name = 'block_len'
-    labeled = pd.merge(
-        labeled, block_len, left_on=block_keys, right_on=block_keys, how='outer'
-    )
+    labeled['n_block'] = labeled.groupby(list_keys)['block'].transform('max')
     return labeled
 
 
