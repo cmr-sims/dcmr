@@ -503,6 +503,19 @@ def model_comp_weights(res, stat='aic'):
     return out
 
 
+def compare_fit(means):
+    """Compare model fit to mean measures."""
+    if "Data" not in means.columns:
+        raise ValueError("Must have a Data column.")
+    models = [n for n in means.columns if n != "Data"]
+    output = pd.DataFrame(columns=models, index=["rmsd"])
+
+    # rmsd
+    for model in models:
+        output.loc["rmsd", model] = np.sqrt(np.mean((means["Data"] - means[model]) ** 2))
+    return output
+
+
 def generate_restricted_models():
     """Generate restricted model definitions."""
     params = ['B_enc_cat', 'B_enc_use', 'B_rec_cat', 'B_rec_use']
