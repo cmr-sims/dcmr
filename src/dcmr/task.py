@@ -76,13 +76,50 @@ def label_block_category(data):
     return labeled
 
 
+def block_index(list_labels):
+    """
+    Get index of each block in a list.
+
+    Parameters
+    ----------
+    list_labels : pandas.Series
+        Position labels that define the blocks.
+
+    Returns
+    -------
+    block : pandas.Series
+        Block index of each position.
+    """
+    prev_label = ''
+    curr_block = 0
+    block = pd.Series(len(list_labels), dtype="int64[pyarrow]")
+    for i, label in enumerate(list_labels):
+        if pd.isnull(label):
+            # null values of label have no block and do not advance block
+            block[i] = None
+            continue
+
+        if prev_label != label:
+            curr_block += 1
+        block[i] = curr_block
+        prev_label = label
+    block.index = list_labels.index
+    return block
+
+
 def label_block(data):
     """Label features of category blocks."""
     # get the index of each contiguous block of same-category items
     labeled = data.copy()
     list_keys = ['subject', 'list', 'trial_type']
     block_keys = list_keys + ['block']
-    labeled['block'] = data.groupby(list_keys)['category'].transform(fr.block_index)
+    labeled['block'] = data.groupby(list_keys)['category'].transform(block_index)
+
+    # position within block
+    labeled['block_pos'] = (labeled.groupby(block_keys)['block'].cumcount() + 1).astype('int64[pyarrow]')
+
+    # block length
+    labeled['block_len'] = labeled.groupby(block_keys)['block_pos'].transform('max')
 
     # get the number of blocks for each study list
     n_block = labeled.groupby(list_keys)['block'].max()
