@@ -60,7 +60,7 @@
     "DCMR-ICD-FE-FR-RC-RD": {
         "full": "cmrs_fcf-loc-cat-use_sl-B_enc-B_rec_fix-B_rec_cat1-B_rec_use1",
         "set1": "RC-RD",
-        "set2": "DCMR-Restricted"
+        "set2": "DCMR-Focused"
     },
     "DCMR-ICD-FE-FR-EC-RC": {
         "full": "cmrs_fcf-loc-cat-use_sl-B_enc-B_rec_fix-B_enc_cat1-B_rec_cat1",
