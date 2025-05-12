@@ -174,6 +174,37 @@ def read_free_recall(csv_file, block=True, block_category=True):
     return merged
 
 
+def crp_recency(data, op_thresh=3, edges=None, labels=None, sp_edges=(5, 19)):
+    """Calculate a persistant recency effect lag-CRP analysis."""
+    if edges is None:
+        edges = [-19.5, -16.5, -5.5, -1.5, 0, 1.5, 5.5, 16.5, 19.5]
+    if labels is None:
+        labels = [-18, -11, -3, -1, 1, 3, 11, 18]
+    
+    crp_early = fr.lag_crp(
+        data,
+        test_key="input", 
+        test=lambda x, y: (x >= sp_edges[0]) & (x <= sp_edges[1]),
+        item_query=f"output <= {op_thresh} or not recall"
+    )
+    crp_early["Output"] = f"OP <= {op_thresh}"
+
+    crp_late = fr.lag_crp(
+        data,
+        test_key="input", 
+        test=lambda x, y: (x >= sp_edges[0]) & (x <= sp_edges[1]),
+        item_query=f"output > {op_thresh} or not recall"
+    )
+    crp_late["Output"] = f"OP > {op_thresh}"
+    crp = pd.concat([crp_early, crp_late], ignore_index=True)
+    
+    crp["Lag"] = pd.cut(crp["lag"], edges, labels=labels)
+    m = crp.groupby(["subject", "Output", "Lag"], observed=True)["prob"].mean()
+    res = m.reset_index()
+    res["Lag"] = res["Lag"].astype(int)
+    return res
+
+
 def label_clean_trials(data):
     """Label study and recall trials as clean or not."""
     # score data
