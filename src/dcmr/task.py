@@ -179,8 +179,8 @@ def crp_recency(data, op_thresh=3, edges=None, labels=None, sp_edges=(5, 19)):
     if edges is None:
         edges = [-19.5, -16.5, -5.5, -1.5, 0, 1.5, 5.5, 16.5, 19.5]
     if labels is None:
-        labels = [-18, -11, -3, -1, 1, 3, 11, 18]
-    
+        labels = [-18, -10.5, -3.5, -1, 1, 3.5, 10.5, 18]
+
     crp_early = fr.lag_crp(
         data,
         test_key="input", 
@@ -201,7 +201,7 @@ def crp_recency(data, op_thresh=3, edges=None, labels=None, sp_edges=(5, 19)):
     crp["Lag"] = pd.cut(crp["lag"], edges, labels=labels)
     m = crp.groupby(["subject", "Output", "Lag"], observed=True)["prob"].mean()
     res = m.reset_index()
-    res["Lag"] = res["Lag"].astype(int)
+    res["Lag"] = res["Lag"].astype(float)
     return res
 
 
