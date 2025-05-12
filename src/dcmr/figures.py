@@ -366,7 +366,7 @@ def plot_mean_block_pos_evidence(mean_evidence):
         y='evidence',
         hue='Category',
         palette=['C2'],
-        ci=None,
+        errorbar=None,
         ax=ax[0],
     )
     sns.lineplot(
@@ -375,7 +375,7 @@ def plot_mean_block_pos_evidence(mean_evidence):
         y='evidence',
         hue='Category',
         palette=['C0', 'C1'],
-        ci=None,
+        errorbar=None,
         ax=ax[1],
     )
     ax[0].set(ylabel='Evidence', xlabel='Block position', xticks=[1, 2, 3])
@@ -396,9 +396,11 @@ def plot_slope_evidence(slope):
     sns.swarmplot(
         data=ml_slopes,
         x='category',
+        hue='category',
         y='slope',
         palette=['C2', 'C0', 'C1'],
         zorder=1,
+        legend=False,
         ax=ax,
     )
     g = sns.pointplot(
@@ -406,11 +408,10 @@ def plot_slope_evidence(slope):
         x='category',
         y='slope',
         color='k',
-        join=False,
+        linestyle="none",
         zorder=2,
         ax=ax,
         capsize=0.4,
-        scale=1.25,
     )
     g.set_xticklabels(['Current', 'Previous', 'Baseline'], fontsize='large')
     g.set(xlabel='', ylabel='Evidence slope')
