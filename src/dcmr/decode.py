@@ -274,7 +274,7 @@ def mark_included_eeg_events(data, eeg_dir, subjects=None):
     columns = ['subject', 'list', 'position', 'trial_type']
     included_columns = columns + ['include']
     merged = pd.merge(data, events[included_columns], how='outer', on=columns)
-    merged['include'].fillna(False, inplace=True)
+    merged['include'] = merged['include'].fillna(0).astype(bool)
     return merged
 
 
