@@ -1,5 +1,6 @@
 """Functions to run classification of EEG data or network representation."""
 
+import sys
 import logging
 from pathlib import Path
 import click
@@ -425,6 +426,8 @@ def _decode_context_subject(
     sublayer,
     out_dir,
     subject,
+    sigmas=None,
+    n_reps=1,
     **kwargs,
 ):
     """Decode category from simulated context patterns for one suject."""
@@ -467,14 +470,34 @@ def _decode_context_subject(
     logger.info(f'Running classification.')
     include = study['include'].to_numpy()
     study_include = study.loc[include]
-    evidence = classify_patterns(
-        study_include, context[include], logger=logger, **kwargs
-    )
-    evidence.index = study_include.index
-
+    c = context[include]
+    if sigmas is not None:
+        # set random seed using a hash of the subject code
+        seed = hash(subject) % ((sys.maxsize + 1) * 2)
+        rng = np.random.default_rng(seed)
+        d_list = []
+        for sigma in sigmas:
+            for i in range(n_reps):
+                # add noise to the context we are classifying
+                c_noise = c + rng.normal(scale=sigma, size=c.shape)
+                evidence = classify_patterns(
+                    study_include, c_noise, logger=logger, **kwargs
+                )
+                evidence.index = study_include.index
+                d = pd.concat([study, evidence], axis=1)
+                d["sigma"] = sigma
+                d["rep"] = i + 1
+                d_list.append(d)
+        df = pd.concat(d_list, axis=0)
+    else:
+        # classify the raw context
+        evidence = classify_patterns(
+            study_include, c, logger=logger, **kwargs
+        )
+        evidence.index = study_include.index
+        df = pd.concat([study, evidence], axis=1)
     out_file = out_dir / f'sub-{subject_id}_decode.csv'
     logger.info(f'Writing results to {out_file}.')
-    df = pd.concat([study, evidence], axis=1)
     df.to_csv(out_file.as_posix())
 
 
@@ -508,6 +531,8 @@ def _decode_context_subject(
     help='multi-class method {["auto"], "ovr", "multinomial"}',
 )
 @click.option("--regularization", "-C", type=float, default=1, help="Regularization parameter (1.0)")
+@click.option("--sigmas", help="Noise levels to add (default: no noise)")
+@click.option("--n-reps", type=int, default=1, help="Number of replications of each noise level")
 def decode_context(
     data_file,
     patterns_file,
@@ -521,12 +546,17 @@ def decode_context(
     classifier,
     multi_class,
     regularization,
+    sigmas,
+    n_reps,
 ):
     "Decode category from simulated context states."
     if subjects is None:
         _, subjects = task.get_subjects()
     else:
         subjects = [int(s) for s in subjects.split(",")]
+    
+    if sigmas is not None:
+        sigmas = [float(s) for s in sigmas.split(",")]
 
     out_dir = Path(fit_dir) / f'decode_{sublayer}' / res_name
     out_dir.mkdir(exist_ok=True, parents=True)
@@ -539,6 +569,8 @@ def decode_context(
             sublayer,
             out_dir,
             subject,
+            sigmas=sigmas,
+            n_reps=n_reps,
             normalization=normalization,
             clf=classifier,
             multi_class=multi_class,
