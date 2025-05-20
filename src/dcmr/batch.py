@@ -8,34 +8,40 @@ import click
 from dcmr import framework
 
 
+def split_opt(opt):
+    """Split an option list."""
+    if opt is not None:
+        opt_list = opt.split(',')
+    else:
+        opt_list = []
+    return opt_list
+
+
+def expand_opt_lists(*opt_lists):
+    """"""
+    max_n = np.max([len(ol) for ol in opt_lists])
+    expand_lists = []
+    for ol in opt_lists:
+        if not ol:
+            el = [None] * max_n
+        elif len(ol) == 1:
+            el = ol * max_n
+        else:
+            el = ol
+        expand_lists.append(ol)
+    return tuple(expand_lists)
+
+
 def expand_variants(fcf_features, ff_features, sublayer_param, fixed_param):
     """Expand variant lists to make full specifications."""
-    fcf_list = fcf_features.split(',')
-    ff_list = ff_features.split(',')
-    if sublayer_param is not None:
-        sub_list = sublayer_param.split(',')
-    else:
-        sub_list = []
-    if fixed_param is not None:
-        fix_list = fixed_param.split(',')
-    else:
-        fix_list = []
+    fcf_list = split_opt(fcf_features)
+    ff_list = split_opt(ff_features)
+    sub_list = split_opt(sublayer_param)
+    fix_list = split_opt(fixed_param)
 
-    max_n = np.max([len(arg) for arg in [fcf_list, ff_list, sub_list, fix_list]])
-    if len(fcf_list) == 1:
-        fcf_list *= max_n
-    if len(ff_list) == 1:
-        ff_list *= max_n
-    if sublayer_param is not None:
-        if len(sub_list) == 1:
-            sub_list *= max_n
-    else:
-        sub_list = [None] * max_n
-    if fixed_param is not None:
-        if len(fix_list) == 1:
-            fix_list *= max_n
-    else:
-        fix_list = [None] * max_n
+    fcf_list, ff_list, sub_list, fix_list = batch.expand_opt_lists(
+        fcf_list, ff_list, sub_list, fix_list
+    )
     return fcf_list, ff_list, sub_list, fix_list
 
 
