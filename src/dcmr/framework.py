@@ -256,6 +256,7 @@ def model_variant(
     sublayer_param=None,
     intercept=False,
     fixed_param=None,
+    free_param=None,
 ):
     """Define parameters for a model variant."""
     wp = WeightParameters()
@@ -327,6 +328,13 @@ def model_variant(
             if param_name not in wp.free:
                 raise ValueError(f'Parameter {param_name} is not free.')
             del wp.free[param_name]
+    
+    # add free parameters and/or modify free parameters
+    if free_param is not None:
+        wp.set_free(free_param)
+        for param_name in free_param.keys():
+            if param_name in fixed_param:
+                del wp.fixed[param_name]
     return wp
 
 
@@ -569,6 +577,7 @@ def configure_model(
     sublayers,
     sublayer_param,
     fixed_param,
+    free_param,
     include,
 ):
     """Configure a model based on commandline input."""
@@ -584,6 +593,13 @@ def configure_model(
         for expr in fixed_param_list:
             param_name, val = expr.split('=')
             fixed_param[param_name] = float(val)
+    free_param_list = split_arg(free_param)
+    free_param = {}
+    if free_param_list is not None:
+        for expr in free_param_list:
+            param_name, val = expr.split('=')
+            low, high = val.split(':')
+            free_param[param_name] = (float(low), float(high))
 
     # load data to simulate
     logging.info(f'Loading data from {data_file}.')
@@ -599,6 +615,7 @@ def configure_model(
         sublayer_param=sublayer_param,
         intercept=intercept,
         fixed_param=fixed_param,
+        free_param=free_param,
     )
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
@@ -629,6 +646,11 @@ def configure_model(
     "--fixed-param",
     "-f",
     help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
+)
+@click.option(
+    "--free-param",
+    "-e",
+    help="dash-separated list of values for free parameter ranges (e.g., B_enc_cat=0:0.8)",
 )
 @click.option(
     "--n-reps",
@@ -663,6 +685,7 @@ def fit_cmr(
     sublayers,
     sublayer_param=None,
     fixed_param=None,
+    free_param=None,
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
@@ -689,6 +712,7 @@ def fit_cmr(
         sublayers,
         sublayer_param,
         fixed_param,
+        free_param,
         include,
     )
 
@@ -763,6 +787,11 @@ def fit_cmr(
     help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
 )
 @click.option(
+    "--free-param",
+    "-e",
+    help="dash-separated list of values for free parameter ranges (e.g., B_enc_cat=0:0.8)",
+)
+@click.option(
     "--n-folds",
     "-d",
     type=int,
@@ -799,6 +828,7 @@ def xval_cmr(
     sublayers,
     sublayer_param=None,
     fixed_param=None,
+    free_param=None,
     n_folds=None,
     fold_key=None,
     n_reps=1,
@@ -826,6 +856,7 @@ def xval_cmr(
         sublayers,
         sublayer_param,
         fixed_param,
+        free_param,
         include,
     )
 
@@ -959,6 +990,7 @@ def generate_model_name(
     sublayers,
     subpar,
     fixed,
+    free,
 ):
     """Generate standard model name from configuration."""
     if sublayers:
@@ -974,6 +1006,8 @@ def generate_model_name(
         res_name += f'_sl-{subpar}'
     if fixed:
         res_name += f'_fix-{fixed.replace("=", "")}'
+    if free:
+        res_name += f'_free-{free.replace("=", "")}'
     return res_name
 
 

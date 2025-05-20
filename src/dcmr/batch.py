@@ -32,17 +32,18 @@ def expand_opt_lists(*opt_lists):
     return tuple(expand_lists)
 
 
-def expand_variants(fcf_features, ff_features, sublayer_param, fixed_param):
+def expand_variants(fcf_features, ff_features, sublayer_param, fixed_param, free_param):
     """Expand variant lists to make full specifications."""
     fcf_list = split_opt(fcf_features)
     ff_list = split_opt(ff_features)
     sub_list = split_opt(sublayer_param)
     fix_list = split_opt(fixed_param)
+    free_list = split_opt(free_param)
 
     fcf_list, ff_list, sub_list, fix_list = expand_opt_lists(
         fcf_list, ff_list, sub_list, fix_list
     )
-    return fcf_list, ff_list, sub_list, fix_list
+    return fcf_list, ff_list, sub_list, fix_list, free_list
 
 
 def command_fit_cmr(
@@ -53,6 +54,7 @@ def command_fit_cmr(
     sublayers,
     subpar,
     fixed,
+    free,
     n_reps=10,
     n_jobs=48,
     tol=0.00001,
@@ -62,7 +64,7 @@ def command_fit_cmr(
     study_dir, data_file, patterns_file = framework.get_study_paths(study)
     inputs = f'{data_file} {patterns_file}'
     res_name = framework.generate_model_name(
-        fcf_features, ff_features, sublayers, subpar, fixed
+        fcf_features, ff_features, sublayers, subpar, fixed, free
     )
     opts = f'-t {tol:.6f} -n {n_reps} -j {n_jobs} -r {n_sim_reps}'
 
@@ -75,6 +77,8 @@ def command_fit_cmr(
         opts += f' -p {subpar}'
     if fixed:
         opts += f' -f {fixed}'
+    if free:
+        opts += f' -e {free}'
     full_dir = study_dir / study / 'fits' / fit / res_name
 
     print(f'cfr-fit-cmr {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
@@ -95,6 +99,11 @@ def command_fit_cmr(
     "--fixed-param",
     "-f",
     help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
+)
+@click.option(
+    "--free-param",
+    "-e",
+    help="dash-separated list of values for free parameter ranges (e.g., B_enc_cat=0:0.8)",
 )
 @click.option(
     "--n-reps",
@@ -122,13 +131,14 @@ def plan_fit_cmr(
     sublayers,
     sublayer_param,
     fixed_param,
+    free_param,
     **kwargs,
 ):
     """Print command lines for fitting multiple models."""
-    fcf_list, ff_list, sub_list, fix_list = expand_variants(
-        fcf_features, ff_features, sublayer_param, fixed_param
+    fcf_list, ff_list, sub_list, fix_list, free_list = expand_variants(
+        fcf_features, ff_features, sublayer_param, fixed_param, free_param
     )
-    for fcf, ff, sub, fix in zip(fcf_list, ff_list, sub_list, fix_list):
+    for fcf, ff, sub, fix, free in zip(fcf_list, ff_list, sub_list, fix_list, free_list):
         command_fit_cmr(
             study,
             fit,
@@ -137,6 +147,7 @@ def plan_fit_cmr(
             sublayers,
             sub,
             fix,
+            free,
             **kwargs,
         )
 
@@ -149,6 +160,7 @@ def command_xval_cmr(
     sublayers,
     subpar,
     fixed,
+    free,
     n_folds=None,
     fold_key=None,
     n_reps=10,
@@ -159,7 +171,7 @@ def command_xval_cmr(
     study_dir, data_file, patterns_file = framework.get_study_paths(study)
     inputs = f'{data_file} {patterns_file}'
     res_name = framework.generate_model_name(
-        fcf_features, ff_features, sublayers, subpar, fixed
+        fcf_features, ff_features, sublayers, subpar, fixed, free
     )
     opts = f'-t {tol:.6f} -n {n_reps} -j {n_jobs}'
     if n_folds is not None:
@@ -176,6 +188,8 @@ def command_xval_cmr(
         opts += f' -p {subpar}'
     if fixed:
         opts += f' -f {fixed}'
+    if free:
+        opts += f' -e {free}'
     full_dir = study_dir / study / 'fits' / fit / res_name
 
     print(f'cfr-xval-cmr {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
@@ -196,6 +210,11 @@ def command_xval_cmr(
     "--fixed-param",
     "-f",
     help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
+)
+@click.option(
+    "--free-param",
+    "-e",
+    help="dash-separated list of values for free parameter ranges (e.g., B_enc_cat=0:0.8)",
 )
 @click.option(
     "--n-folds",
@@ -227,13 +246,14 @@ def plan_xval_cmr(
     sublayers,
     sublayer_param,
     fixed_param,
+    free_param,
     **kwargs,
 ):
     """Print command lines for fitting multiple models."""
-    fcf_list, ff_list, sub_list, fix_list = expand_variants(
-        fcf_features, ff_features, sublayer_param, fixed_param
+    fcf_list, ff_list, sub_list, fix_list, free_list = expand_variants(
+        fcf_features, ff_features, sublayer_param, fixed_param, free_param
     )
-    for fcf, ff, sub, fix in zip(fcf_list, ff_list, sub_list, fix_list):
+    for fcf, ff, sub, fix, free in zip(fcf_list, ff_list, sub_list, fix_list, free_list):
         command_xval_cmr(
             study,
             fit,
@@ -242,6 +262,7 @@ def plan_xval_cmr(
             sublayers,
             sub,
             fix,
+            free,
             **kwargs,
         )
 
