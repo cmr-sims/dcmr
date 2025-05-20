@@ -81,7 +81,7 @@ def command_fit_cmr(
         opts += f' -e {free}'
     full_dir = study_dir / study / 'fits' / fit / res_name
 
-    print(f'cfr-fit-cmr {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
+    print(f'dcmr-fit {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
 
 
 @click.command()
@@ -192,7 +192,7 @@ def command_xval_cmr(
         opts += f' -e {free}'
     full_dir = study_dir / study / 'fits' / fit / res_name
 
-    print(f'cfr-xval-cmr {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
+    print(f'dcmr-xval {inputs} {fcf_features} {ff_features} {full_dir} {opts}')
 
 
 @click.command()
@@ -273,7 +273,7 @@ def command_sim_cmr(study, fit, model, n_rep=1):
     fit_dir = study_dir / study / 'fits' / fit / model
     if not fit_dir.exists():
         raise IOError(f'Fit directory does not exist: {fit_dir}')
-    print(f'cfr-sim-cmr {data_file} {patterns_file} {fit_dir} -r {n_rep}')
+    print(f'dcmr-sim {data_file} {patterns_file} {fit_dir} -r {n_rep}')
 
 
 @click.command()
@@ -299,7 +299,7 @@ def command_plot_fit(study, fit, model, ext="svg"):
     fit_dir = study_dir / study / 'fits' / fit / model
     if not fit_dir.exists():
         raise IOError(f'Fit directory does not exist: {fit_dir}')
-    print(f'cfr-plot-fit -e {ext} {data_file} {patterns_file} {fit_dir}')
+    print(f'dcmr-plot-fit -e {ext} {data_file} {patterns_file} {fit_dir}')
 
 
 @click.command()
