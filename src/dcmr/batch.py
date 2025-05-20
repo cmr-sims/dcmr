@@ -39,7 +39,7 @@ def expand_variants(fcf_features, ff_features, sublayer_param, fixed_param):
     sub_list = split_opt(sublayer_param)
     fix_list = split_opt(fixed_param)
 
-    fcf_list, ff_list, sub_list, fix_list = batch.expand_opt_lists(
+    fcf_list, ff_list, sub_list, fix_list = expand_opt_lists(
         fcf_list, ff_list, sub_list, fix_list
     )
     return fcf_list, ff_list, sub_list, fix_list
