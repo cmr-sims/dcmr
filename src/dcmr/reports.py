@@ -221,6 +221,7 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
         fr.distance_crp,
         {'index_key': 'item_index', 'distances': distances, 'edges': edges},
         'prob',
+        'center',
         fr.plot_distance_crp,
         {'min_samples': 10},
         fig_dir,
@@ -240,6 +241,7 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
                 'test': lambda x, y: x == y,
             },
             'prob',
+            'center',
             fr.plot_distance_crp,
             {'min_samples': 10},
             fig_dir,
@@ -258,13 +260,14 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
                 'test': lambda x, y: x != y,
             },
             'prob',
+            'center',
             fr.plot_distance_crp,
             {'min_samples': 10},
             fig_dir,
             **kwargs,
         )
     figures.plot_fit(
-        full, 'source', 'spc', fr.spc, {}, 'recall', fr.plot_spc, {}, fig_dir, **kwargs
+        full, 'source', 'spc', fr.spc, {}, 'recall', 'input', fr.plot_spc, {}, fig_dir, **kwargs
     )
     figures.plot_fit(
         full,
@@ -273,6 +276,7 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
         lambda x: fr.pnr(x).query('output == 1'),
         {},
         'prob',
+        'input',
         fr.plot_spc,
         {},
         fig_dir,
@@ -285,6 +289,7 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
         fr.lag_crp,
         {},
         'prob',
+        'lag',
         fr.plot_lag_crp,
         {},
         fig_dir,
@@ -298,6 +303,7 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
             fr.lag_crp,
             {'test_key': 'category', 'test': lambda x, y: x == y},
             'prob',
+            'lag',
             fr.plot_lag_crp,
             {},
             fig_dir,
@@ -310,6 +316,7 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
             fr.lag_crp,
             {'test_key': 'category', 'test': lambda x, y: x != y},
             'prob',
+            'lag',
             fr.plot_lag_crp,
             {},
             fig_dir,
