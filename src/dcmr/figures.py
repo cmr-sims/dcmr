@@ -38,7 +38,41 @@ def plot_fit(
     out_dir,
     ext='pdf',
 ):
-    """Plot fit for an analysis and save figures."""
+    """
+    Plot fit for an analysis and save figures.
+
+    Parameters
+    ----------
+    data : DataFrame
+        Observed and simulated data.
+    
+    group_var : str
+        Column to split by for comparison.
+    
+    stat_name : str
+        Base of file names for figures.
+    
+    f_stat : callable
+        Takes data as the first input and returns a DataFrame with statistics.
+    
+    stat_kws : dict
+        Keyword arguments for f_stat.
+    
+    var_name : str
+        Statistic column to plot.
+    
+    f_plot : callable
+        Seaborn-style figure-level function.
+    
+    plot_kws : dict
+        Keyword arguments for f_plot.
+    
+    out_dir : str
+        Directory to save plots in.
+    
+    ext : str
+        Extension of saved plots.
+    """
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
