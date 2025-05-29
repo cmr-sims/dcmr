@@ -1007,7 +1007,7 @@ def generate_model_name(
     if fixed:
         res_name += f'_fix-{fixed.replace("=", "")}'
     if free:
-        res_name += f'_free-{free.replace("=", "").replace(":", ",")}'
+        res_name += f'_free-{free.replace("=", "").replace(":", "to")}'
     return res_name
 
 
