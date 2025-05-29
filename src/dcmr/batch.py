@@ -28,7 +28,7 @@ def expand_opt_lists(*opt_lists):
             el = ol * max_n
         else:
             el = ol
-        expand_lists.append(ol)
+        expand_lists.append(el)
     return tuple(expand_lists)
 
 
@@ -40,8 +40,8 @@ def expand_variants(fcf_features, ff_features, sublayer_param, fixed_param, free
     fix_list = split_opt(fixed_param)
     free_list = split_opt(free_param)
 
-    fcf_list, ff_list, sub_list, fix_list = expand_opt_lists(
-        fcf_list, ff_list, sub_list, fix_list
+    fcf_list, ff_list, sub_list, fix_list, free_list = expand_opt_lists(
+        fcf_list, ff_list, sub_list, fix_list, free_list
     )
     return fcf_list, ff_list, sub_list, fix_list, free_list
 
