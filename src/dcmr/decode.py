@@ -426,6 +426,7 @@ def _decode_context_subject(
     sublayer,
     out_dir,
     subject,
+    weight=None,
     sigmas=None,
     n_reps=1,
     **kwargs,
@@ -466,6 +467,13 @@ def _decode_context_subject(
     )
     net = state[0]
     context = np.vstack([s.c[net.get_slice('c', sublayer, 'item')] for s in state])
+
+    if weight is not None:
+        if weight not in subj_param[subject]:
+            raise ValueError(f"Weight parameter {weight} not found.")
+        weight_value = subj_param[subject][weight]
+        logger.info(f'Scaling context with {weight} parameter (value: {weight_value:.3f}).')
+        context *= weight_value
 
     logger.info(f'Running classification.')
     include = study['include'].to_numpy()
@@ -531,6 +539,7 @@ def _decode_context_subject(
     help='multi-class method {["auto"], "ovr", "multinomial"}',
 )
 @click.option("--regularization", "-C", type=float, default=1, help="Regularization parameter (1.0)")
+@click.option("--weight", "-w", help="Weighting parameter name")
 @click.option("--sigmas", help="Noise levels to add (default: no noise)")
 @click.option("--n-reps", type=int, default=1, help="Number of replications of each noise level")
 def decode_context(
@@ -546,6 +555,7 @@ def decode_context(
     classifier,
     multi_class,
     regularization,
+    weight,
     sigmas,
     n_reps,
 ):
@@ -569,6 +579,7 @@ def decode_context(
             sublayer,
             out_dir,
             subject,
+            weight=weight,
             sigmas=sigmas,
             n_reps=n_reps,
             normalization=normalization,
