@@ -485,6 +485,7 @@ def _decode_context_subject(
         rng = np.random.default_rng(seed)
         d_list = []
         for sigma in sigmas:
+            logger.info(f"Adding noise with {sigma=} for {n_reps} replications.")
             for i in range(n_reps):
                 # add noise to the context we are classifying
                 c_noise = c + rng.normal(scale=sigma, size=c.shape)
