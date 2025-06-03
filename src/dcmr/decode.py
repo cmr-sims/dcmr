@@ -426,12 +426,16 @@ def _decode_context_subject(
     sublayer,
     out_dir,
     subject,
+    layers=None,
     weight=None,
     sigmas=None,
     n_reps=1,
     **kwargs,
 ):
     """Decode category from simulated context patterns for one suject."""
+    if layers is None:
+        layers = ['c']
+
     log_dir = out_dir / 'logs'
     log_dir.mkdir(exist_ok=True)
     subject_id = f'LTP{subject:03n}'
@@ -463,10 +467,14 @@ def _decode_context_subject(
     logger.info('Recording network states.')
     model = cmr.CMR()
     state = model.record(
-        study, {}, subj_param, param_def=param_def, patterns=patterns, include=['c']
+        study, {}, subj_param, param_def=param_def, patterns=patterns, include=layers
     )
     net = state[0]
-    context = np.vstack([s.c[net.get_slice('c', sublayer, 'item')] for s in state])
+    context_layers = []
+    for layer in layers:
+        context_layer = np.vstack([getattr(s, layer)[net.get_slice('c', sublayer, 'item')] for s in state])
+        context_layers.append(context_layer)
+    context = np.concat(context_layers, 1)
 
     if weight is not None:
         if weight not in subj_param[subject]:
@@ -540,6 +548,7 @@ def _decode_context_subject(
     help='multi-class method {["auto"], "ovr", "multinomial"}',
 )
 @click.option("--regularization", "-C", type=float, default=1, help="Regularization parameter (1.0)")
+@click.option("--layers", help="Layers to include (may include 'c', 'c_in')")
 @click.option("--weight", "-w", help="Weighting parameter name")
 @click.option("--sigmas", help="Noise levels to add (default: no noise)")
 @click.option("--n-reps", type=int, default=1, help="Number of replications of each noise level")
@@ -556,6 +565,7 @@ def decode_context(
     classifier,
     multi_class,
     regularization,
+    layers,
     weight,
     sigmas,
     n_reps,
@@ -565,7 +575,12 @@ def decode_context(
         _, subjects = task.get_subjects()
     else:
         subjects = [int(s) for s in subjects.split(",")]
-    
+
+    if layers is None:
+        layers = ["c"]
+    else:
+        layers = layers.split(",")
+
     if sigmas is not None:
         sigmas = [float(s) for s in sigmas.split(",")]
 
@@ -580,6 +595,7 @@ def decode_context(
             sublayer,
             out_dir,
             subject,
+            layers=layers,
             weight=weight,
             sigmas=sigmas,
             n_reps=n_reps,
