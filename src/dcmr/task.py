@@ -13,7 +13,7 @@ from skimage import transform
 import pandas as pd
 import polars as pl
 from psifr import fr
-from cymr import network
+from cymr import cmr
 from wikivector import vector
 
 
@@ -268,7 +268,7 @@ def save_patterns_sem(use_file, h5_file):
     use_z = stats.zscore(patterns, axis=1) / np.sqrt(patterns.shape[1])
 
     # write to standard format hdf5 file
-    network.save_patterns(h5_file, items, loc=loc_patterns, cat=cat_patterns, use=use_z)
+    cmr.save_patterns(h5_file, items, loc=loc_patterns, cat=cat_patterns, use=use_z)
 
 
 def read_pool_cfr(image_dir):
