@@ -363,12 +363,18 @@ def convert_matrix(matrix_file, frdata_file):
         "2": "Intentional CDFR",
         "3": "Incidental CDFR",
     }
+    distract = {"0": 0, "1": 0, "2": 16, "3": 16}
+    retention = {"0": 16, "1": 16, "2": 16, "3": 16}
 
     # recode variables and filter to get included subjects
     clean = (
-        long.select(
-            "subject", 
-            pl.col("condition").cast(pl.Int64).cast(pl.String).replace(conditions),
+        long.with_columns(
+            condition_code=pl.col("condition").cast(pl.Int64).cast(pl.String)
+        )
+        .select(
+            "subject",
+            "condition_code",
+            pl.col("condition_code").replace(conditions).alias("condition"),
             pl.col("included_subjects").cast(bool).alias("included"),
             pl.col("output").cast(pl.Int64) + 1,
             pl.col("code").cast(pl.Int64).replace(-1, None),
@@ -378,6 +384,8 @@ def convert_matrix(matrix_file, frdata_file):
             trial_type=pl.lit("recall"),
             position=pl.col("output"),
             item=pl.when(pl.col("code") >= 0).then(pl.col("code") + 1).otherwise(-1),
+            distract=pl.col("condition_code").replace(distract),
+            retention=pl.col("condition_code").replace(retention),
         )
         .drop_nulls("code")
         .sort("subject", "output")
@@ -391,13 +399,20 @@ def convert_matrix(matrix_file, frdata_file):
     all_items = pl.DataFrame(
         {"subject": subj, "position": pos, "item": pos, "list": 1, "trial_type": "study"}
     )
-    study = (
-        all_items.join(
-            clean.group_by("subject").agg(pl.col("condition").first()), on="subject"
+    conds = (
+        clean.group_by("subject")
+        .agg(
+            pl.col("condition").first(),
+            pl.col("distract").first(),
+            pl.col("retention").first(),
         )
-        .select("subject", "condition", "list", "trial_type", "position", "item")
     )
-    recall = clean.select("subject", "condition", "list", "trial_type", "position", "item")
+    columns = ["subject", "condition", "distract", "retention", "list", "trial_type", "position", "item"]
+    study = (
+        all_items.join(conds, on="subject")
+        .select(columns)
+    )
+    recall = clean.select(columns)
     full = (
         pl.concat([study, recall])
         .sort("subject", "trial_type", "position", descending=[False, True, False])
