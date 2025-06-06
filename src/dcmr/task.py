@@ -4,12 +4,14 @@ import os
 import glob
 import re
 import shutil
+import click
 import numpy as np
 from scipy import io
 from scipy import stats
 import matplotlib.pyplot as plt
 from skimage import transform
 import pandas as pd
+import polars as pl
 from psifr import fr
 from cymr import network
 from wikivector import vector
@@ -340,3 +342,64 @@ def load_pool_images(pool, image_dir, rescale=None):
 
         images[item['item']] = rescaled
     return images
+
+
+@click.command()
+@click.argument("matrix_file", type=click.Path(exists=True))
+@click.argument("frdata_file", type=click.Path())
+def convert_matrix(matrix_file, frdata_file):
+    """Convert recalls matrix to standard format."""
+    LIST_LENGTH = 12
+    raw = pl.read_csv(matrix_file).drop("")
+    long = raw.melt(
+        value_vars=raw.columns[3:],
+        id_vars=['subject', 'condition', 'included_subjects'], 
+        variable_name="output",
+        value_name="code",
+    )
+    conditions = {
+        "0": "Intentional DFR", 
+        "1": "Incidental DFR",
+        "2": "Intentional CDFR",
+        "3": "Incidental CDFR",
+    }
+
+    # recode variables and filter to get included subjects
+    clean = (
+        long.select(
+            "subject", 
+            pl.col("condition").cast(pl.Int64).cast(pl.String).replace(conditions),
+            pl.col("included_subjects").cast(bool).alias("included"),
+            pl.col("output").cast(pl.Int64) + 1,
+            pl.col("code").cast(pl.Int64).replace(-1, None),
+        )
+        .with_columns(
+            list=1,
+            trial_type=pl.lit("recall"),
+            position=pl.col("output"),
+            item=pl.when(pl.col("code") >= 0).then(pl.col("code") + 1).otherwise(-1),
+        )
+        .drop_nulls("code")
+        .sort("subject", "output")
+        .filter(pl.col("included"))
+    )
+
+    # define study events
+    n_subject = clean["subject"].unique().len()
+    pos = np.tile(np.arange(1, LIST_LENGTH + 1), n_subject)
+    subj = np.repeat(clean["subject"].unique(), LIST_LENGTH)
+    all_items = pl.DataFrame(
+        {"subject": subj, "position": pos, "item": pos, "list": 1, "trial_type": "study"}
+    )
+    study = (
+        all_items.join(
+            clean.group_by("subject").agg(pl.col("condition").first()), on="subject"
+        )
+        .select("subject", "condition", "list", "trial_type", "position", "item")
+    )
+    recall = clean.select("subject", "condition", "list", "trial_type", "position", "item")
+    full = (
+        pl.concat([study, recall])
+        .sort("subject", "trial_type", "position", descending=[False, True, False])
+    )
+    full.write_csv(frdata_file)
