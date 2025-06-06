@@ -19,6 +19,7 @@ dependencies = [
     "numpy",
     "scipy",
     "pandas",
+    "polars",
     "joblib",
     "matplotlib>=3.5",
     "seaborn",
@@ -50,6 +51,7 @@ dcmr-plot-fit = "dcmr.reports:plot_fit"
 dcmr-plan-plot-fit = "dcmr.batch:plan_plot_fit"
 dcmr-decode-eeg = "dcmr.decode:decode_eeg"
 dcmr-decode-context = "dcmr.decode:decode_context"
+dcmr-convert-matrix = "dcmr.task:convert_matrix"
 
 [build-system]
 requires = ["setuptools", "wheel"]
