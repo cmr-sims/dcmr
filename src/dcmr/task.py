@@ -418,3 +418,39 @@ def convert_matrix(matrix_file, frdata_file):
         .sort("subject", "trial_type", "position", descending=[False, True, False])
     )
     full.write_csv(frdata_file)
+
+
+@click.command()
+@click.argument("peers_patterns_file", type=click.Path(exists=True))
+@click.argument("data_file", type=click.Path(exists=True))
+@click.argument("out_patterns_file", type=click.Path())
+@click.argument("out_data_file", type=click.Path())
+def prepare_incidental(
+    peers_patterns_file, data_file, out_patterns_file, out_data_file
+):
+    # read data and PEERS patterns
+    data = pl.read_csv(data_file, null_values="-1")
+    patterns = cmr.load_patterns(peers_patterns_file)
+
+    # randomly assign items from the pool
+    n_items = len(patterns['items'])
+    indexed = (
+        data.with_columns(
+            pl.int_range(n_items)
+            .sample(pl.col('item').max(), shuffle=True)
+            .gather(pl.col('item') - 1)
+            .over('subject', 'list')
+            .alias('item_index')
+        )
+    )
+    items = indexed.drop_nulls('item')
+    items = items.with_columns(
+        item=pl.lit(patterns['items'][items['item_index'].to_numpy().astype(int)])
+    )
+    labeled = indexed.update(items, on=['subject', 'list', 'trial_type', 'position'])
+
+    # save data with assigned items
+    labeled.write_csv(out_data_file)
+
+    # copy patterns
+    shutil.copyfile(peers_patterns_file, out_patterns_file)
