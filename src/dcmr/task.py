@@ -363,6 +363,9 @@ def convert_matrix(matrix_file, frdata_file):
         "2": "Intentional CDFR",
         "3": "Incidental CDFR",
     }
+    encoding = {
+        "0": "intentional", "1": "incidental", "2": "intentional", "3": "incidental"
+    }
     distract = {"0": 0, "1": 0, "2": 16, "3": 16}
     retention = {"0": 16, "1": 16, "2": 16, "3": 16}
 
@@ -375,6 +378,7 @@ def convert_matrix(matrix_file, frdata_file):
             "subject",
             "condition_code",
             pl.col("condition_code").replace(conditions).alias("condition"),
+            pl.col("condition_code").replace(encoding).alias("encoding"),
             pl.col("included_subjects").cast(bool).alias("included"),
             pl.col("output").cast(pl.Int64) + 1,
             pl.col("code").cast(pl.Int64).replace(-1, None),
@@ -403,11 +407,12 @@ def convert_matrix(matrix_file, frdata_file):
         clean.group_by("subject")
         .agg(
             pl.col("condition").first(),
+            pl.col("encoding").first(),
             pl.col("distract").first(),
             pl.col("retention").first(),
         )
     )
-    columns = ["subject", "condition", "distract", "retention", "list", "trial_type", "position", "item"]
+    columns = ["subject", "condition", "encoding", "distract", "retention", "list", "trial_type", "position", "item"]
     study = (
         all_items.join(conds, on="subject")
         .select(columns)
