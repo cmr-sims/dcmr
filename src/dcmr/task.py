@@ -281,11 +281,18 @@ def save_patterns_cdcatfr2(use_file, h5_file):
     # localist patterns
     loc_patterns = np.eye(len(items))
 
+    # category patterns
+    category = np.repeat(['cel', 'loc', 'obj'], 256)
+    cat_patterns = np.zeros((len(items), 3))
+    cat_names = np.unique(category)
+    for i in range(3):
+        cat_patterns[category == cat_names[i], i] = 1
+
     # use vectors
     use_z = stats.zscore(patterns, axis=1) / np.sqrt(patterns.shape[1])
 
     # write to standard format hdf5 file
-    cmr.save_patterns(h5_file, items, loc=loc_patterns, use=use_z)
+    cmr.save_patterns(h5_file, items, loc=loc_patterns, cat=cat_patterns, use=use_z)
 
 
 def read_pool_cfr(image_dir):
