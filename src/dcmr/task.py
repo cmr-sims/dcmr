@@ -271,6 +271,23 @@ def save_patterns_sem(use_file, h5_file):
     cmr.save_patterns(h5_file, items, loc=loc_patterns, cat=cat_patterns, use=use_z)
 
 
+@click.command()
+@click.argument("use_file", type=click.Path(exists=True))
+@click.argument("h5_file", type=click.Path())
+def save_patterns_cdcatfr2(use_file, h5_file):
+    """Read wiki2USE data and write patterns for cdcatfr2."""
+    patterns, items = vector.load_vectors(use_file)
+
+    # localist patterns
+    loc_patterns = np.eye(len(items))
+
+    # use vectors
+    use_z = stats.zscore(patterns, axis=1) / np.sqrt(patterns.shape[1])
+
+    # write to standard format hdf5 file
+    cmr.save_patterns(h5_file, items, loc=loc_patterns, use=use_z)
+
+
 def read_pool_cfr(image_dir):
     """Read CFR pool information."""
     sub_dirs = ['celebrities', 'locations', 'objects']
