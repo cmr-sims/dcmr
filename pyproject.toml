@@ -54,6 +54,7 @@ dcmr-decode-context = "dcmr.decode:decode_context"
 dcmr-convert-matrix = "dcmr.task:convert_matrix"
 dcmr-prepare-incidental = "dcmr.task:prepare_incidental"
 dcmr-patterns-cdcatfr2 = "dcmr.task:save_patterns_cdcatfr2"
+dcmr-prepare-cdcatfr2 = "dcmr.task:prepare_cdcatfr2"
 
 [build-system]
 requires = ["setuptools", "wheel"]

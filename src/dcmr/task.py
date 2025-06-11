@@ -476,3 +476,20 @@ def prepare_incidental(
 
     # copy patterns
     shutil.copyfile(peers_patterns_file, out_patterns_file)
+
+
+@click.command()
+@click.argument("data_file", type=click.Path(exists=True))
+@click.argument("patterns_file", type=click.Path(exists=True))
+@click.argument("out_data_file", type=click.Path())
+def prepare_cdcatfr2(data_file, patterns_file, out_data_file):
+    """Prepare cdcatfr2 data for analysis."""
+    raw = pl.read_csv(data_file, null_values="NaN")
+    patterns = cmr.load_patterns(patterns_file)
+    categories = {"0": "cel", "1": "loc", "2": "obj"}
+    data = raw.with_columns(
+        pl.col("category").cast(pl.String).replace(categories),
+        pl.col("distractor") / 1000,
+        item_index=pl.Series(fr.pool_index(raw['item'].to_pandas(), patterns['items'])),
+    )
+    data.write_csv(out_data_file)
