@@ -495,8 +495,11 @@ def prepare_cdcatfr2(data_file, patterns_file, out_data_file):
     patterns = cmr.load_patterns(patterns_file)
     categories = {"0": "cel", "1": "loc", "2": "obj"}
     data = raw.with_columns(
+        pl.col("item").str.strip_chars(),
         pl.col("category").cast(pl.String).replace(categories),
         pl.col("distractor") / 1000,
-        item_index=pl.Series(fr.pool_index(raw['item'].to_pandas(), patterns['items'])),
+    )
+    data = data.with_columns(
+        item_index=pl.Series(fr.pool_index(data['item'].to_pandas(), patterns['items'])),
     )
     data.write_csv(out_data_file)
