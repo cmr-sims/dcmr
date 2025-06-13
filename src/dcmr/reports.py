@@ -18,6 +18,34 @@ from dcmr import figures
 
 
 def render_fit_html(fit_dir, curves, points, grids=None, ext='svg'):
+    """
+    Create an HTML report with figures and parameter tables.
+
+    After running, open {fit_dir}/report.html in a browser to view the
+    report.
+
+    Parameters
+    ----------
+    fit_dir : str
+        Path to directory with fit results.
+    
+    curves : list of str
+        Names of curves to include in the report. Files named 
+        {curve}.{ext}, {curve}_comp.{ext}, and {curve}_comp_subject.{ext}
+        will be included.
+    
+    points : dict of (str: list of str)
+        Groups of analyses to include. Files named 
+        {analysis}_comp_subject.{ext} will be included.
+    
+    grids : list of str
+        Plot grids to include. Files named {grid}_subject.{ext} will be
+        included.
+    
+    ext : str
+        File extension to expect for plot files. SVG files are 
+        recommended for reports.
+    """
     env = jn.Environment(
         loader=jn.PackageLoader('dcmr', 'templates'),
         autoescape=jn.select_autoescape(['html']),
@@ -382,7 +410,35 @@ def get_param_latex():
 
 
 def create_model_table(fit_dir, models, model_names, param_map=None, model_comp='xval'):
-    """Create a summary table to compare models."""
+    """
+    Create a summary table to compare models.
+
+    Parameters
+    ----------
+    fit_dir : str
+        Path to main directory with model fitting results. Individual
+        model fits should be in subdirectories.
+
+    models : list of str
+        Model identifiers to include. Must match model directory names
+        in fit_dir.
+    
+    model_names : list of str
+        Model names to use in the table.
+    
+    param_map : dict of (str: str)
+        Mapping of parameter names to display names, which may include
+        LaTeX math code.
+    
+    model_comp : str
+        Method for comparing models. May be "xval" or "aic".
+    
+    Returns
+    -------
+    reordered : pandas.DataFrame
+        Data frame with the table, ordered to match the order of keys
+        in param_map.
+    """
     # get free parameters
     df = framework.read_model_specs(fit_dir, models, model_names)
     free_param = df.reset_index().query("kind == 'free'")['param'].unique()

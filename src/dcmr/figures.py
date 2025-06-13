@@ -143,7 +143,35 @@ def plot_fit(
 def plot_fit_scatter(
     data, group_var, stat_name, f_stat, stat_kws, var_name, out_dir, ext='pdf'
 ):
-    """Plot fit scatterplot for a scalar statistic."""
+    """
+    Plot fit scatterplot for a scalar statistic.
+    
+    Parameters
+    ----------
+    data : DataFrame
+        Observed and simulated data.
+    
+    group_var : str
+        Column to split by for comparison.
+
+    stat_name : str
+        Base of file names for figures.
+    
+    f_stat : callable
+        Takes data as the first input and returns a DataFrame with statistics.
+    
+    stat_kws : dict
+        Keyword arguments for f_stat.
+    
+    var_name : str
+        Statistic column to plot.
+    
+    out_dir : str
+        Directory to save plots in.
+    
+    ext : str
+        Extension of saved plots.
+    """
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
@@ -172,7 +200,11 @@ def plot_swarm_bar(
     capsize=0.425,
     point_kind='swarm',
 ):
-    """Make a bar plot with individual points and error bars."""
+    """
+    Make a bar plot with individual points and error bars.
+    
+    Deprecated. Use the swarmbar package instead.
+    """
     if dark is None:
         dark = 'ch:rot=-.5, light=.7, dark=.3, gamma=.6'
     if light is None:
