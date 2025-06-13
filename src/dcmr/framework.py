@@ -64,6 +64,11 @@ class WeightParameters(CMRParameters):
         """
         Add scaling parameters for patterns or similarity.
 
+        Scaling parameters include a free "raw" parameter and a 
+        normalized parameter that is calculated based on the set of raw
+        parameters. This normalization varies depending on whether we
+        are scaling similarity values or vectors.
+
         Parameters
         ----------
         scaling_type : {'similarity', 'vector'}
@@ -75,6 +80,11 @@ class WeightParameters(CMRParameters):
 
         upper : float
             Upper bound of parameters beyond the first two.
+        
+        Returns
+        -------
+        scaling_param : dict of (str: str)
+            Expressions for parameters used to scale weights.
         """
         if scaling_type == 'vector':
             prefix = 'w'
@@ -125,7 +135,7 @@ class WeightParameters(CMRParameters):
         return scaling_param
 
     def set_intercept_param(self, connects, lower, upper):
-        """Set intercept parameters."""
+        """Set a free intercept parameter for each connection matrix."""
         intercept_param = {}
         for connect in connects:
             new_param = f'A{connect}'
@@ -134,7 +144,20 @@ class WeightParameters(CMRParameters):
         return intercept_param
 
     def set_region_weights(self, connect, scaling_param, pre_param):
-        """Sets weights within sublayer regions."""
+        """
+        Set weights within context regions.
+
+        Parameters
+        ----------
+        connect : str
+            Connection matrix (fc or cf).
+        
+        scaling_param : dict of (str: str)
+            Expressions for scaling parameters for each segment.
+        
+        pre_param : str
+            Name of parameter that scales pre-experimental weights.
+        """
         for weight, scaling in scaling_param.items():
             if scaling is not None:
                 expr = f'{pre_param} * {scaling} * {weight}'
@@ -145,7 +168,35 @@ class WeightParameters(CMRParameters):
     def set_sublayer_weights(
         self, connect, scaling_param, pre_param, intercept_param=None
     ):
-        """Set weights for different sublayers."""
+        """
+        Set weights for context sublayers.
+
+        Weights expressions may include the following terms:
+            intercept + pre * scaling * weight
+        Where terms are:
+            intercept : an optional intercept parameter.
+            pre : a parameter that determines the weight of 
+                pre-experimental associations.
+            scaling : an optional scaling parameter that determines
+                the relative weighting of sublayers.
+            weight : the name of the pattern to use for these weights.
+
+        Parameters
+        ----------
+        connect : str
+            Connection matrix (fc or cf).
+        
+        scaling_param : dict of (str: str)
+            Expressions for scaling parameters for each sublayer. If
+            None, there will be no scaling term.
+        
+        pre_param : str
+            Name of parameter that scales pre-experimental weights.
+        
+        intercept_param : str or dict of (str: str)
+            Expression to apply to all sublayers or dictionary with
+            an expression for each sublayer.
+        """
         for weight, scaling in scaling_param.items():
             # get pre weighting parameter
             if isinstance(pre_param, str):
@@ -175,7 +226,26 @@ class WeightParameters(CMRParameters):
             self.set_weights(connect, {(('task', 'item'), (weight, 'item')): expr})
 
     def set_item_weights(self, scaling_param, pre_param, intercept_param=None):
-        """Set item-item weights."""
+        """
+        Set item-item weights.
+
+        Weights expressions may include an intercept term and additive
+        terms for each set of weights to be included, optionally scaled
+        by scaling parameters:
+            intercept + scaling1 * weight1 + scaling2 * weight2 + ...
+
+        Parameters
+        ----------
+        scaling_param : dict of (str: str)
+            Expressions for scaling parameters for each set of weights.
+        
+        pre_param : str
+            Name of parameter that scales pre-experimental weights.
+        
+        intercept_param : str or dict of (str: str)
+            Expression to apply to all sublayers or dictionary with
+            an expression for each sublayer.
+        """
         weight_expr = []
         for weight, scaling in scaling_param.items():
             if scaling is not None:
@@ -191,7 +261,30 @@ class WeightParameters(CMRParameters):
         self.set_weights('ff', {('task', 'item'): w_expr})
 
     def set_learning_sublayer_param(self, L_name, D_name):
-        """Set dependent sublayer parameters for learning."""
+        """
+        Set dependent sublayer parameters for learning.
+
+        Learning parameters will be set to vary by sublayer. The
+        pre-experimental parameters will be modified to be dependent
+        on the new sublayer-specific learning parameters, so they will
+        be set to (1 - L) for that sublayer.
+
+        Parameters
+        ----------
+        L_name : str
+            Name of the original learning parameter.
+        
+        D_name : str
+            Name of the original pre-experimental parameter.
+        
+        Returns
+        -------
+        L_param : dict of str
+            The new sublayer-specific learning parameters.
+        
+        D_param : dict of str
+            The new sublayer-specific pre-experimental parameters.
+        """
         # free up the learning rate
         self.set_free_sublayer_param([L_name], '_raw')
 
@@ -211,7 +304,21 @@ class WeightParameters(CMRParameters):
         return L_param, D_param
 
     def set_weight_sublayer_param(self, scaling_param, suffix=None):
-        """Set scaling of sublayer learning rates."""
+        """
+        Set scaling of sublayer learning rates.
+
+        Apply scaling to learning rate parameters. Sets a dependent
+        parameter that is scaled and sets that as a sublayer parameter.
+        
+        Parameters
+        ----------
+        scaling_param : dict of (str: str)
+            Scaling parameter name for each sublayer.
+        
+        suffix : dict of (str: str)
+            Suffix for sublayer-specific learning parameters Lfc and 
+            Lcf.
+        """
         for weight in self.sublayers['c']:
             scaling = scaling_param[weight]
 
@@ -231,7 +338,22 @@ class WeightParameters(CMRParameters):
             self.set_sublayer_param('c', weight, weight_param)
 
     def set_free_sublayer_param(self, param_names, suffix=None):
-        """Set sublayer parameters to be free."""
+        """
+        Set sublayer parameters to be free.
+
+        Parameters must already be defined as free. Specified 
+        parameters will be modified to vary by sublayer, with the same
+        range as the original parameter. The original parameter will be
+        removed from the list of free parameters.
+
+        Parameters
+        ----------
+        param_names : list of str
+            Parameters to free to vary by sublayer.
+        
+        suffix : str
+            Suffix to add for modified parameters.
+        """
         for param in param_names:
             if param not in self.free:
                 raise ValueError(f'No range defined for {param}.')
@@ -259,7 +381,59 @@ def model_variant(
     free_param=None,
     dependent_param=None,
 ):
-    """Define parameters for a model variant."""
+    """
+    Define parameters for a model variant.
+
+    Parameters
+    ----------
+    fcf_features : list of str
+        Features to include in the FC and CF matrices connecting the
+        item and context layers.
+    
+    ff_features : list of str
+        Features to include in the FF matrices connecting items to
+        other items.
+    
+    sublayers : bool
+        If True, features will be represented in different sublayers,
+        which may vary in their dynamics and are normalized separately.
+        If False, features will be represented in different segments of
+        a single layer of context.
+    
+    sublayer_param : list of str
+        Names of parameters that will vary by sublayer. If Lfc and/or
+        Lcf are included, the dependent Dfc and Dcf parameters will 
+        also be adjusted; for example, Lfc might be split into Lfc_loc
+        and Lfc_cat, Dfc_loc will be defined as 1 - Lfc_loc, and 
+        Dcf_loc will be defined as 1 - Lcf_loc.
+    
+    intercept : bool
+        If True, an intercept term will be included in the FF matrix to
+        add a baseline level of cuing strength for all included items.
+    
+    fixed_param : dict of (str: float)
+        Parameters to set to a specified fixed value. Any free 
+        parameters of the same name will be removed from the free 
+        parameter list.
+    
+    free_param : dict of (str: (float, float))
+        Parameters to set as free parameters, with the corresponding
+        range of allowed values. Any fixed parameters of the same name
+        will be removed from the fixed parameter list.
+    
+    dependent_param : dict of (str: str)
+        Parameters to set as dependent on other parameters, with an
+        expression defining how they should be evaluated. Expressions
+        may call NumPy functions.
+
+    Returns
+    -------
+    wp : WeightParameters
+        A parameter definition object defining the specified model 
+        variant. Can be used to run parameter searches to fit the model
+        variant. Can also be used with specific fitted or manually set
+        parameters to evaluate likelihood or run a simulation.
+    """
     wp = WeightParameters()
     wp.set_fixed(T=0.1)
     wp.set_free(
