@@ -36,6 +36,7 @@ dependencies = [
     "click",
     "pyarrow",
     "jupyterlab",
+    "swarmbar",
 ]
 
 [project.scripts]
