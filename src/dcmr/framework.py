@@ -1127,6 +1127,113 @@ def fit_cmr_cdcatfr2(
 @click.command()
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
+@click.argument("res_dir", type=click.Path())
+@click.option(
+    "--n-reps",
+    "-n",
+    type=int,
+    default=1,
+    help="number of times to replicate the search",
+)
+@click.option(
+    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
+)
+@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
+@click.option(
+    "--n-sim-reps",
+    "-r",
+    type=int,
+    default=1,
+    help="number of experiment replications to simulate",
+)
+@click.option(
+    "--include",
+    "-i",
+    help="dash-separated list of subject to include (default: all in data file)",
+)
+def fit_cmr_incidental(
+    data_file,
+    patterns_file,
+    res_dir,
+    n_reps=1,
+    n_jobs=1,
+    tol=0.00001,
+    n_sim_reps=1,
+    include=None,
+):
+    os.makedirs(res_dir, exist_ok=True)
+    log_file = os.path.join(res_dir, 'log_fit.txt')
+    logging.basicConfig(
+        filename=log_file,
+        filemode='w',
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
+    )
+
+    logging.info(f'Loading data from {data_file}.')
+    data = pd.read_csv(data_file)
+
+    logging.info(f'Loading network patterns from {patterns_file}.')
+    patterns = cmr.load_patterns(patterns_file)
+
+    param_def = model_variant(
+        ['loc', 'use'], 
+        sublayers=True,
+        free_param={
+            'B_distract_raw': (0, 1), 
+            'w0_intent': (0, 1),
+            'w0_incid': (0, 1),
+            'X1_intent': (0, 1),
+            'X1_incid': (0, 1),
+            'X2_intent': (0, 5),
+            'X2_incid': (0, 5),
+        },
+        sublayer_param=[
+            'B_enc', 
+            'B_rec', 
+            'B_distract', 
+            'B_retention', 
+            'B_distract_raw', 
+            'B_retention_raw',
+        ],
+        fixed_param={'B_rec_use': 1, 'w0': 0.5},
+        dependent_param={
+            'B_retention_raw_loc': 'B_distract_raw_loc',
+            'B_retention_raw_use': 'B_distract_raw_use',
+        },
+        dynamic_param={
+            ('study', 'list'): {
+                'B_distract_loc': 'where(distractor == 16, B_distract_raw_loc, 0)',
+                'B_distract_use': 'where(distractor == 16, B_distract_raw_use, 0)',
+                'B_retention_loc': 'where(retention == 16, B_retention_raw_loc, 0)',
+                'B_retention_use': 'where(retention == 16, B_retention_raw_use, 0)',
+                'w0': 'where(encoding == "intentional", w0_intent, w0_incid)',
+                'X1': 'where(encoding == "intentional", X1_intent, X1_incid)',
+                'X2': 'where(encoding == "intentional", X2_intent, X2_incid)',
+            }
+        }
+    )
+    del param_def.free['X1']
+    del param_def.free['X2']
+    param_def.set_options(distraction=True)
+
+    # fit parameters, simulate using fitted parameters, and save results
+    _run_fit(
+        res_dir, 
+        data, 
+        param_def, 
+        patterns, 
+        n_jobs, 
+        n_reps, 
+        tol, 
+        n_sim_reps, 
+        study_keys=['distractor', 'retention', 'encoding'],
+    )
+
+
+@click.command()
+@click.argument("data_file", type=click.Path(exists=True))
+@click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("fcf_features")
 @click.argument("ff_features")
 @click.argument("res_dir", type=click.Path())
