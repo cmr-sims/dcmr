@@ -534,9 +534,8 @@ def model_variant(
     if fixed_param is not None:
         for param_name, val in fixed_param.items():
             wp.set_fixed({param_name: val})
-            if param_name not in wp.free:
-                raise ValueError(f'Parameter {param_name} is not free.')
-            del wp.free[param_name]
+            if param_name in wp.free:
+                del wp.free[param_name]
     return wp
 
 
