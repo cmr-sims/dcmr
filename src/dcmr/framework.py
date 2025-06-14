@@ -456,6 +456,20 @@ def model_variant(
     )
     wp.set_dependent(Dfc='1 - Lfc', Dcf='1 - Lcf')
 
+    # add free parameters and/or modify free parameters
+    if free_param is not None:
+        wp.set_free(free_param)
+        for param_name in free_param.keys():
+            if param_name in fixed_param:
+                del wp.fixed[param_name]
+    
+    # add dependent parameters
+    if dependent_param is not None:
+        wp.set_dependent(dependent_param)
+        for param_name in dependent_param.keys():
+            if param_name in wp.free:
+                del wp.free[param_name]
+    
     # add dynamic parameters
     if dynamic_param is not None:
         for (trial_type, scope), dyn in dynamic_param.items():
@@ -515,20 +529,6 @@ def model_variant(
             if param_name not in wp.free:
                 raise ValueError(f'Parameter {param_name} is not free.')
             del wp.free[param_name]
-    
-    # add free parameters and/or modify free parameters
-    if free_param is not None:
-        wp.set_free(free_param)
-        for param_name in free_param.keys():
-            if param_name in fixed_param:
-                del wp.fixed[param_name]
-    
-    # add dependent parameters
-    if dependent_param is not None:
-        wp.set_dependent(dependent_param)
-        for param_name in dependent_param.keys():
-            if param_name in wp.free:
-                del wp.free[param_name]
     return wp
 
 
