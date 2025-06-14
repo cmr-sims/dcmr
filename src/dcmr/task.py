@@ -145,8 +145,8 @@ def read_study_recall(csv_file, block=True, block_category=True):
         data = label_block_category(data)
 
     # additional list fields
-    list_keys = ['session']
-    fields = ['list_type', 'list_category', 'distractor']
+    list_keys = []
+    fields = ['session', 'list_type', 'list_category', 'distractor']
     for field in fields:
         if field in data:
             list_keys += [field]
