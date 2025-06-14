@@ -1061,7 +1061,7 @@ def fit_cmr_cdcatfr2(
         ['loc', 'cat', 'use'], 
         sublayers=True,
         free_param={
-            'B_distract_raw': (0, 1), 
+            'B_distract_raw': (0, 0.4), 
             'B_disrupt': (0, 1),
             'B_start0': (0, 1),
             'B_start1': (0, 1),
