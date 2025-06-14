@@ -390,7 +390,7 @@ def convert_matrix(matrix_file, frdata_file):
     encoding = {
         "0": "intentional", "1": "incidental", "2": "intentional", "3": "incidental"
     }
-    distract = {"0": 0, "1": 0, "2": 16, "3": 16}
+    distractor = {"0": 0, "1": 0, "2": 16, "3": 16}
     retention = {"0": 16, "1": 16, "2": 16, "3": 16}
 
     # recode variables and filter to get included subjects
@@ -412,7 +412,7 @@ def convert_matrix(matrix_file, frdata_file):
             trial_type=pl.lit("recall"),
             position=pl.col("output"),
             item=pl.when(pl.col("code") >= 0).then(pl.col("code") + 1).otherwise(-1),
-            distract=pl.col("condition_code").replace(distract),
+            distractor=pl.col("condition_code").replace(distractor),
             retention=pl.col("condition_code").replace(retention),
         )
         .drop_nulls("code")
@@ -432,11 +432,21 @@ def convert_matrix(matrix_file, frdata_file):
         .agg(
             pl.col("condition").first(),
             pl.col("encoding").first(),
-            pl.col("distract").first(),
+            pl.col("distractor").first(),
             pl.col("retention").first(),
         )
     )
-    columns = ["subject", "condition", "encoding", "distract", "retention", "list", "trial_type", "position", "item"]
+    columns = [
+        "subject", 
+        "condition", 
+        "encoding", 
+        "distractor", 
+        "retention", 
+        "list", 
+        "trial_type", 
+        "position", 
+        "item",
+    ]
     study = (
         all_items.join(conds, on="subject")
         .select(columns)
