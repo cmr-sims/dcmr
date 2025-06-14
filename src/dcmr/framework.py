@@ -839,6 +839,59 @@ def configure_model(
     return data, param_def, patterns
 
 
+def _run_fit(res_dir, data, param_def, patterns, n_jobs, n_reps, tol, n_sim_reps):
+    # save model information
+    json_file = os.path.join(res_dir, 'parameters.json')
+    logging.info(f'Saving parameter definition to {json_file}.')
+    param_def.to_json(json_file)
+
+    # run individual subject fits
+    n = data['subject'].nunique()
+    logging.info(
+        f'Running {n_reps} parameter optimization repeat(s) for {n} participant(s).'
+    )
+    logging.info(f'Using {n_jobs} core(s).')
+    model = cmr.CMR()
+    results = model.fit_indiv(
+        data,
+        param_def,
+        patterns=patterns,
+        n_jobs=n_jobs,
+        method='de',
+        n_rep=n_reps,
+        tol=tol,
+    )
+
+    # full search information
+    res_file = os.path.join(res_dir, 'search.csv')
+    logging.info(f'Saving full search results to {res_file}.')
+    results.to_csv(res_file)
+
+    # best results
+    best = fit.get_best_results(results)
+    best_file = os.path.join(res_dir, 'fit.csv')
+    logging.info(f'Saving best fitting results to {best_file}.')
+    best.to_csv(best_file)
+
+    # simulate data based on best parameters
+    subj_param = best.T.to_dict()
+    study_data = data.loc[(data['trial_type'] == 'study')]
+    logging.info(
+        f'Simulating {n_sim_reps} replication(s) with best-fitting parameters.'
+    )
+    sim = model.generate(
+        study_data,
+        {},
+        subj_param=subj_param,
+        param_def=param_def,
+        patterns=patterns,
+        n_rep=n_sim_reps,
+    )
+    sim_file = os.path.join(res_dir, 'sim.csv')
+    logging.info(f'Saving simulated data to {sim_file}.')
+    sim.to_csv(sim_file, index=False)
+
+
 @click.command()
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
@@ -933,56 +986,8 @@ def fit_cmr(
         include,
     )
 
-    # save model information
-    json_file = os.path.join(res_dir, 'parameters.json')
-    logging.info(f'Saving parameter definition to {json_file}.')
-    param_def.to_json(json_file)
-
-    # run individual subject fits
-    n = data['subject'].nunique()
-    logging.info(
-        f'Running {n_reps} parameter optimization repeat(s) for {n} participant(s).'
-    )
-    logging.info(f'Using {n_jobs} core(s).')
-    model = cmr.CMR()
-    results = model.fit_indiv(
-        data,
-        param_def,
-        patterns=patterns,
-        n_jobs=n_jobs,
-        method='de',
-        n_rep=n_reps,
-        tol=tol,
-    )
-
-    # full search information
-    res_file = os.path.join(res_dir, 'search.csv')
-    logging.info(f'Saving full search results to {res_file}.')
-    results.to_csv(res_file)
-
-    # best results
-    best = fit.get_best_results(results)
-    best_file = os.path.join(res_dir, 'fit.csv')
-    logging.info(f'Saving best fitting results to {best_file}.')
-    best.to_csv(best_file)
-
-    # simulate data based on best parameters
-    subj_param = best.T.to_dict()
-    study_data = data.loc[(data['trial_type'] == 'study')]
-    logging.info(
-        f'Simulating {n_sim_reps} replication(s) with best-fitting parameters.'
-    )
-    sim = model.generate(
-        study_data,
-        {},
-        subj_param=subj_param,
-        param_def=param_def,
-        patterns=patterns,
-        n_rep=n_sim_reps,
-    )
-    sim_file = os.path.join(res_dir, 'sim.csv')
-    logging.info(f'Saving simulated data to {sim_file}.')
-    sim.to_csv(sim_file, index=False)
+    # fit parameters, simulate using fitted parameters, and save results
+    _run_fit(res_dir, data, param_def, patterns, n_jobs, n_reps, tol, n_sim_reps)
 
 
 @click.command()
