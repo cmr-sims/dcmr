@@ -378,6 +378,7 @@ def model_variant(
     fixed_param=None,
     free_param=None,
     dependent_param=None,
+    dynamic_param=None,
 ):
     """
     Define parameters for a model variant.
@@ -423,6 +424,14 @@ def model_variant(
         Parameters to set as dependent on other parameters, with an
         expression defining how they should be evaluated. Expressions
         may call NumPy functions.
+    
+    dynamic_param : dict of ((str, str): str)
+        Parameters to set as dynamic values that depend on variables in
+        the data. Parameters are listed by trial type ("study" or 
+        "recall") and scope ("trial" or "list"), with each dictionary
+        key being a (trial_type, scope) tuple. Values indicate 
+        expressions to define the dynamic parameter, which may 
+        reference other parameters, data columns, and NumPy functions.
 
     Returns
     -------
@@ -446,6 +455,11 @@ def model_variant(
         X2=(0, 5),
     )
     wp.set_dependent(Dfc='1 - Lfc', Dcf='1 - Lcf')
+
+    # add dynamic parameters
+    if dynamic_param is not None:
+        for (trial_type, scope), dyn in dynamic_param.items():
+            wp.set_dynamic(trial_type, scope, dyn)
 
     if intercept:
         intercept_param = wp.set_intercept_param(['ff'], -1, 1)
