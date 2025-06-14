@@ -488,8 +488,14 @@ def prepare_incidental(
     )
     labeled = indexed.update(items, on=['subject', 'list', 'trial_type', 'position'])
 
-    # save data with assigned items
-    labeled.write_csv(out_data_file)
+    # for fitting, treat all lists as coming from one subject
+    data1s = labeled.with_columns(
+        subject=1,
+        list=pl.col('subject'),
+    )
+
+    # write modified data
+    data1s.write_csv(out_data_file)
 
     # copy patterns
     shutil.copyfile(peers_patterns_file, out_patterns_file)
