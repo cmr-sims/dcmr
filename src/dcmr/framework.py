@@ -355,15 +355,13 @@ class WeightParameters(CMRParameters):
             Suffix to add for modified parameters.
         """
         for param in param_names:
-            if param not in self.free:
-                raise ValueError(f'No range defined for {param}.')
-
             # make a copy of the base parameter for each sublayer
             for weight in self.sublayers['c']:
                 param_name = f'{param}_{weight}'
                 if suffix is not None:
                     param_name += suffix
-                self.set_free({param_name: self.free[param]})
+                if param in self.free:
+                    self.set_free({param_name: self.free[param]})
                 self.set_sublayer_param('c', weight, {param: param_name})
 
             # remove the base parameter from the list of free variables
