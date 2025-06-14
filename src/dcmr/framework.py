@@ -839,7 +839,18 @@ def configure_model(
     return data, param_def, patterns
 
 
-def _run_fit(res_dir, data, param_def, patterns, n_jobs, n_reps, tol, n_sim_reps):
+def _run_fit(
+    res_dir, 
+    data, 
+    param_def, 
+    patterns, 
+    n_jobs, 
+    n_reps, 
+    tol, 
+    n_sim_reps, 
+    study_keys=None,
+    recall_keys=None,
+):
     # save model information
     json_file = os.path.join(res_dir, 'parameters.json')
     logging.info(f'Saving parameter definition to {json_file}.')
@@ -860,6 +871,8 @@ def _run_fit(res_dir, data, param_def, patterns, n_jobs, n_reps, tol, n_sim_reps
         method='de',
         n_rep=n_reps,
         tol=tol,
+        study_keys=study_keys,
+        recall_keys=recall_keys,
     )
 
     # full search information
@@ -886,6 +899,8 @@ def _run_fit(res_dir, data, param_def, patterns, n_jobs, n_reps, tol, n_sim_reps
         param_def=param_def,
         patterns=patterns,
         n_rep=n_sim_reps,
+        study_keys=study_keys,
+        recall_keys=recall_keys,
     )
     sim_file = os.path.join(res_dir, 'sim.csv')
     logging.info(f'Saving simulated data to {sim_file}.')
