@@ -383,6 +383,14 @@ def model_variant(
     """
     Define parameters for a model variant.
 
+    Parameters are determined in the following order:
+
+        dependent evaluated based on other static parameters
+        dynamic evaluated based on static parameters and data
+        dynamic set for the current list
+        dependent evaluated given current dynamic parameters
+        sublayer parameters evaluated given current parameters
+
     Parameters
     ----------
     fcf_features : list of str
