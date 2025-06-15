@@ -7,6 +7,7 @@ import numpy as np
 from scipy.spatial import distance
 import pandas as pd
 import matplotlib
+import seaborn as sns
 import click
 
 matplotlib.use('Agg')
@@ -351,6 +352,12 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
             **kwargs,
         )
 
+    # parameter pair plot
+    fit = pd.read_csv(os.path.join(fit_dir, 'fit.csv'))
+    param_def = cmr.read_config(os.path.join(fit_dir, 'parameters.json'))
+    g = sns.pairplot(fit[list(param_def.free.keys())])
+    g.savefig(os.path.join(fig_dir, f'parameters_subject.{ext}'))
+
     # report
     if category:
         curves = [
@@ -368,11 +375,11 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
             'cat_crp': ['cat_crp'],
             'use_rank': ['use_rank', 'use_rank_within', 'use_rank_across'],
         }
-        grids = curves.copy()
+        grids = curves.copy() + ['parameters']
     else:
         curves = ['spc', 'pfr', 'lag_crp', 'use_crp']
         points = {'lag_rank': ['lag_rank'], 'use_rank': ['use_rank']}
-        grids = curves.copy()
+        grids = curves.copy() + ['parameters']
     os.chdir(fit_dir)
     render_fit_html('.', curves, points, grids)
 
