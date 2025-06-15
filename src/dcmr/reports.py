@@ -491,4 +491,4 @@ def create_model_table(fit_dir, models, model_names, param_map=None, model_comp=
     latex_names = get_param_latex()
     order = [n for n in latex_names.keys() if n in table.index]
     reordered = table.reindex(order).rename(index=latex_names)
-    return reordered
+    return reordered, table
