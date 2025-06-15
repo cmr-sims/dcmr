@@ -635,24 +635,39 @@ def read_model_xvals(fit_dir, models, model_names=None):
 
 
 def read_model_sims(
-    data_file, fit_dir, models, model_names=None, block=False, block_category=False
+    data_file, 
+    fit_dir, 
+    models, 
+    model_names=None, 
+    block=False, 
+    block_category=False, 
+    data_first=False,
 ):
     """Read simulated data for multiple models."""
     if model_names is None:
         model_names = models
 
-    data_list = []
     obs_data = task.read_free_recall(
         data_file, block=block, block_category=block_category
     )
+    if data_first:
+        data_list = [obs_data]
+        keys = ['Data'] + model_names
+    else:
+        data_list = []
+        keys = model_names + ['Data']
+
     for model in models:
         sim_file = os.path.join(fit_dir, model, 'sim.csv')
         sim_data = task.read_free_recall(
             sim_file, block=block, block_category=block_category
         )
         data_list.append(sim_data)
-    data_list.append(obs_data)
-    data = pd.concat(data_list, axis=0, keys=model_names + ['Data'])
+        
+    if not data_first:
+        data_list.append(obs_data)
+
+    data = pd.concat(data_list, axis=0, keys=keys)
     data.index.rename(['source', 'trial'], inplace=True)
     return data
 
