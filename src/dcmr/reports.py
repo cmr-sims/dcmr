@@ -465,6 +465,11 @@ def create_model_table(fit_dir, models, model_names, param_map=None, model_comp=
         stats = ['k', 'logl_test_list']
         fields = np.hstack((free_param, stats))
         mean_only = ['k']
+    else:
+        stats = []
+        fields = free_param
+        mean_only = []
+
     table = pd.DataFrame(index=fields, columns=model_names)
 
     # parameter means and sem
