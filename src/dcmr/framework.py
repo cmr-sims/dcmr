@@ -663,7 +663,7 @@ def read_model_sims(
             sim_file, block=block, block_category=block_category
         )
         data_list.append(sim_data)
-        
+
     if not data_first:
         data_list.append(obs_data)
 
@@ -1080,6 +1080,8 @@ def fit_cmr_cfr_disrupt(
         sublayer_param=[
             'B_enc', 
             'B_rec', 
+            'Lfc', 
+            'Lcf',
             'B_disrupt',
             'B_distract',
         ],
