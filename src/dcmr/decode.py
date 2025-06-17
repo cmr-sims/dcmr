@@ -597,23 +597,43 @@ def decode_context(
 
     out_dir = Path(fit_dir) / f'decode_{sublayer}' / res_name
     out_dir.mkdir(exist_ok=True, parents=True)
-    Parallel(n_jobs=n_jobs)(
-        delayed(_decode_context_subject)(
-            Path(data_file),
-            Path(patterns_file),
-            Path(fit_dir),
-            Path(eeg_class_dir),
-            sublayer,
-            out_dir,
-            subject,
-            layers=layers,
-            weight=weight,
-            sigmas=sigmas,
-            n_reps=n_reps,
-            normalization=normalization,
-            clf=classifier,
-            multi_class=multi_class,
-            C=regularization,
+    if n_jobs == 1:
+        for subject in subjects:
+            _decode_context_subject(
+                Path(data_file),
+                Path(patterns_file),
+                Path(fit_dir),
+                Path(eeg_class_dir),
+                sublayer,
+                out_dir,
+                subject,
+                layers=layers,
+                weight=weight,
+                sigmas=sigmas,
+                n_reps=n_reps,
+                normalization=normalization,
+                clf=classifier,
+                multi_class=multi_class,
+                C=regularization,
+            )
+    else:
+        Parallel(n_jobs=n_jobs)(
+            delayed(_decode_context_subject)(
+                Path(data_file),
+                Path(patterns_file),
+                Path(fit_dir),
+                Path(eeg_class_dir),
+                sublayer,
+                out_dir,
+                subject,
+                layers=layers,
+                weight=weight,
+                sigmas=sigmas,
+                n_reps=n_reps,
+                normalization=normalization,
+                clf=classifier,
+                multi_class=multi_class,
+                C=regularization,
+            )
+            for subject in subjects
         )
-        for subject in subjects
-    )
