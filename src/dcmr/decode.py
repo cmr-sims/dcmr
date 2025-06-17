@@ -465,9 +465,20 @@ def _decode_context_subject(
     patterns = cmr.load_patterns(patterns_file)
 
     logger.info('Recording network states.')
+    if param_def.options['distraction']:
+        # disruption when a new block starts
+        study_keys = ['block', 'block_pos']
+    else:
+        study_keys = None
     model = cmr.CMR()
     state = model.record(
-        study, {}, subj_param, param_def=param_def, patterns=patterns, include=layers
+        study, 
+        {}, 
+        subj_param, 
+        param_def=param_def, 
+        patterns=patterns, 
+        include=layers,
+        study_keys=study_keys,
     )
     net = state[0]
     context_layers = []
