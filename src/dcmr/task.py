@@ -1,6 +1,7 @@
 """Analyze free recall data."""
 
 import os
+import sys
 import glob
 import re
 import shutil
@@ -519,3 +520,72 @@ def prepare_cdcatfr2(data_file, patterns_file, out_data_file):
         item_index=pl.Series(fr.pool_index(data['item'].to_pandas(), patterns['items'])),
     )
     data.write_csv(out_data_file)
+
+
+@click.command()
+@click.argument("data_file", type=click.Path(exists=True))
+@click.argument("sem_file", type=click.Path())
+@click.argument("patterns_file", type=click.Path())
+@click.argument("out_data_file", type=click.Path())
+def prepare_asymfr(data_file, sem_file, patterns_file, out_data_file):
+    """Prepare AsymFR data for simulations."""
+    raw = pl.read_csv(data_file)
+    list_type_pools = {"0": "taxonomic", "1": "taxonomic", "2": "toronto"}
+    list_types = {"0": "same", "1": "mixed", "2": "toronto"}
+    data = (
+        raw.with_columns(
+            pl.col("listtype").cast(pl.String).replace(list_type_pools).alias("pool"),
+            pl.col("listtype").cast(pl.String).replace(list_types).alias("list_type"),
+        )
+        .select("subject", "list", "trial_type", "position", "item", "category", "list_type", "pool")
+    )
+
+    # get item pool
+    items = (
+        data.filter(trial_type="study")
+        .sort("pool", "category", "item")
+        .select("pool", "category", "item")
+        .unique(subset="item", maintain_order=True)
+        .with_columns(pl.col("category").replace("TORONTO", None))
+    )
+    item_strings = items["item"].to_numpy()
+
+    # add pool index column
+    data_index = (
+        data.with_columns(
+            pl.lit(
+                pl.Series(fr.pool_index(raw["item"].to_pandas(), item_strings))
+            ).alias("item_index")
+        )
+    )
+    data_index.write_csv(out_data_file)
+
+    try:
+        import tensorflow_hub as hub
+    except ModuleNotFoundError:
+        print("Error: TensorflowHub must be installed to run embedding.")
+        sys.exit(1)
+
+    # run embedding
+    embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
+    patterns = embed(item_strings).numpy()
+
+    # save semantic representation file
+    cat_strings = items["category"].fill_null("n/a").to_numpy()
+    pool_strings = items["pool"].to_numpy()
+    np.savez(
+        sem_file, 
+        items=item_strings, 
+        category=cat_strings, 
+        pool=pool_strings, 
+        vectors=patterns,
+    )
+
+    # localist and distributional patterns
+    loc_patterns = np.eye(len(items))
+    use_z = stats.zscore(patterns, axis=1) / np.sqrt(patterns.shape[1])
+
+    # write patterns to standard format hdf5 file
+    cmr.save_patterns(
+        patterns_file, item_strings, loc=loc_patterns, use=use_z
+    )
