@@ -1137,6 +1137,100 @@ def fit_cmr_cfr_disrupt(
     "-i",
     help="dash-separated list of subject to include (default: all in data file)",
 )
+def fit_cmr_asymfr(
+    data_file,
+    patterns_file,
+    res_dir,
+    n_reps=1,
+    n_jobs=1,
+    tol=0.00001,
+    n_sim_reps=1,
+    include=None,
+):
+    os.makedirs(res_dir, exist_ok=True)
+    log_file = os.path.join(res_dir, 'log_fit.txt')
+    logging.basicConfig(
+        filename=log_file,
+        filemode='w',
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
+    )
+
+    logging.info(f'Loading data from {data_file}.')
+    data = pd.read_csv(data_file)
+
+    logging.info(f'Loading network patterns from {patterns_file}.')
+    patterns = cmr.load_patterns(patterns_file)
+
+    param_def = model_variant(
+        ['loc', 'use'], 
+        sublayers=True,
+        sublayer_param=[
+            'B_enc', 
+            'B_rec', 
+            'Lfc', 
+            'Lcf',
+        ],
+        free_param={
+            'X10': (0, 1),
+            'X11': (0, 1),
+            'X12': (0, 1),
+            'X20': (0, 1),
+            'X21': (0, 1),
+            'X22': (0, 1),
+        },
+        fixed_param={'B_rec_use': 1},
+        dynamic_param={
+            ('study', 'list'): {
+                'X1': 'where(list_type == "same", X10, where(list_type == "mixed", X11, X12))',
+                'X2': 'where(list_type == "same", X20, where(list_type == "mixed", X21, X22))',
+            }
+        }
+    )
+    del param_def.free['X1']
+    del param_def.free['X2']
+
+    # fit parameters, simulate using fitted parameters, and save results
+    _run_fit(
+        res_dir, 
+        data, 
+        param_def, 
+        patterns, 
+        n_jobs, 
+        n_reps, 
+        tol, 
+        n_sim_reps, 
+        study_keys=['list_type'],
+    )
+
+
+@click.command()
+@click.argument("data_file", type=click.Path(exists=True))
+@click.argument("patterns_file", type=click.Path(exists=True))
+@click.argument("res_dir", type=click.Path())
+@click.option(
+    "--n-reps",
+    "-n",
+    type=int,
+    default=1,
+    help="number of times to replicate the search",
+)
+@click.option(
+    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
+)
+@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
+@click.option(
+    "--n-sim-reps",
+    "-r",
+    type=int,
+    default=1,
+    help="number of experiment replications to simulate",
+)
+@click.option(
+    "--include",
+    "-i",
+    help="dash-separated list of subject to include (default: all in data file)",
+)
 def fit_cmr_cdcatfr2(
     data_file,
     patterns_file,

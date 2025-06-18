@@ -59,6 +59,8 @@ dcmr-fit-incidental = "dcmr.framework:fit_cmr_incidental"
 dcmr-patterns-cdcatfr2 = "dcmr.task:save_patterns_cdcatfr2"
 dcmr-prepare-cdcatfr2 = "dcmr.task:prepare_cdcatfr2"
 dcmr-fit-cdcatfr2 = "dcmr.framework:fit_cmr_cdcatfr2"
+dcmr-prepare-asymfr = "dcmr.task:prepare_asymfr"
+dcmr-fit-asymfr = "dcmr.framework:fit_cmr_asymfr"
 
 [build-system]
 requires = ["setuptools", "wheel"]
