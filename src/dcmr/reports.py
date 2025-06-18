@@ -1,6 +1,7 @@
 """Reports for summarizing behavior and model fit."""
 
 import os
+import shutil
 import logging
 import jinja2 as jn
 import numpy as np
@@ -126,8 +127,10 @@ def render_fit_html(fit_dir, curves, points, grids=None, ext='svg'):
 @click.argument("data_file")
 @click.argument("patterns_file")
 @click.argument("fit_dir")
+@click.argument("data_filter")
+@click.argument("report_name")
 @click.option("--ext", "-e", default="svg", help="figure file type (default: svg)")
-def plot_fit(data_file, patterns_file, fit_dir, ext):
+def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
     log_file = os.path.join(fit_dir, 'log_plot.txt')
     logging.basicConfig(
         filename=log_file,
@@ -145,6 +148,11 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
     sim = task.read_free_recall(sim_file, block=False, block_category=False)
     category = 'category' in sim.columns
 
+    # filter the data
+    if data_filter is not None:
+        data = data.query(data_filter)
+        sim = sim.query(data_filter)
+
     # prep semantic similarity
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
@@ -159,7 +167,15 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
     full.index.rename(['source', 'trial'], inplace=True)
 
     # make plots
-    fig_dir = os.path.join(fit_dir, 'figs')
+    if report_name is not None:
+        report_dir = os.path.join(fit_dir, report_name)
+        os.makedirs(report_dir, exist_ok=True)
+        shutil.copyfile(
+            os.path.join(fit_dir, "fit.csv"), os.path.join(report_dir, "fit.csv")
+        )
+    else:
+        report_dir = fit_dir
+    fig_dir = os.path.join(report_dir, 'figs')
     kwargs = {'ext': ext}
     logging.info(f'Saving figures to {fig_dir}.')
 
@@ -380,7 +396,7 @@ def plot_fit(data_file, patterns_file, fit_dir, ext):
         curves = ['spc', 'pfr', 'lag_crp', 'use_crp']
         points = {'lag_rank': ['lag_rank'], 'use_rank': ['use_rank']}
         grids = curves.copy() + ['parameters']
-    os.chdir(fit_dir)
+    os.chdir(report_dir)
     render_fit_html('.', curves, points, grids)
 
 
