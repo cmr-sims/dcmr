@@ -80,7 +80,7 @@ def plot_fit(
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    palette = sns.color_palette('viridis', 2)
+    palette = None
 
     # mean stat
     stat = data.groupby(group_var).apply(f_stat, **stat_kws).droplevel(1)
