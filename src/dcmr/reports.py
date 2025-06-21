@@ -262,6 +262,19 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
     figures.plot_fit(
         full,
         'source',
+        'input_crp',
+        fr.input_crp,
+        {},
+        'prob',
+        ['previous', 'current'],
+        fr.plot_input_crp,
+        {},
+        fig_dir,
+        **kwargs,
+    )
+    figures.plot_fit(
+        full,
+        'source',
         'use_crp',
         fr.distance_crp,
         {'index_key': 'item_index', 'distances': distances, 'edges': edges},
@@ -379,6 +392,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
         curves = [
             'spc',
             'pfr',
+            'input_crp',
             'lag_crp',
             'lag_crp_within',
             'lag_crp_across',
