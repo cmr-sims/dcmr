@@ -131,6 +131,7 @@ def plot_fit(
         size=style,
         data=comp.reset_index(),
         height=4,
+        alpha=0.5,
     )
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
     g.savefig(os.path.join(out_dir, f'{stat_name}_comp.{ext}'))
@@ -154,6 +155,7 @@ def plot_fit(
         size=style,
         data=comp.reset_index(),
         height=4,
+        alpha=0.5,
     )
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
     g.savefig(os.path.join(out_dir, f'{stat_name}_comp_subject.{ext}'))
@@ -201,7 +203,7 @@ def plot_fit_scatter(
     stat_index = stat.set_index('subject', append=True)[var_name]
     comp = stat_index.unstack(level=0)
     g = sns.relplot(
-        kind='scatter', x=groups[0], y=groups[1], data=comp.reset_index(), height=4
+        kind='scatter', x=groups[0], y=groups[1], data=comp.reset_index(), height=4, alpha=0.5
     )
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
     g.savefig(os.path.join(out_dir, f'{stat_name}_comp_subject.{ext}'))
