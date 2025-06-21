@@ -407,7 +407,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
         }
         grids = curves.copy() + ['parameters']
     else:
-        curves = ['spc', 'pfr', 'lag_crp', 'use_crp']
+        curves = ['spc', 'pfr', 'input_crp', 'lag_crp', 'use_crp']
         points = {'lag_rank': ['lag_rank'], 'use_rank': ['use_rank']}
         grids = curves.copy() + ['parameters']
     os.chdir(report_dir)
