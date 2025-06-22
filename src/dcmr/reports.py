@@ -159,7 +159,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
     distances = distance.squareform(
         distance.pdist(patterns['vector']['use'], 'correlation')
     )
-    edges = np.linspace(0.05, 0.95, 10)
+    edges = np.percentile(distance.squareform(distances), np.linspace(1, 100, 11))
     data['item_index'] = fr.pool_index(data['item'], patterns['items'])
 
     # concatenate for analysis
@@ -281,7 +281,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
         'prob',
         'center',
         fr.plot_distance_crp,
-        {'min_samples': 10},
+        {'min_samples': None},
         fig_dir,
         **kwargs,
     )
@@ -301,7 +301,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
             'prob',
             'center',
             fr.plot_distance_crp,
-            {'min_samples': 10},
+            {'min_samples': None},
             fig_dir,
             **kwargs,
         )
@@ -320,7 +320,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
             'prob',
             'center',
             fr.plot_distance_crp,
-            {'min_samples': 10},
+            {'min_samples': None},
             fig_dir,
             **kwargs,
         )
@@ -349,7 +349,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
         'prob',
         'lag',
         fr.plot_lag_crp,
-        {},
+        {'max_lag': None},
         fig_dir,
         **kwargs,
     )
@@ -363,7 +363,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
             'prob',
             'lag',
             fr.plot_lag_crp,
-            {},
+            {'max_lag': None},
             fig_dir,
             **kwargs,
         )
@@ -376,7 +376,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
             'prob',
             'lag',
             fr.plot_lag_crp,
-            {},
+            {'max_lag': None},
             fig_dir,
             **kwargs,
         )
