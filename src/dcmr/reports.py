@@ -146,7 +146,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
     data = task.read_free_recall(data_file, block=False, block_category=False)
     logging.info(f'Loading simulation from {sim_file}.')
     sim = task.read_free_recall(sim_file, block=False, block_category=False)
-    category = 'category' in sim.columns
+    category = 'category' in sim.columns and not 'toronto' in sim['list_type'].unique()
 
     # filter the data
     if data_filter is not None:
