@@ -127,8 +127,8 @@ def render_fit_html(fit_dir, curves, points, grids=None, ext='svg'):
 @click.argument("data_file")
 @click.argument("patterns_file")
 @click.argument("fit_dir")
-@click.argument("data_filter")
-@click.argument("report_name")
+@click.option("--data-filter", "-d", help="filter to apply to data before plotting")
+@click.option("--report-name", "-r", help="name of the report directory")
 @click.option("--ext", "-e", default="svg", help="figure file type (default: svg)")
 def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
     log_file = os.path.join(fit_dir, 'log_plot.txt')
