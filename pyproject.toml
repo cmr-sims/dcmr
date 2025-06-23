@@ -30,6 +30,7 @@ dependencies = [
     "wikivector",
     "jinja2",
     "pingouin",
+    "mpmath",
     "ezlaunch",
     "mindstorm",
     "watermark",
