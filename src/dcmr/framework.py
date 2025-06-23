@@ -1075,6 +1075,7 @@ def fit_cmr_cfr_disrupt(
         ['loc', 'cat', 'use'], 
         sublayers=True,
         free_param={
+            'T': (0.001, 0.1),
             'B_disrupt': (0, 1),
         },
         sublayer_param=[
@@ -1092,8 +1093,10 @@ def fit_cmr_cfr_disrupt(
                 'B_distract_cat': 'where((block != 1) & (block_pos == 1), B_disrupt_cat, 0)',
                 'B_distract_use': 'where((block != 1) & (block_pos == 1), B_disrupt_use, 0)',
             }
-        }
+        },
+        intercept=True,
     )
+    del param_def.fixed['T']
     param_def.set_options(distraction=True)
 
     # fit parameters, simulate using fitted parameters, and save results

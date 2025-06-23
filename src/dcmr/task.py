@@ -126,7 +126,7 @@ def label_block(data):
     return labeled
 
 
-def read_study_recall(csv_file, block=True, block_category=True):
+def _pd_read_study_recall(csv_file, block=True, block_category=True):
     """Read study and recall data."""
     if not os.path.exists(csv_file):
         raise ValueError(f'Data file does not exist: {csv_file}')
@@ -154,6 +154,83 @@ def read_study_recall(csv_file, block=True, block_category=True):
     data = data.groupby(['subject', 'list']).apply(set_list_columns, list_keys)
     data = data.reset_index(drop=True)
     return data
+
+
+def _pl_read_study_recall(csv_file, block=True, block_category=True, as_pandas=True):
+    """Read study and recall data using Polars."""
+    q1 = pl.scan_csv(csv_file, null_values=["NaN"])
+    columns = q1.collect_schema().names()
+    trial_cols = ["subject", "list", "trial_type"]
+    block_cols = trial_cols + ["block"]
+    if block and "n_block" not in columns:
+        # if category different from the previous category, this is a new block
+        new_block = pl.col("category").shift(1, fill_value=True).ne(pl.col("category"))
+        q1 = (
+            q1.with_columns(
+                new_block.cum_sum().over(trial_cols).alias("block")
+            )
+            .with_columns(
+                pl.when(~pl.col("category").is_null())
+                .then(pl.col("block").cum_count().over(block_cols))
+                .otherwise(None)
+                .alias("block_pos")
+            )
+            .with_columns(
+                pl.when(~pl.col("category").is_null())
+                .then(pl.col("block_pos").max().over(block_cols))
+                .otherwise(None)
+                .alias("block_len"),
+                pl.col("block").max().over(trial_cols).alias("n_block")
+            )
+        )
+    
+    if block_category and "base" not in columns:
+        # block-level category context labels
+        diff = pl.lit(["cel", "loc", "obj"]).list.set_difference(
+            pl.concat_list(pl.col("curr"), pl.col("prev"))
+        )
+        q2 = (
+            q1.group_by(block_cols, maintain_order=True)
+            .agg(pl.col("category").first())
+            .with_columns(
+                pl.col("category").alias("curr"),
+                pl.col("category").shift(1).over(trial_cols).alias("prev"),
+            )
+            .with_columns(
+                pl.when(diff.list.len() == 1)
+                .then(diff.list.get(0))
+                .otherwise(None)
+                .alias("base"),
+            )
+        )
+        q1 = q1.join(
+            q2, on=["subject", "list", "trial_type", "block", "category"], how="left"
+        )
+    
+    # additional list fields
+    fields = ["session", "list_type", "list_category", "distractor"]
+    expr_list = []
+    for f in fields:
+        if f in columns:
+            expr = pl.col(f).first().over("subject", "list")
+            expr_list.append(expr)
+    if expr_list:
+        q1 = q1.with_columns(*expr_list)
+    mod = q1.collect()
+
+    if as_pandas:
+        mod = mod.to_pandas(use_pyarrow_extension_array=True)
+        cat_cols = ["category", "curr", "prev", "base"]
+        convert_cols = [col for col in cat_cols if col in mod]
+        mod = mod.astype({col: "category" for col in convert_cols})
+        for col in convert_cols:
+            mod[col] = mod[col].cat.as_ordered()
+    return mod
+
+
+def read_study_recall(csv_file, **kwargs):
+    """Read study and recall data."""
+    return _pl_read_study_recall(csv_file, **kwargs, as_pandas=True)
 
 
 def read_free_recall(csv_file, block=True, block_category=True):

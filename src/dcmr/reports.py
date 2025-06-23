@@ -159,7 +159,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
     distances = distance.squareform(
         distance.pdist(patterns['vector']['use'], 'correlation')
     )
-    edges = np.linspace(0.05, 0.95, 10)
+    edges = np.percentile(distance.squareform(distances), np.linspace(1, 100, 11))
     data['item_index'] = fr.pool_index(data['item'], patterns['items'])
 
     # concatenate for analysis
@@ -262,13 +262,26 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
     figures.plot_fit(
         full,
         'source',
+        'input_crp',
+        fr.input_crp,
+        {},
+        'prob',
+        ['previous', 'current'],
+        fr.plot_input_crp,
+        {},
+        fig_dir,
+        **kwargs,
+    )
+    figures.plot_fit(
+        full,
+        'source',
         'use_crp',
         fr.distance_crp,
         {'index_key': 'item_index', 'distances': distances, 'edges': edges},
         'prob',
         'center',
         fr.plot_distance_crp,
-        {'min_samples': 10},
+        {'min_samples': None},
         fig_dir,
         **kwargs,
     )
@@ -288,7 +301,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
             'prob',
             'center',
             fr.plot_distance_crp,
-            {'min_samples': 10},
+            {'min_samples': None},
             fig_dir,
             **kwargs,
         )
@@ -307,7 +320,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
             'prob',
             'center',
             fr.plot_distance_crp,
-            {'min_samples': 10},
+            {'min_samples': None},
             fig_dir,
             **kwargs,
         )
@@ -318,10 +331,10 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
         full,
         'source',
         'pfr',
-        lambda x: fr.pnr(x).query('output == 1'),
+        lambda x: fr.pnr(x).query('output <= 3'),
         {},
         'prob',
-        'input',
+        ['input', 'output'],
         fr.plot_spc,
         {},
         fig_dir,
@@ -336,7 +349,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
         'prob',
         'lag',
         fr.plot_lag_crp,
-        {},
+        {'max_lag': None},
         fig_dir,
         **kwargs,
     )
@@ -350,7 +363,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
             'prob',
             'lag',
             fr.plot_lag_crp,
-            {},
+            {'max_lag': None},
             fig_dir,
             **kwargs,
         )
@@ -363,7 +376,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
             'prob',
             'lag',
             fr.plot_lag_crp,
-            {},
+            {'max_lag': None},
             fig_dir,
             **kwargs,
         )
@@ -379,6 +392,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
         curves = [
             'spc',
             'pfr',
+            'input_crp',
             'lag_crp',
             'lag_crp_within',
             'lag_crp_across',
@@ -393,7 +407,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
         }
         grids = curves.copy() + ['parameters']
     else:
-        curves = ['spc', 'pfr', 'lag_crp', 'use_crp']
+        curves = ['spc', 'pfr', 'input_crp', 'lag_crp', 'use_crp']
         points = {'lag_rank': ['lag_rank'], 'use_rank': ['use_rank']}
         grids = curves.copy() + ['parameters']
     os.chdir(report_dir)

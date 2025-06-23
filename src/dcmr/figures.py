@@ -80,11 +80,16 @@ def plot_fit(
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    palette = sns.color_palette('viridis', 2)
+    palette = None
 
     # mean stat
     stat = data.groupby(group_var).apply(f_stat, **stat_kws).droplevel(1)
-    g = f_plot(stat, hue=group_var, palette=palette, height=4, **plot_kws)
+    if isinstance(cond_var, list):
+        hue, style = cond_var
+    else:
+        hue = cond_var
+        style = None
+    g = f_plot(stat, hue=group_var, palette=palette, height=4, style=style, **plot_kws)
     g.savefig(os.path.join(out_dir, f'{stat_name}.{ext}'))
     plt.close(g.fig)
 
@@ -92,6 +97,7 @@ def plot_fit(
     g = f_plot(
         stat,
         hue=group_var,
+        style=style,
         palette=palette,
         col='subject',
         col_wrap=6,
@@ -105,35 +111,51 @@ def plot_fit(
     groups = stat.index.unique()
 
     # by mean
+    if isinstance(cond_var, list):
+        _groups = [group_var, *cond_var]
+        check_var = cond_var
+    else:
+        _groups = [group_var, cond_var]
+        check_var = [cond_var]
     stat_index = stat.set_index(cond_var, append=True)[stat_var]
-    m = stat_index.groupby([group_var, cond_var]).mean()
+    m = stat_index.groupby(_groups).mean()
     comp = m.unstack(level=0).reset_index()
-    if comp[cond_var].dtype == 'int64[pyarrow]':
-        comp[cond_var] = comp[cond_var].astype(int)
+    for var in check_var:
+        if comp[var].dtype == 'int64[pyarrow]':
+            comp[var] = comp[var].astype(int)
     g = sns.relplot(
         kind='scatter',
         x=groups[0],
         y=groups[1],
-        hue=cond_var,
+        hue=hue,
+        size=style,
         data=comp.reset_index(),
         height=4,
+        alpha=0.5,
     )
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
     g.savefig(os.path.join(out_dir, f'{stat_name}_comp.{ext}'))
     plt.close(g.fig)
 
     # by subject
-    stat_subj = stat.set_index([cond_var, 'subject'], append=True)[stat_var]
+    if isinstance(cond_var, list):
+        index_var = [*cond_var, 'subject']
+    else:
+        index_var = [cond_var, 'subject']
+    stat_subj = stat.set_index(index_var, append=True)[stat_var]
     comp = stat_subj.unstack(level=0).reset_index()
-    if comp[cond_var].dtype == 'int64[pyarrow]':
-        comp[cond_var] = comp[cond_var].astype(int)
+    for var in check_var:
+        if comp[var].dtype == 'int64[pyarrow]':
+            comp[var] = comp[var].astype(int)
     g = sns.relplot(
         kind='scatter',
         x=groups[0],
         y=groups[1],
-        hue=cond_var,
+        hue=hue,
+        size=style,
         data=comp.reset_index(),
         height=4,
+        alpha=0.5,
     )
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
     g.savefig(os.path.join(out_dir, f'{stat_name}_comp_subject.{ext}'))
@@ -181,7 +203,7 @@ def plot_fit_scatter(
     stat_index = stat.set_index('subject', append=True)[var_name]
     comp = stat_index.unstack(level=0)
     g = sns.relplot(
-        kind='scatter', x=groups[0], y=groups[1], data=comp.reset_index(), height=4
+        kind='scatter', x=groups[0], y=groups[1], data=comp.reset_index(), height=4, alpha=0.5
     )
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
     g.savefig(os.path.join(out_dir, f'{stat_name}_comp_subject.{ext}'))
