@@ -40,6 +40,9 @@ dependencies = [
     "swarmbar",
 ]
 
+[project.optional-dependencies]
+docs = ["sphinx", "pydata-sphinx-theme", "ipython", "sphinx-click"]
+
 [project.scripts]
 dcmr_restricted_models = "dcmr.framework:print_restricted_models"
 dcmr-fit = "dcmr.framework:fit_cmr"
