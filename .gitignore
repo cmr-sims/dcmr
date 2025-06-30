@@ -130,6 +130,7 @@ dmypy.json
 
 # sphinx
 docs/savefig
+docs/source/api/api
 
 # Pycharm
 .idea/
