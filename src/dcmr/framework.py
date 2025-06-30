@@ -6,6 +6,7 @@ import json
 import logging
 from itertools import combinations
 from importlib import resources
+import functools
 import numpy as np
 import pandas as pd
 import click
@@ -928,62 +929,114 @@ def _run_fit(
     sim.to_csv(sim_file, index=False)
 
 
+def filter_options(f):
+    """Set options for data filtering."""
+    @click.option(
+        "--include",
+        "-i",
+        help="dash-separated list of subject to include (default: all in data file)",
+    )
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def model_options(f):
+    """Set options for model configuration."""
+    @click.option("--intercept/--no-intercept", default=False)
+    @click.option("--sublayers/--no-sublayers", default=False)
+    @click.option(
+        "--scaling/--no-scaling", 
+        default=True,
+        help="Include scaling parameters",
+    )
+    @click.option(
+        "--sublayer-param",
+        "-p",
+        help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
+    )
+    @click.option(
+        "--fixed-param",
+        "-f",
+        help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
+    )
+    @click.option(
+        "--free-param",
+        "-e",
+        help="dash-separated list of values for free parameter ranges (e.g., B_enc_cat=0:0.8)",
+    )
+    @click.option(
+        "--dependent-param",
+        "-a",
+        help="dash-separated list of values for dependent parameter expressions (e.g., B_enc_cat=B_enc_use)",
+    )
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def fit_options(f):
+    @click.option(
+        "--n-reps",
+        "-n",
+        type=int,
+        default=1,
+        help="number of times to replicate the search",
+    )
+    @click.option(
+        "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
+    )
+    @click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def sim_options(f):
+    @click.option(
+        "--n-sim-reps",
+        "-r",
+        type=int,
+        default=1,
+        help="number of experiment replications to simulate",
+    )
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def xval_options(f):
+    @click.option(
+        "--n-folds",
+        "-d",
+        type=int,
+        help="number of cross-validation folds to run",
+    )
+    @click.option(
+        "--fold-key",
+        "-k",
+        help="events column to use when defining cross-validation folds",
+    )
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return wrapper
+
+
 @click.command()
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("fcf_features")
 @click.argument("ff_features")
 @click.argument("res_dir", type=click.Path())
-@click.option("--intercept/--no-intercept", default=False)
-@click.option("--sublayers/--no-sublayers", default=False)
-@click.option(
-    "--scaling/--no-scaling", 
-    default=True,
-    help="Include scaling parameters",
-)
-@click.option(
-    "--sublayer-param",
-    "-p",
-    help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
-)
-@click.option(
-    "--fixed-param",
-    "-f",
-    help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
-)
-@click.option(
-    "--free-param",
-    "-e",
-    help="dash-separated list of values for free parameter ranges (e.g., B_enc_cat=0:0.8)",
-)
-@click.option(
-    "--dependent-param",
-    "-a",
-    help="dash-separated list of values for dependent parameter expressions (e.g., B_enc_cat=B_enc_use)",
-)
-@click.option(
-    "--n-reps",
-    "-n",
-    type=int,
-    default=1,
-    help="number of times to replicate the search",
-)
-@click.option(
-    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
-)
-@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
-@click.option(
-    "--n-sim-reps",
-    "-r",
-    type=int,
-    default=1,
-    help="number of experiment replications to simulate",
-)
-@click.option(
-    "--include",
-    "-i",
-    help="dash-separated list of subject to include (default: all in data file)",
-)
+@model_options
+@fit_options
+@sim_options
+@filter_options
 def fit_cmr(
     data_file,
     patterns_file,
@@ -1037,29 +1090,9 @@ def fit_cmr(
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("res_dir", type=click.Path())
-@click.option(
-    "--n-reps",
-    "-n",
-    type=int,
-    default=1,
-    help="number of times to replicate the search",
-)
-@click.option(
-    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
-)
-@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
-@click.option(
-    "--n-sim-reps",
-    "-r",
-    type=int,
-    default=1,
-    help="number of experiment replications to simulate",
-)
-@click.option(
-    "--include",
-    "-i",
-    help="dash-separated list of subject to include (default: all in data file)",
-)
+@fit_options
+@sim_options
+@filter_options
 def fit_cmr_cfr_disrupt(
     data_file,
     patterns_file,
@@ -1131,29 +1164,9 @@ def fit_cmr_cfr_disrupt(
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("res_dir", type=click.Path())
-@click.option(
-    "--n-reps",
-    "-n",
-    type=int,
-    default=1,
-    help="number of times to replicate the search",
-)
-@click.option(
-    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
-)
-@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
-@click.option(
-    "--n-sim-reps",
-    "-r",
-    type=int,
-    default=1,
-    help="number of experiment replications to simulate",
-)
-@click.option(
-    "--include",
-    "-i",
-    help="dash-separated list of subject to include (default: all in data file)",
-)
+@fit_options
+@sim_options
+@filter_options
 def fit_cmr_asymfr(
     data_file,
     patterns_file,
@@ -1225,29 +1238,9 @@ def fit_cmr_asymfr(
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("res_dir", type=click.Path())
-@click.option(
-    "--n-reps",
-    "-n",
-    type=int,
-    default=1,
-    help="number of times to replicate the search",
-)
-@click.option(
-    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
-)
-@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
-@click.option(
-    "--n-sim-reps",
-    "-r",
-    type=int,
-    default=1,
-    help="number of experiment replications to simulate",
-)
-@click.option(
-    "--include",
-    "-i",
-    help="dash-separated list of subject to include (default: all in data file)",
-)
+@fit_options
+@sim_options
+@filter_options
 def fit_cmr_cdcatfr2(
     data_file,
     patterns_file,
@@ -1344,29 +1337,9 @@ def fit_cmr_cdcatfr2(
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("res_dir", type=click.Path())
-@click.option(
-    "--n-reps",
-    "-n",
-    type=int,
-    default=1,
-    help="number of times to replicate the search",
-)
-@click.option(
-    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
-)
-@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
-@click.option(
-    "--n-sim-reps",
-    "-r",
-    type=int,
-    default=1,
-    help="number of experiment replications to simulate",
-)
-@click.option(
-    "--include",
-    "-i",
-    help="dash-separated list of subject to include (default: all in data file)",
-)
+@fit_options
+@sim_options
+@filter_options
 def fit_cmr_incidental(
     data_file,
     patterns_file,
@@ -1453,60 +1426,10 @@ def fit_cmr_incidental(
 @click.argument("fcf_features")
 @click.argument("ff_features")
 @click.argument("res_dir", type=click.Path())
-@click.option("--intercept/--no-intercept", default=False)
-@click.option("--sublayers/--no-sublayers", default=False)
-@click.option(
-    "--scaling/--no-scaling", 
-    default=True,
-    help="Include scaling parameters",
-)
-@click.option(
-    "--sublayer-param",
-    "-p",
-    help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
-)
-@click.option(
-    "--fixed-param",
-    "-f",
-    help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
-)
-@click.option(
-    "--free-param",
-    "-e",
-    help="dash-separated list of values for free parameter ranges (e.g., B_enc_cat=0:0.8)",
-)
-@click.option(
-    "--dependent-param",
-    "-a",
-    help="dash-separated list of values for dependent parameter expressions (e.g., B_enc_cat=B_enc_use)",
-)
-@click.option(
-    "--n-folds",
-    "-d",
-    type=int,
-    help="number of cross-validation folds to run",
-)
-@click.option(
-    "--fold-key",
-    "-k",
-    help="events column to use when defining cross-validation folds",
-)
-@click.option(
-    "--n-reps",
-    "-n",
-    type=int,
-    default=1,
-    help="number of times to replicate the search",
-)
-@click.option(
-    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
-)
-@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
-@click.option(
-    "--include",
-    "-i",
-    help="dash-separated list of subject to include (default: all in data file)",
-)
+@model_options
+@xval_options
+@fit_options
+@filter_options
 def xval_cmr(
     data_file,
     patterns_file,

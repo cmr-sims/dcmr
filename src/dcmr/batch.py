@@ -100,51 +100,9 @@ def command_fit_cmr(
 @click.argument("fit")
 @click.argument("fcf_features")
 @click.argument("ff_features")
-@click.option("--intercept/--no-intercept", default=False)
-@click.option("--sublayers/--no-sublayers", default=False)
-@click.option(
-    "--scaling/--no-scaling", 
-    default=True,
-    help="Include scaling parameters",
-)
-@click.option(
-    "--sublayer-param",
-    "-p",
-    help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
-)
-@click.option(
-    "--fixed-param",
-    "-f",
-    help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
-)
-@click.option(
-    "--free-param",
-    "-e",
-    help="dash-separated list of values for free parameter ranges (e.g., B_enc_cat=0:0.8)",
-)
-@click.option(
-    "--dependent-param",
-    "-a",
-    help="dash-separated list of values for dependent parameter expressions (e.g., B_enc_cat=B_enc_use)",
-)
-@click.option(
-    "--n-reps",
-    "-n",
-    type=int,
-    default=1,
-    help="number of times to replicate the search",
-)
-@click.option(
-    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
-)
-@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
-@click.option(
-    "--n-sim-reps",
-    "-r",
-    type=int,
-    default=1,
-    help="number of experiment replications to simulate",
-)
+@framework.model_options
+@framework.fit_options
+@framework.sim_options
 def plan_fit_cmr(
     study,
     fit,
@@ -243,55 +201,9 @@ def command_xval_cmr(
 @click.argument("fit")
 @click.argument("fcf_features")
 @click.argument("ff_features")
-@click.option("--intercept/--no-intercept", default=False)
-@click.option("--sublayers/--no-sublayers", default=False)
-@click.option(
-    "--scaling/--no-scaling", 
-    default=True,
-    help="Include scaling parameters",
-)
-@click.option(
-    "--sublayer-param",
-    "-p",
-    help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
-)
-@click.option(
-    "--fixed-param",
-    "-f",
-    help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
-)
-@click.option(
-    "--free-param",
-    "-e",
-    help="dash-separated list of values for free parameter ranges (e.g., B_enc_cat=0:0.8)",
-)
-@click.option(
-    "--dependent-param",
-    "-a",
-    help="dash-separated list of values for dependent parameter expressions (e.g., B_enc_cat=B_enc_use)",
-)
-@click.option(
-    "--n-folds",
-    "-d",
-    type=int,
-    help="number of cross-validation folds to run",
-)
-@click.option(
-    "--fold-key",
-    "-k",
-    help="events column to use when defining cross-validation folds",
-)
-@click.option(
-    "--n-reps",
-    "-n",
-    type=int,
-    default=1,
-    help="number of times to replicate the search",
-)
-@click.option(
-    "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
-)
-@click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
+@framework.model_options
+@framework.fit_options
+@framework.xval_options
 def plan_xval_cmr(
     study,
     fit,
@@ -340,13 +252,7 @@ def command_sim_cmr(study, fit, model, n_rep=1):
 @click.argument("study")
 @click.argument("fit")
 @click.argument("models")
-@click.option(
-    "--n-sim-reps",
-    "-r",
-    type=int,
-    default=1,
-    help="number of experiment replications to simulate",
-)
+@framework.sim_options
 def plan_sim_cmr(study, fit, models, n_sim_reps):
     """Print command lines for simulating multiple models."""
     for model in models.split(","):
