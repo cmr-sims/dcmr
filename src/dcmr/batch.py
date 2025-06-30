@@ -68,7 +68,7 @@ def command_fit_cmr(
     study_dir, data_file, patterns_file = framework.get_study_paths(study)
     inputs = f'{data_file} {patterns_file}'
     res_name = framework.generate_model_name(
-        fcf_features, ff_features, intercept, sublayers, subpar, fixed, free, dependent
+        fcf_features, ff_features, intercept, sublayers, scaling, subpar, fixed, free, dependent
     )
     opts = f'-t {tol:.6f} -n {n_reps} -j {n_jobs} -r {n_sim_reps}'
 
@@ -76,6 +76,11 @@ def command_fit_cmr(
         opts = f'--sublayers {opts}'
     else:
         opts = f'--no-sublayers {opts}'
+
+    if scaling:
+        opts = f'--scaling {opts}'
+    else:
+        opts = f'--no-scaling {opts}'
 
     if intercept:
         opts = f'--intercept {opts}'
@@ -160,7 +165,7 @@ def command_xval_cmr(
     study_dir, data_file, patterns_file = framework.get_study_paths(study)
     inputs = f'{data_file} {patterns_file}'
     res_name = framework.generate_model_name(
-        fcf_features, ff_features, intercept, sublayers, subpar, fixed, free, dependent
+        fcf_features, ff_features, intercept, sublayers, scaling, subpar, fixed, free, dependent
     )
     opts = f'-t {tol:.6f} -n {n_reps} -j {n_jobs}'
     if n_folds is not None:
@@ -174,9 +179,9 @@ def command_xval_cmr(
         opts = f'--no-sublayers {opts}'
     
     if scaling:
-        opts += f'--scaling {opts}'
+        opts = f'--scaling {opts}'
     else:
-        opts += f'--no-scaling {opts}'
+        opts = f'--no-scaling {opts}'
 
     if intercept:
         opts = f'--intercept {opts}'
