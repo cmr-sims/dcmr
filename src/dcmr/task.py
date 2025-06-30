@@ -249,7 +249,7 @@ def get_study_keys(data):
     return study_keys
 
 
-def merge_free_recall(data):
+def merge_free_recall(data, include_list_keys=False):
     """Merge study and recall data."""
     # split, add block fields to study
     study = data.query('trial_type == "study"').copy()
@@ -257,9 +257,12 @@ def merge_free_recall(data):
 
     # merge study and recall events
     study_keys = get_study_keys(study)
-    list_keys = [
-        i for i in ['session', 'list_type', 'list_category', 'distractor'] if i in data
-    ]
+    if include_list_keys:
+        list_keys = [
+            i for i in ['session', 'list_type', 'list_category', 'distractor'] if i in data
+        ]
+    else:
+        list_keys = None
     merged = fr.merge_lists(study, recall, list_keys=list_keys, study_keys=study_keys)
     return merged
 
@@ -267,7 +270,7 @@ def merge_free_recall(data):
 def read_free_recall(csv_file, block=True, block_category=True):
     """Read and score free recall data."""
     data = read_study_recall(csv_file, block=block, block_category=block_category)
-    merged = merge_free_recall(data)
+    merged = merge_free_recall(data, include_list_keys=True)
     return merged
 
 
