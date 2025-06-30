@@ -138,7 +138,7 @@ def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='sv
         f.write(css.render())
 
 
-def plot_fit(data, sim, patterns, fit_dir, report_name, ext, study_keys=None):
+def plot_fit(data, sim, patterns, fit_dir, report_name=None, ext='svg', study_keys=None):
     """Make a report with fit information."""
     # information about the data
     category = 'category' in sim.columns and not 'toronto' in sim['list_type'].unique()
