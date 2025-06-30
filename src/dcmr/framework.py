@@ -5,7 +5,7 @@ from pathlib import Path
 import json
 import logging
 from itertools import combinations
-from pkg_resources import resource_filename
+from importlib import resources
 import numpy as np
 import pandas as pd
 import click
@@ -674,7 +674,7 @@ def read_model_sims(
 
 def get_sim_models(study, model_set, included=None):
     """Get a list of models for a study."""
-    list_file = resource_filename('dcmr', f'models/{study}.json')
+    list_file = resources.files('dcmr') / 'models' / f'{study}.json'
     with open(list_file, 'r') as f:
         model_list = json.load(f)
         if included is not None:
