@@ -233,24 +233,41 @@ def read_study_recall(csv_file, **kwargs):
     return _pl_read_study_recall(csv_file, **kwargs, as_pandas=True)
 
 
-def read_free_recall(csv_file, block=True, block_category=True):
-    """Read and score free recall data."""
-    data = read_study_recall(csv_file, block=block, block_category=block_category)
+def get_study_keys(data):
+    _study_keys = [
+        'item_index',
+        'category',
+        'block',
+        'n_block',
+        'block_pos',
+        'block_len',
+        'curr',
+        'prev',
+        'base',
+    ]
+    study_keys = [i for i in _study_keys if i in data]
+    return study_keys
 
+
+def merge_free_recall(data):
+    """Merge study and recall data."""
     # split, add block fields to study
     study = data.query('trial_type == "study"').copy()
     recall = data.query('trial_type == "recall"').copy()
 
     # merge study and recall events
-    study_keys = [i for i in ['item_index', 'category'] if i in data]
-    if block:
-        study_keys += ['block', 'n_block', 'block_pos', 'block_len']
-    if block_category:
-        study_keys += ['curr', 'prev', 'base']
+    study_keys = get_study_keys(study)
     list_keys = [
         i for i in ['session', 'list_type', 'list_category', 'distractor'] if i in data
     ]
     merged = fr.merge_lists(study, recall, list_keys=list_keys, study_keys=study_keys)
+    return merged
+
+
+def read_free_recall(csv_file, block=True, block_category=True):
+    """Read and score free recall data."""
+    data = read_study_recall(csv_file, block=block, block_category=block_category)
+    merged = merge_free_recall(data)
     return merged
 
 
