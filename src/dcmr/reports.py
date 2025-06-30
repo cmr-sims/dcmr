@@ -138,9 +138,12 @@ def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='sv
         f.write(css.render())
 
 
-def plot_fit(data, sim, patterns, fit_dir, report_name, ext, study_keys):
+def plot_fit(data, sim, patterns, fit_dir, report_name, ext, study_keys=None):
     """Make a report with fit information."""
+    # information about the data
     category = 'category' in sim.columns and not 'toronto' in sim['list_type'].unique()
+    if study_keys is None:
+        study_keys = task.get_study_keys(data)
 
     # prep semantic similarity
     distances = distance.squareform(
@@ -173,8 +176,6 @@ def plot_fit(data, sim, patterns, fit_dir, report_name, ext, study_keys):
     subj_param = framework.read_fit_param(os.path.join(fit_dir, 'fit.csv'))
     study = data.query('trial_type == "study"')
     model = cmr.CMR()
-    study_keys = list(study_keys)
-
     s1, l1 = study.groupby(['subject', 'list']).first().index[0]
     sample_study = fr.filter_data(study, subjects=s1, lists=l1)
     fig, ax = network.init_plot()
@@ -448,9 +449,9 @@ def run_plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ex
     # load data and simulated data
     sim_file = os.path.join(fit_dir, 'sim.csv')
     logging.info(f'Loading data from {data_file}.')
-    data = task.read_study_recall(data_file, block=False, block_category=False)
+    data = task.read_study_recall(data_file, block=True, block_category=False)
     logging.info(f'Loading simulation from {sim_file}.')
-    sim = task.read_study_recall(sim_file, block=False, block_category=False)
+    sim = task.read_study_recall(sim_file, block=True, block_category=False)
 
     # filter the data
     if data_filter is not None:
@@ -463,6 +464,10 @@ def run_plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ex
     patterns = cmr.load_patterns(patterns_file)
 
     logging.info(f'Creating {report_name} report.')
+    if not study_keys:
+        study_keys = None
+    else:
+        study_keys = list(study_keys)
     plot_fit(data, sim, patterns, fit_dir, report_name, ext, study_keys)
 
 
