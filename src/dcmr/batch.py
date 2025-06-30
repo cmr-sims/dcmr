@@ -183,7 +183,7 @@ def command_xval_cmr(
     study_dir, data_file, patterns_file = framework.get_study_paths(study)
     inputs = f'{data_file} {patterns_file}'
     res_name = framework.generate_model_name(
-        fcf_features, ff_features, sublayers, subpar, fixed, free
+        fcf_features, ff_features, sublayers, subpar, fixed, free, dependent
     )
     opts = f'-t {tol:.6f} -n {n_reps} -j {n_jobs}'
     if n_folds is not None:
