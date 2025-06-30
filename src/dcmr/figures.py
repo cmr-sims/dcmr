@@ -1,7 +1,7 @@
 """Figures for visualizing behavior and fits."""
 
 import os
-from pkg_resources import resource_filename
+from importlib import resources
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -12,7 +12,7 @@ from psifr import fr
 def set_style(style_path=None):
     """Set default plot style."""
     if style_path is None:
-        style_path = resource_filename('dcmr', 'figures.mplstyle')
+        style_path = resources.files('dcmr') / 'figures.mplstyle'
     plt.style.use(style_path)
 
 
