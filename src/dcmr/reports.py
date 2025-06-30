@@ -138,48 +138,22 @@ def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='sv
         f.write(css.render())
 
 
-@click.command()
-@click.argument("data_file")
-@click.argument("patterns_file")
-@click.argument("fit_dir")
-@click.option("--data-filter", "-d", help="filter to apply to data before plotting")
-@click.option("--report-name", "-r", help="name of the report directory")
-@click.option("--ext", "-e", default="svg", help="figure file type (default: svg)")
-@click.option("--study-keys", "-k", multiple=True, help="study keys for simulation")
-def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext, study_keys):
-    log_file = os.path.join(fit_dir, 'log_plot.txt')
-    logging.basicConfig(
-        filename=log_file,
-        filemode='w',
-        level=logging.INFO,
-        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
-    )
-    logging.info(f'Plotting fitted simulation data in {fit_dir}.')
-
-    # load data and simulated data
-    sim_file = os.path.join(fit_dir, 'sim.csv')
-    logging.info(f'Loading data from {data_file}.')
-    data = task.read_free_recall(data_file, block=False, block_category=False)
-    logging.info(f'Loading simulation from {sim_file}.')
-    sim = task.read_free_recall(sim_file, block=False, block_category=False)
+def plot_fit(data, sim, patterns, fit_dir, report_name, ext, study_keys):
+    """Make a report with fit information."""
     category = 'category' in sim.columns and not 'toronto' in sim['list_type'].unique()
 
-    # filter the data
-    if data_filter is not None:
-        data = data.query(data_filter)
-        sim = sim.query(data_filter)
-
     # prep semantic similarity
-    logging.info(f'Loading network patterns from {patterns_file}.')
-    patterns = cmr.load_patterns(patterns_file)
     distances = distance.squareform(
         distance.pdist(patterns['vector']['use'], 'correlation')
     )
     edges = np.percentile(distance.squareform(distances), np.linspace(1, 100, 11))
     data['item_index'] = fr.pool_index(data['item'], patterns['items'])
+    sim['item_index'] = fr.pool_index(sim['item'], patterns['items'])
 
-    # concatenate for analysis
-    full = pd.concat((data, sim), axis=0, keys=['Data', 'Model'])
+    # merge and concatenate for analysis
+    data_merge = task.merge_free_recall(data)
+    sim_merge = task.merge_free_recall(sim)
+    full = pd.concat((data_merge, sim_merge), axis=0, keys=['Data', 'Model'])
     full.index.rename(['source', 'trial'], inplace=True)
 
     # make plots
@@ -193,13 +167,11 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext, s
         report_dir = fit_dir
     fig_dir = os.path.join(report_dir, 'figs')
     kwargs = {'ext': ext}
-    logging.info(f'Saving figures to {fig_dir}.')
 
     # snapshots
     param_def = cmr.read_config(os.path.join(fit_dir, 'parameters.json'))
     subj_param = framework.read_fit_param(os.path.join(fit_dir, 'fit.csv'))
-    raw = task.read_study_recall(data_file)
-    study = raw.query('trial_type == "study"')
+    study = data.query('trial_type == "study"')
     model = cmr.CMR()
     study_keys = list(study_keys)
 
@@ -453,6 +425,45 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext, s
         grids = curves.copy() + ['parameters']
     os.chdir(report_dir)
     render_fit_html('.', curves, points, grids, snapshots)
+
+
+@click.command()
+@click.argument("data_file")
+@click.argument("patterns_file")
+@click.argument("fit_dir")
+@click.option("--data-filter", "-d", help="filter to apply to data before plotting")
+@click.option("--report-name", "-r", help="name of the report directory")
+@click.option("--ext", "-e", default="svg", help="figure file type (default: svg)")
+@click.option("--study-keys", "-k", multiple=True, help="study keys for simulation")
+def run_plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext, study_keys):
+    log_file = os.path.join(fit_dir, 'log_plot.txt')
+    logging.basicConfig(
+        filename=log_file,
+        filemode='w',
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
+    )
+    logging.info(f'Plotting fitted simulation data in {fit_dir}.')
+
+    # load data and simulated data
+    sim_file = os.path.join(fit_dir, 'sim.csv')
+    logging.info(f'Loading data from {data_file}.')
+    data = task.read_study_recall(data_file, block=False, block_category=False)
+    logging.info(f'Loading simulation from {sim_file}.')
+    sim = task.read_study_recall(sim_file, block=False, block_category=False)
+
+    # filter the data
+    if data_filter is not None:
+        logging.info(f'Applying filter to data: {data_filter}')
+        data = data.query(data_filter)
+        sim = sim.query(data_filter)
+
+    # load patterns
+    logging.info(f'Loading network patterns from {patterns_file}.')
+    patterns = cmr.load_patterns(patterns_file)
+
+    logging.info(f'Creating {report_name} report.')
+    plot_fit(data, sim, patterns, fit_dir, report_name, ext, study_keys)
 
 
 def get_param_latex():
