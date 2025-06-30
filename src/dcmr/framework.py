@@ -15,6 +15,7 @@ from cymr import fit
 from psifr import fr
 from cymr.cmr import CMRParameters
 from dcmr import task
+from dcmr import reports
 
 
 class WeightParameters(CMRParameters):
@@ -927,6 +928,9 @@ def _run_fit(
     sim_file = os.path.join(res_dir, 'sim.csv')
     logging.info(f'Saving simulated data to {sim_file}.')
     sim.to_csv(sim_file, index=False)
+
+    # make a report of the fit
+    reports.plot_fit(data, sim, patterns, res_dir)
 
 
 def filter_options(f):
