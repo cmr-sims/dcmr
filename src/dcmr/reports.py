@@ -169,6 +169,7 @@ def plot_fit(data, sim, patterns, fit_dir, report_name=None, ext='svg', study_ke
     else:
         report_dir = fit_dir
     fig_dir = os.path.join(report_dir, 'figs')
+    os.makedirs(fig_dir, exist_ok=True)
     kwargs = {'ext': ext}
 
     # snapshots
