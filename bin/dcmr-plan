@@ -18,7 +18,7 @@ else
     jobs=$3
 fi
 
-version=v5
+version=v6
 case $command in
   fit)
     program="dcmr-plan-fit"
@@ -40,18 +40,18 @@ esac
 if [[ -n $program ]]; then
     case $sim in
       1)
-        $program cfr "$version" loc,cat,use,loc-cat,loc-use,cat-use,loc-cat-use none --sublayers $opt
+        $program cfr "$version" loc,cat,use,loc-cat,loc-use,cat-use,loc-cat-use none --sublayers --intercept -p Lfc-Lcf $opt
         ;;
       2)
-        $program cfr "$version" loc-cat-use none --sublayers -p B_enc-B_rec $opt
-        $program cfr "$version" loc-cat-use none --sublayers -p B_enc-B_rec -f $(dcmr_restricted_models) $opt
-        $program cfr "$version" loc cat-use --sublayers $opt
+        $program cfr "$version" loc-cat-use none --sublayers --intercept -p Lfc-Lcf-B_enc-B_rec $opt
+        $program cfr "$version" loc-cat-use none --sublayers --intercept -p Lfc-Lcf-B_enc-B_rec -f $(dcmr_restricted_models) $opt
+        $program cfr "$version" loc cat-use --sublayers --intercept $opt
         ;;
       4)
-        $program peers "$version" loc,use,loc-use none --sublayers $opt
-        $program peers "$version" loc-use none --sublayers -p B_enc-B_rec $opt
-        $program peers "$version" loc-use none --sublayers -p B_enc-B_rec -f B_enc_use=1,B_rec_use=1,B_enc_use=1-B_rec_use=1 $opt
-        $program peers "$version" loc use --sublayers $opt
+        $program peers "$version" loc,use,loc-use none --sublayers --intercept -p Lfc-Lcf $opt
+        $program peers "$version" loc-use none --sublayers --intercept -p Lfc-Lcf-B_enc-B_rec $opt
+        $program peers "$version" loc-use none --sublayers --intercept -p Lfc-Lcf-B_enc-B_rec -f B_enc_use=1,B_rec_use=1,B_enc_use=1-B_rec_use=1 $opt
+        $program peers "$version" loc use --sublayers --intercept $opt
         ;;
       *)
         echo "Error: Unknown simulation: $sim."

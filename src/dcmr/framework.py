@@ -1659,6 +1659,7 @@ def sim_cmr(data_file, patterns_file, fit_dir, n_rep=1):
 def generate_model_name(
     fcf_features,
     ff_features,
+    intercept,
     sublayers,
     subpar,
     fixed,
@@ -1670,6 +1671,9 @@ def generate_model_name(
         res_name = 'cmrs'
     else:
         res_name = 'cmr'
+    
+    if intercept:
+        res_name += 'i'
 
     if fcf_features and fcf_features != 'none':
         res_name += f'_fcf-{fcf_features}'

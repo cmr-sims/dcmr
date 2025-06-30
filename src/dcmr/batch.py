@@ -52,6 +52,7 @@ def command_fit_cmr(
     fit,
     fcf_features,
     ff_features,
+    intercept,
     sublayers,
     subpar,
     fixed,
@@ -66,7 +67,7 @@ def command_fit_cmr(
     study_dir, data_file, patterns_file = framework.get_study_paths(study)
     inputs = f'{data_file} {patterns_file}'
     res_name = framework.generate_model_name(
-        fcf_features, ff_features, sublayers, subpar, fixed, free, dependent
+        fcf_features, ff_features, intercept, sublayers, subpar, fixed, free, dependent
     )
     opts = f'-t {tol:.6f} -n {n_reps} -j {n_jobs} -r {n_sim_reps}'
 
@@ -74,6 +75,11 @@ def command_fit_cmr(
         opts = f'--sublayers {opts}'
     else:
         opts = f'--no-sublayers {opts}'
+
+    if intercept:
+        opts = f'--intercept {opts}'
+    else:
+        opts = f'--no-intercept {opts}'
 
     if subpar:
         opts += f' -p {subpar}'
@@ -93,6 +99,7 @@ def command_fit_cmr(
 @click.argument("fit")
 @click.argument("fcf_features")
 @click.argument("ff_features")
+@click.option("--intercept/--no-intercept", default=False)
 @click.option("--sublayers/--no-sublayers", default=False)
 @click.option(
     "--sublayer-param",
@@ -137,6 +144,7 @@ def plan_fit_cmr(
     fit,
     fcf_features,
     ff_features,
+    intercept,
     sublayers,
     sublayer_param,
     fixed_param,
@@ -154,6 +162,7 @@ def plan_fit_cmr(
             fit,
             fcf,
             ff,
+            intercept,
             sublayers,
             sub,
             fix,
@@ -168,6 +177,7 @@ def command_xval_cmr(
     fit,
     fcf_features,
     ff_features,
+    intercept,
     sublayers,
     subpar,
     fixed,
@@ -183,7 +193,7 @@ def command_xval_cmr(
     study_dir, data_file, patterns_file = framework.get_study_paths(study)
     inputs = f'{data_file} {patterns_file}'
     res_name = framework.generate_model_name(
-        fcf_features, ff_features, sublayers, subpar, fixed, free, dependent
+        fcf_features, ff_features, intercept, sublayers, subpar, fixed, free, dependent
     )
     opts = f'-t {tol:.6f} -n {n_reps} -j {n_jobs}'
     if n_folds is not None:
@@ -195,6 +205,11 @@ def command_xval_cmr(
         opts = f'--sublayers {opts}'
     else:
         opts = f'--no-sublayers {opts}'
+
+    if intercept:
+        opts = f'--intercept {opts}'
+    else:
+        opts = f'--no-intercept {opts}'
 
     if subpar:
         opts += f' -p {subpar}'
@@ -214,6 +229,7 @@ def command_xval_cmr(
 @click.argument("fit")
 @click.argument("fcf_features")
 @click.argument("ff_features")
+@click.option("--intercept/--no-intercept", default=False)
 @click.option("--sublayers/--no-sublayers", default=False)
 @click.option(
     "--sublayer-param",
@@ -262,6 +278,7 @@ def plan_xval_cmr(
     fit,
     fcf_features,
     ff_features,
+    intercept,
     sublayers,
     sublayer_param,
     fixed_param,
@@ -279,6 +296,7 @@ def plan_xval_cmr(
             fit,
             fcf,
             ff,
+            intercept,
             sublayers,
             sub,
             fix,
