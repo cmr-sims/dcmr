@@ -1617,6 +1617,9 @@ def generate_model_name(
     else:
         res_name = 'cmr'
     
+    if not scaling:
+        res_name += 'n'
+
     if intercept:
         res_name += 'i'
 
