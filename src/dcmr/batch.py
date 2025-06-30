@@ -54,6 +54,7 @@ def command_fit_cmr(
     ff_features,
     intercept,
     sublayers,
+    scaling,
     subpar,
     fixed,
     free,
@@ -102,6 +103,11 @@ def command_fit_cmr(
 @click.option("--intercept/--no-intercept", default=False)
 @click.option("--sublayers/--no-sublayers", default=False)
 @click.option(
+    "--scaling/--no-scaling", 
+    default=True,
+    help="Include scaling parameters",
+)
+@click.option(
     "--sublayer-param",
     "-p",
     help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
@@ -146,6 +152,7 @@ def plan_fit_cmr(
     ff_features,
     intercept,
     sublayers,
+    scaling,
     sublayer_param,
     fixed_param,
     free_param,
@@ -164,6 +171,7 @@ def plan_fit_cmr(
             ff,
             intercept,
             sublayers,
+            scaling,
             sub,
             fix,
             free,
@@ -179,6 +187,7 @@ def command_xval_cmr(
     ff_features,
     intercept,
     sublayers,
+    scaling,
     subpar,
     fixed,
     free,
@@ -205,6 +214,11 @@ def command_xval_cmr(
         opts = f'--sublayers {opts}'
     else:
         opts = f'--no-sublayers {opts}'
+    
+    if scaling:
+        opts += f'--scaling {opts}'
+    else:
+        opts += f'--no-scaling {opts}'
 
     if intercept:
         opts = f'--intercept {opts}'
@@ -231,6 +245,11 @@ def command_xval_cmr(
 @click.argument("ff_features")
 @click.option("--intercept/--no-intercept", default=False)
 @click.option("--sublayers/--no-sublayers", default=False)
+@click.option(
+    "--scaling/--no-scaling", 
+    default=True,
+    help="Include scaling parameters",
+)
 @click.option(
     "--sublayer-param",
     "-p",
@@ -280,6 +299,7 @@ def plan_xval_cmr(
     ff_features,
     intercept,
     sublayers,
+    scaling,
     sublayer_param,
     fixed_param,
     free_param,
@@ -298,6 +318,7 @@ def plan_xval_cmr(
             ff,
             intercept,
             sublayers,
+            scaling,
             sub,
             fix,
             free,

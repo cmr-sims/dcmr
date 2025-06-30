@@ -373,6 +373,7 @@ def model_variant(
     fcf_features,
     ff_features=None,
     sublayers=False,
+    scaling=True,
     sublayer_param=None,
     intercept=False,
     fixed_param=None,
@@ -490,7 +491,11 @@ def model_variant(
 
     if fcf_features:
         # set global weight scaling
-        scaling_param = wp.set_scaling_param('vector', fcf_features)
+        if scaling:
+            scaling_param = wp.set_scaling_param('vector', fcf_features)
+        else:
+            scaling_param = {key: None for key in fcf_features}
+
         if sublayers:
             wp.set_sublayers(f=['task'], c=fcf_features)
 
@@ -791,6 +796,7 @@ def configure_model(
     ff_features,
     intercept,
     sublayers,
+    scaling,
     sublayer_param,
     fixed_param,
     free_param,
@@ -835,6 +841,7 @@ def configure_model(
         fcf_features,
         ff_features,
         sublayers=sublayers,
+        scaling=scaling,
         sublayer_param=sublayer_param,
         intercept=intercept,
         fixed_param=fixed_param,
@@ -930,6 +937,11 @@ def _run_fit(
 @click.option("--intercept/--no-intercept", default=False)
 @click.option("--sublayers/--no-sublayers", default=False)
 @click.option(
+    "--scaling/--no-scaling", 
+    default=True,
+    help="Include scaling parameters",
+)
+@click.option(
     "--sublayer-param",
     "-p",
     help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
@@ -980,6 +992,7 @@ def fit_cmr(
     res_dir,
     intercept,
     sublayers,
+    scaling,
     sublayer_param=None,
     fixed_param=None,
     free_param=None,
@@ -1008,6 +1021,7 @@ def fit_cmr(
         ff_features,
         intercept,
         sublayers,
+        scaling,
         sublayer_param,
         fixed_param,
         free_param,
@@ -1442,6 +1456,11 @@ def fit_cmr_incidental(
 @click.option("--intercept/--no-intercept", default=False)
 @click.option("--sublayers/--no-sublayers", default=False)
 @click.option(
+    "--scaling/--no-scaling", 
+    default=True,
+    help="Include scaling parameters",
+)
+@click.option(
     "--sublayer-param",
     "-p",
     help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
@@ -1496,6 +1515,7 @@ def xval_cmr(
     res_dir,
     intercept,
     sublayers,
+    scaling,
     sublayer_param=None,
     fixed_param=None,
     free_param=None,
@@ -1525,6 +1545,7 @@ def xval_cmr(
         ff_features,
         intercept,
         sublayers,
+        scaling,
         sublayer_param,
         fixed_param,
         free_param,
@@ -1661,6 +1682,7 @@ def generate_model_name(
     ff_features,
     intercept,
     sublayers,
+    scaling,
     subpar,
     fixed,
     free,
