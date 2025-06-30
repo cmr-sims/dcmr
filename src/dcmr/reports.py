@@ -14,12 +14,13 @@ import click
 matplotlib.use('Agg')
 from psifr import fr
 from cymr import cmr
+from cymr import network
 from dcmr import task
 from dcmr import framework
 from dcmr import figures
 
 
-def render_fit_html(fit_dir, curves, points, grids=None, ext='svg'):
+def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='svg'):
     """
     Create an HTML report with figures and parameter tables.
 
@@ -43,6 +44,10 @@ def render_fit_html(fit_dir, curves, points, grids=None, ext='svg'):
     grids : list of str
         Plot grids to include. Files named {grid}_subject.{ext} will be
         included.
+    
+    snapshots : list of str
+        Model snapshots to include. Files named 
+        snapshot_{snapshot}.{ext} will be included.
     
     ext : str
         File extension to expect for plot files. SVG files are 
@@ -82,6 +87,15 @@ def render_fit_html(fit_dir, curves, points, grids=None, ext='svg'):
         }
     else:
         d_grid = None
+    
+    # snapshots
+    if snapshots is not None:
+        d_snapshot = {
+            snapshot: os.path.join(fit_dir, 'figs', f'snapshot_{snapshot}.{ext}')
+            for snapshot in snapshots
+        }
+    else:
+        d_snapshot = None
 
     # tables
     fit = pd.read_csv(os.path.join(fit_dir, 'fit.csv'))
@@ -104,6 +118,7 @@ def render_fit_html(fit_dir, curves, points, grids=None, ext='svg'):
         curves=d_curve,
         points=d_point,
         grids=d_grid,
+        snapshots=d_snapshot,
         tables=tables,
         table_opt=table_opt,
     )
@@ -130,7 +145,8 @@ def render_fit_html(fit_dir, curves, points, grids=None, ext='svg'):
 @click.option("--data-filter", "-d", help="filter to apply to data before plotting")
 @click.option("--report-name", "-r", help="name of the report directory")
 @click.option("--ext", "-e", default="svg", help="figure file type (default: svg)")
-def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
+@click.option("--study-keys", "-k", multiple=True, help="study keys for simulation")
+def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext, study_keys):
     log_file = os.path.join(fit_dir, 'log_plot.txt')
     logging.basicConfig(
         filename=log_file,
@@ -178,6 +194,32 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
     fig_dir = os.path.join(report_dir, 'figs')
     kwargs = {'ext': ext}
     logging.info(f'Saving figures to {fig_dir}.')
+
+    # snapshots
+    param_def = cmr.read_config(os.path.join(fit_dir, 'parameters.json'))
+    subj_param = framework.read_fit_param(os.path.join(fit_dir, 'fit.csv'))
+    raw = task.read_study_recall(data_file)
+    study = raw.query('trial_type == "study"')
+    model = cmr.CMR()
+    study_keys = list(study_keys)
+
+    s1, l1 = study.groupby(['subject', 'list']).first().index[0]
+    sample_study = fr.filter_data(study, subjects=s1, lists=l1)
+    fig, ax = network.init_plot()
+    snapshots = []
+    for subj, par in subj_param.items():
+        state = model.record(
+            sample_study,
+            par, 
+            subj_param=None, 
+            param_def=param_def, 
+            patterns=patterns, 
+            study_keys=study_keys,
+            remove_blank=True,
+        )
+        state[-1].plot(ax=ax)
+        fig.savefig(os.path.join(fig_dir, f'snapshot_sub-{subj}.{ext}'))
+        snapshots.append(f'sub-{subj}')
 
     # scalar stats
     logging.info('Plotting fits to individual scalar statistics.')
@@ -383,7 +425,6 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
 
     # parameter pair plot
     fit = pd.read_csv(os.path.join(fit_dir, 'fit.csv'))
-    param_def = cmr.read_config(os.path.join(fit_dir, 'parameters.json'))
     g = sns.pairplot(fit[list(param_def.free.keys())])
     g.savefig(os.path.join(fig_dir, f'parameters_subject.{ext}'))
 
@@ -411,7 +452,7 @@ def plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext):
         points = {'lag_rank': ['lag_rank'], 'use_rank': ['use_rank']}
         grids = curves.copy() + ['parameters']
     os.chdir(report_dir)
-    render_fit_html('.', curves, points, grids)
+    render_fit_html('.', curves, points, grids, snapshots)
 
 
 def get_param_latex():
