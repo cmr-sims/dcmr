@@ -189,7 +189,6 @@ def plot_fit(data, sim, patterns, fit_dir, report_name=None, ext='svg', study_ke
             param_def=param_def, 
             patterns=patterns, 
             study_keys=study_keys,
-            remove_blank=True,
         )
         state[-1].plot(ax=ax)
         fig.savefig(os.path.join(fig_dir, f'snapshot_sub-{subj}.{ext}'))
