@@ -487,7 +487,11 @@ def model_variant(
             wp.set_dynamic(trial_type, scope, dyn)
 
     if intercept:
-        intercept_param = wp.set_intercept_param(['ff'], -1, 1)
+        if 'Aff' in wp.free:
+            Aff = wp.free['Aff']
+        else:
+            Aff = (-1, 1)
+        intercept_param = wp.set_intercept_param(['ff'], *Aff)
     else:
         intercept_param = None
 
