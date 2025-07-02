@@ -1199,6 +1199,7 @@ def fit_cmr_asymfr(
     param_def = model_variant(
         ['loc', 'use'], 
         sublayers=True,
+        intercept=True,
         sublayer_param=[
             'B_enc', 
             'B_rec', 
@@ -1206,6 +1207,9 @@ def fit_cmr_asymfr(
             'Lcf',
         ],
         free_param={
+            'w00': (0, 1),
+            'w01': (0, 1),
+            'w02': (0, 1),
             'X10': (0, 1),
             'X11': (0, 1),
             'X12': (0, 1),
@@ -1213,9 +1217,10 @@ def fit_cmr_asymfr(
             'X21': (0, 1),
             'X22': (0, 1),
         },
-        fixed_param={'B_rec_use': 1},
+        fixed_param={'B_rec_use': 1, 'w0': 1},
         dynamic_param={
             ('study', 'list'): {
+                'w0': 'where(list_type == "same", w00, where(list_type == "mixed", w01, w02))',
                 'X1': 'where(list_type == "same", X10, where(list_type == "mixed", X11, X12))',
                 'X2': 'where(list_type == "same", X20, where(list_type == "mixed", X21, X22))',
             }
