@@ -199,7 +199,7 @@ def plot_fit(
             param_def=param_def, 
             patterns=patterns, 
             study_keys=study_keys,
-            remove_blank=['loc'],
+            filter_item=['loc'],
         )
         state[-1].plot(ax=ax)
         fig.savefig(os.path.join(fig_dir, f'snapshot_sub-{subj}.{ext}'), dpi=300)
