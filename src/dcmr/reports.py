@@ -476,8 +476,8 @@ def run_plot_fit(
     # filter the data
     if data_filter is not None:
         logging.info(f'Applying filter to data: {data_filter}')
-        data = data.query(data_filter)
-        sim = sim.query(data_filter)
+        data = data.query(data_filter).copy()
+        sim = sim.query(data_filter).copy()
 
     # load patterns
     logging.info(f'Loading network patterns from {patterns_file}.')
