@@ -189,7 +189,7 @@ def plot_fit(
     model = cmr.CMR()
     s1, l1 = study.groupby(['subject', 'list']).first().index[0]
     sample_study = fr.filter_data(study, subjects=s1, lists=l1)
-    fig, ax = network.init_plot()
+    fig, ax = network.init_plot(figsize=(13, 9.5))
     snapshots = []
     for subj, par in subj_param.items():
         state = model.record(
@@ -199,9 +199,10 @@ def plot_fit(
             param_def=param_def, 
             patterns=patterns, 
             study_keys=study_keys,
+            remove_blank=['loc'],
         )
         state[-1].plot(ax=ax)
-        fig.savefig(os.path.join(fig_dir, f'snapshot_sub-{subj}.{ext}'))
+        fig.savefig(os.path.join(fig_dir, f'snapshot_sub-{subj}.{ext}'), dpi=300)
         snapshots.append(f'sub-{subj}')
 
     # scalar stats
