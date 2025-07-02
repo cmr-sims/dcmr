@@ -138,10 +138,20 @@ def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='sv
         f.write(css.render())
 
 
-def plot_fit(data, sim, patterns, fit_dir, report_name=None, ext='svg', study_keys=None):
+def plot_fit(
+    data, 
+    sim, 
+    patterns, 
+    fit_dir, 
+    report_name=None, 
+    ext='svg', 
+    study_keys=None,
+    category=None,
+):
     """Make a report with fit information."""
     # information about the data
-    category = 'category' in sim.columns and not 'toronto' in sim['list_type'].unique()
+    if category is None:
+        category = 'category' in sim.columns and not 'toronto' in sim['list_type'].unique()
     if study_keys is None:
         study_keys = task.get_study_keys(data)
 
@@ -436,7 +446,17 @@ def plot_fit(data, sim, patterns, fit_dir, report_name=None, ext='svg', study_ke
 @click.option("--report-name", "-r", help="name of the report directory")
 @click.option("--ext", "-e", default="svg", help="figure file type (default: svg)")
 @click.option("--study-keys", "-k", multiple=True, help="study keys for simulation")
-def run_plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ext, study_keys):
+@click.option("--category/--no-category", default=False, help="include category analyses")
+def run_plot_fit(
+    data_file, 
+    patterns_file, 
+    fit_dir, 
+    data_filter, 
+    report_name, 
+    ext, 
+    study_keys,
+    category,
+):
     log_file = os.path.join(fit_dir, 'log_plot.txt')
     logging.basicConfig(
         filename=log_file,
@@ -468,7 +488,7 @@ def run_plot_fit(data_file, patterns_file, fit_dir, data_filter, report_name, ex
         study_keys = None
     else:
         study_keys = list(study_keys)
-    plot_fit(data, sim, patterns, fit_dir, report_name, ext, study_keys)
+    plot_fit(data, sim, patterns, fit_dir, report_name, ext, study_keys, category)
 
 
 def get_param_latex():
