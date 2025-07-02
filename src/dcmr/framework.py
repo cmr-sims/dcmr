@@ -934,7 +934,10 @@ def _run_fit(
     sim.to_csv(sim_file, index=False)
 
     # make a report of the fit
-    reports.plot_fit(data, sim, patterns, res_dir, study_keys=study_keys)
+    category = 'category' in data.columns and not 'toronto' in data['list_type'].unique()
+    reports.plot_fit(
+        data, sim, patterns, res_dir, study_keys=study_keys, category=category
+    )
 
 
 def filter_options(f):
@@ -1211,15 +1214,16 @@ def fit_cmr_asymfr(
             'Lcf',
         ],
         free_param={
+            'Aff': (-2, 2),
             'w00': (0, 1),
             'w01': (0, 1),
             'w02': (0, 1),
             'X10': (0, 1),
             'X11': (0, 1),
             'X12': (0, 1),
-            'X20': (0, 1),
-            'X21': (0, 1),
-            'X22': (0, 1),
+            'X20': (0, 2),
+            'X21': (0, 2),
+            'X22': (0, 2),
         },
         fixed_param={'B_rec_use': 1, 'w0': 1},
         dynamic_param={
