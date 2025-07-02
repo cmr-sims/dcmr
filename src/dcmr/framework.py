@@ -930,7 +930,7 @@ def _run_fit(
     sim.to_csv(sim_file, index=False)
 
     # make a report of the fit
-    reports.plot_fit(data, sim, patterns, res_dir)
+    reports.plot_fit(data, sim, patterns, res_dir, study_keys=study_keys)
 
 
 def filter_options(f):
