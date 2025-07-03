@@ -1270,6 +1270,7 @@ def fit_cmr_cfr_disrupt(
     param_def.set_options(distraction=True)
 
     # fit parameters, simulate using fitted parameters, and save results
+    study_keys = ['block', 'block_pos']
     _run_fit(
         res_dir, 
         data, 
@@ -1279,7 +1280,23 @@ def fit_cmr_cfr_disrupt(
         n_reps, 
         tol, 
         n_sim_reps, 
-        study_keys=['block', 'block_pos'],
+        study_keys,
+    )
+
+    # evaluate using cross-validation
+    n_folds = None
+    fold_key = "session"
+    _run_xval(
+        res_dir, 
+        data, 
+        param_def, 
+        patterns, 
+        n_folds, 
+        fold_key, 
+        n_jobs, 
+        n_reps, 
+        tol,
+        study_keys,
     )
 
 
@@ -1449,6 +1466,7 @@ def fit_cmr_cdcatfr2(
     param_def.set_options(distraction=True)
 
     # fit parameters, simulate using fitted parameters, and save results
+    study_keys = ['distractor', 'block', 'block_pos']
     _run_fit(
         res_dir, 
         data, 
@@ -1458,7 +1476,23 @@ def fit_cmr_cdcatfr2(
         n_reps, 
         tol, 
         n_sim_reps, 
-        study_keys=['distractor', 'block', 'block_pos'],
+        study_keys,
+    )
+
+    # evaluate using cross-validation
+    n_folds = None
+    fold_key = "session"
+    _run_xval(
+        res_dir, 
+        data, 
+        param_def, 
+        patterns, 
+        n_folds, 
+        fold_key, 
+        n_jobs, 
+        n_reps, 
+        tol,
+        study_keys,
     )
 
 
