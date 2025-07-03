@@ -940,6 +940,118 @@ def _run_fit(
     )
 
 
+def _run_xval(
+    res_dir,
+    data,
+    param_def,
+    patterns,
+    n_folds=None,
+    fold_key=None,
+    n_reps=1,
+    n_jobs=1,
+    tol=0.00001,
+    study_keys=None,
+    recall_keys=None,
+):
+    """Evaluate a model using cross-validation."""
+    # check cross-validation settings
+    if (n_folds is None and fold_key is None) or (
+        n_folds is not None and fold_key is not None
+    ):
+        raise ValueError('Must specify one of either n_folds or fold_key.')
+
+    # save model information
+    json_file = os.path.join(res_dir, 'xval_parameters.json')
+    logging.info(f'Saving parameter definition to {json_file}.')
+    param_def.to_json(json_file)
+
+    n = data['subject'].nunique()
+    if fold_key is not None:
+        # get folds from the events
+        n_folds_all = data.groupby('subject')[fold_key].nunique()
+        if len(n_folds_all.unique()) != 1:
+            raise ValueError('All subjects must have same number of folds.')
+        folds = data[fold_key].unique()
+        logging.info(f'Running {len(folds)} cross-validation folds over {fold_key} for {n} participants.')
+    else:
+        # interleave folds over lists
+        folds = np.arange(1, n_folds + 1)
+        n_lists = data.groupby('subject')['list'].nunique().max()
+        list_fold = np.tile(folds, int(np.ceil(n_lists / n_folds)))
+        logging.info(f'Running {len(folds)} cross-validation folds for {n} participants.')
+    
+    # run cross-validation
+    logging.info(f'Running {n_reps} parameter optimization repeat(s).')
+    logging.info(f'Using {n_jobs} core(s).')
+    xval_list = []
+    search_list = []
+    model = cmr.CMR()
+    for fold in folds:
+        # fit the training dataset
+        if fold_key is not None:
+            train_data = data[data[fold_key] != fold]
+        else:
+            train_data = (
+                data.groupby('subject')
+                .apply(apply_list_mask, list_fold != fold)
+                .droplevel('subject')
+            )
+        results = model.fit_indiv(
+            train_data,
+            param_def,
+            patterns=patterns,
+            n_jobs=n_jobs,
+            method='de',
+            n_rep=n_reps,
+            tol=tol,
+            study_keys=study_keys,
+            recall_keys=recall_keys,
+        )
+        search_list.append(results)
+
+        # evaluate on left-out fold
+        best = fit.get_best_results(results)
+        subj_param = best.T.to_dict()
+        if fold_key is not None:
+            test_data = data[data[fold_key] == fold]
+        else:
+            test_data = (
+                data.groupby('subject')
+                .apply(apply_list_mask, list_fold == fold)
+                .droplevel('subject')
+            )
+        stats = model.likelihood(
+            test_data, {}, subj_param, param_def, patterns=patterns
+        )
+        xval = best.copy()
+        xval['logl_train'] = xval['logl']
+        xval['logl_test'] = stats['logl']
+        xval['n_train'] = xval['n']
+        xval['n_test'] = stats['n']
+        m_train = train_data.groupby('subject')['list'].nunique()
+        m_test = test_data.groupby('subject')['list'].nunique()
+        xval['logl_train_list'] = xval['logl_train'] / m_train
+        xval['logl_test_list'] = xval['logl_test'] / m_test
+        xval['m_train'] = m_train
+        xval['m_test'] = m_test
+        xval.drop(columns=['logl', 'n'], inplace=True)
+        xval_list.append(xval)
+
+    # cross-validation summary
+    summary = pd.concat(xval_list, keys=folds)
+    summary.index.rename(['fold', 'subject'], inplace=True)
+    xval_file = os.path.join(res_dir, 'xval.csv')
+    logging.info(f'Saving best fitting results to {xval_file}.')
+    summary.to_csv(xval_file)
+
+    # full search information
+    search = pd.concat(search_list, keys=folds)
+    search.index.rename(['fold', 'subject', 'rep'], inplace=True)
+    search_file = os.path.join(res_dir, f'xval_search.csv')
+    logging.info(f'Saving full search results to {search_file}.')
+    search.to_csv(search_file)
+
+
 def filter_options(f):
     """Set options for data filtering."""
     @click.option(
@@ -1493,99 +1605,10 @@ def xval_cmr(
         include,
     )
 
-    if (n_folds is None and fold_key is None) or (
-        n_folds is not None and fold_key is not None
-    ):
-        raise ValueError('Must specify one of either n_folds or fold_key.')
-
-    # save model information
-    json_file = os.path.join(res_dir, 'xval_parameters.json')
-    logging.info(f'Saving parameter definition to {json_file}.')
-    param_def.to_json(json_file)
-
-    # run individual subject fits
-    n = data['subject'].nunique()
-    logging.info(
-        f'Running {n_reps} parameter optimization repeat(s) for {n} participant(s).'
+    # split data into folds, fit to training set, evaluate on testing set
+    _run_xval(
+        res_dir, data, param_def, patterns, n_folds, fold_key, n_reps, n_jobs, tol
     )
-    logging.info(f'Using {n_jobs} core(s).')
-
-    n_lists = data.groupby('subject')['list'].nunique().max()
-    if fold_key is not None:
-        # get folds from the events
-        n_folds_all = data.groupby('subject')[fold_key].nunique()
-        if len(n_folds_all.unique()) != 1:
-            raise ValueError('All subjects must have same number of folds.')
-        folds = data[fold_key].unique()
-    else:
-        # interleave folds over lists
-        folds = np.arange(1, n_folds + 1)
-        list_fold = np.tile(folds, int(np.ceil(n_lists / n_folds)))
-    xval_list = []
-    search_list = []
-    model = cmr.CMR()
-    for fold in folds:
-        # fit the training dataset
-        if fold_key is not None:
-            train_data = data[data[fold_key] != fold]
-        else:
-            train_data = (
-                data.groupby('subject')
-                .apply(apply_list_mask, list_fold != fold)
-                .droplevel('subject')
-            )
-        results = model.fit_indiv(
-            train_data,
-            param_def,
-            patterns=patterns,
-            n_jobs=n_jobs,
-            method='de',
-            n_rep=n_reps,
-            tol=tol,
-        )
-        search_list.append(results)
-
-        # evaluate on left-out fold
-        best = fit.get_best_results(results)
-        subj_param = best.T.to_dict()
-        if fold_key is not None:
-            test_data = data[data[fold_key] == fold]
-        else:
-            test_data = (
-                data.groupby('subject')
-                .apply(apply_list_mask, list_fold == fold)
-                .droplevel('subject')
-            )
-        stats = model.likelihood(
-            test_data, {}, subj_param, param_def, patterns=patterns
-        )
-        xval = best.copy()
-        xval['logl_train'] = xval['logl']
-        xval['logl_test'] = stats['logl']
-        xval['n_train'] = xval['n']
-        xval['n_test'] = stats['n']
-        m_train = train_data.groupby('subject')['list'].nunique()
-        m_test = test_data.groupby('subject')['list'].nunique()
-        xval['logl_train_list'] = xval['logl_train'] / m_train
-        xval['logl_test_list'] = xval['logl_test'] / m_test
-        xval['m_train'] = m_train
-        xval['m_test'] = m_test
-        xval.drop(columns=['logl', 'n'], inplace=True)
-        xval_list.append(xval)
-
-    # cross-validation summary
-    summary = pd.concat(xval_list, keys=folds)
-    summary.index.rename(['fold', 'subject'], inplace=True)
-    xval_file = os.path.join(res_dir, 'xval.csv')
-    logging.info(f'Saving best fitting results to {xval_file}.')
-    summary.to_csv(xval_file)
-
-    # full search information
-    search = pd.concat(search_list, keys=folds)
-    search.index.rename(['fold', 'subject', 'rep'], inplace=True)
-    search_file = os.path.join(res_dir, f'xval_search.csv')
-    logging.info(f'Saving full search results to {search_file}.')
-    search.to_csv(search_file)
 
 
 @click.command()
