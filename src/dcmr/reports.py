@@ -199,7 +199,7 @@ def plot_fit(
             param_def=param_def, 
             patterns=patterns, 
             study_keys=study_keys,
-            filter_item_segments=[('loc', 'item')],
+            index_segments=[('loc', 'item')],
         )
         state[-1].plot(ax=ax)
         fig.savefig(os.path.join(fig_dir, f'snapshot_sub-{subj}.{ext}'), dpi=300)
