@@ -1242,7 +1242,7 @@ def fit_cmr_cfr_disrupt(
     )
 
     logging.info(f'Loading data from {data_file}.')
-    data = task.read_study_recall(data_file)
+    data = task.read_study_recall(data_file, include=include)
 
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
@@ -1333,7 +1333,9 @@ def fit_cmr_asymfr(
     )
 
     logging.info(f'Loading data from {data_file}.')
-    data = pd.read_csv(data_file)
+    data = task.read_study_recall(
+        data_file, block=False, block_category=False, include=include
+    )
 
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
@@ -1413,7 +1415,7 @@ def fit_cmr_cdcatfr2(
     )
 
     logging.info(f'Loading data from {data_file}.')
-    data = task.read_study_recall(data_file)
+    data = task.read_study_recall(data_file, include=include)
 
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
@@ -1529,7 +1531,9 @@ def fit_cmr_incidental(
     )
 
     logging.info(f'Loading data from {data_file}.')
-    data = pd.read_csv(data_file)
+    data = task.read_study_recall(
+        data_file, block=False, block_category=False, include=include
+    )
 
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
