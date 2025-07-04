@@ -1293,8 +1293,8 @@ def fit_cmr_cfr_disrupt(
         patterns, 
         n_folds, 
         fold_key, 
-        n_jobs, 
         n_reps, 
+        n_jobs, 
         tol,
         study_keys,
     )
@@ -1489,8 +1489,8 @@ def fit_cmr_cdcatfr2(
         patterns, 
         n_folds, 
         fold_key, 
-        n_jobs, 
         n_reps, 
+        n_jobs, 
         tol,
         study_keys,
     )
