@@ -47,7 +47,13 @@ if [[ -n $program ]]; then
         $program cfr "$version" loc-cat-use none --sublayers --intercept -p Lfc-Lcf-B_enc-B_rec -f $(dcmr_restricted_models) $opt
         $program cfr "$version" loc cat-use --sublayers --intercept $opt
         ;;
+      3)
+        echo "dcmr-fit-cfr-disrupt $STUDYDIR/cfr/cfr_data.csv $STUDYDIR/cfr/cfr_patterns.hdf5 $STUDYDIR/cfr/fits/$version/manual/cmrsi_focused_disrupt $opt"
+        ;;
       4)
+        echo "dcmr-fit-cdcatfr2 $STUDYDIR/cdcatfr2/data.csv $STUDYDIR/cdcatfr2/patterns.hdf5 $STUDYDIR/cdcatfr2/fits/$version/manual/cmrsi_focused_disrupt $opt"
+        ;;
+      5)
         $program peers "$version" loc,use,loc-use none --sublayers --intercept -p Lfc-Lcf $opt
         $program peers "$version" loc-use none --sublayers --intercept -p Lfc-Lcf-B_enc-B_rec $opt
         $program peers "$version" loc-use none --sublayers --intercept -p Lfc-Lcf-B_enc-B_rec -f B_enc_use=1,B_rec_use=1,B_enc_use=1-B_rec_use=1 $opt
