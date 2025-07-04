@@ -170,7 +170,7 @@ def _pl_read_study_recall(
     columns = q1.collect_schema().names()
     trial_cols = ["subject", "list", "trial_type"]
     block_cols = trial_cols + ["block"]
-    if block and "n_block" not in columns:
+    if block and "category" in columns and "n_block" not in columns:
         # if category different from the previous category, this is a new block
         new_block = pl.col("category").shift(1, fill_value=True).ne(pl.col("category"))
         q1 = (
@@ -192,7 +192,7 @@ def _pl_read_study_recall(
             )
         )
     
-    if block_category and "base" not in columns:
+    if block_category and "category" in columns and "base" not in columns:
         # block-level category context labels
         diff = pl.lit(["cel", "loc", "obj"]).list.set_difference(
             pl.concat_list(pl.col("curr"), pl.col("prev"))
