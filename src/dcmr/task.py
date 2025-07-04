@@ -164,10 +164,15 @@ def _pl_read_study_recall(
 ):
     """Read study and recall data using Polars."""
     q1 = pl.scan_csv(csv_file, null_values=["NaN"])
+    schema = q1.collect_schema()
+    columns = schema.names()
     if include is not None:
-        q1 = q1.filter(pl.col("subject").is_in(include))
+        q1 = q1.filter(
+            pl.col("subject").is_in(
+                pl.Series("subject", include).cast(schema["subject"])
+            )
+        )
 
-    columns = q1.collect_schema().names()
     trial_cols = ["subject", "list", "trial_type"]
     block_cols = trial_cols + ["block"]
     if block and "category" in columns and "n_block" not in columns:
