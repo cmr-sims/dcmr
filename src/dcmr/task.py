@@ -126,12 +126,15 @@ def label_block(data):
     return labeled
 
 
-def _pd_read_study_recall(csv_file, block=True, block_category=True):
+def _pd_read_study_recall(csv_file, block=True, block_category=True, include=None):
     """Read study and recall data."""
     if not os.path.exists(csv_file):
         raise ValueError(f'Data file does not exist: {csv_file}')
 
     data = pd.read_csv(csv_file, engine='pyarrow', dtype_backend='pyarrow')
+    if include is not None:
+        data = fr.filter_data(data, subjects=include)
+
     if 'category' in data.columns:
         data = data.astype({'category': 'category'})
         data.category = data.category.cat.as_ordered()
@@ -156,9 +159,14 @@ def _pd_read_study_recall(csv_file, block=True, block_category=True):
     return data
 
 
-def _pl_read_study_recall(csv_file, block=True, block_category=True, as_pandas=True):
+def _pl_read_study_recall(
+    csv_file, block=True, block_category=True, include=None, as_pandas=True
+):
     """Read study and recall data using Polars."""
     q1 = pl.scan_csv(csv_file, null_values=["NaN"])
+    if include is not None:
+        q1 = q1.filter(pl.col("subject").is_in(include))
+
     columns = q1.collect_schema().names()
     trial_cols = ["subject", "list", "trial_type"]
     block_cols = trial_cols + ["block"]
