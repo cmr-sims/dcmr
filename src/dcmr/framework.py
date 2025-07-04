@@ -1021,7 +1021,13 @@ def _run_xval(
                 .droplevel('subject')
             )
         stats = model.likelihood(
-            test_data, {}, subj_param, param_def, patterns=patterns
+            test_data, 
+            {}, 
+            subj_param, 
+            param_def, 
+            patterns=patterns, 
+            study_keys=study_keys, 
+            recall_keys=recall_keys,
         )
         xval = best.copy()
         xval['logl_train'] = xval['logl']
