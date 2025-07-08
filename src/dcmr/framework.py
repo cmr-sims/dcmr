@@ -378,6 +378,7 @@ def model_variant(
     scaling=True,
     sublayer_param=None,
     intercept=False,
+    list_context=False,
     distraction=False,
     fixed_param=None,
     free_param=None,
@@ -528,6 +529,39 @@ def model_variant(
 
             # set learning rate to vary by sublayer
             wp.set_weight_sublayer_param(scaling_param, suffix)
+
+            if list_context:
+                # add a static list context sublayer
+                wp.sublayers['c'].append('list')
+
+                # set list sublayer parameters
+                list_context_param = {
+                    'Lfc': 0, 
+                    'Lcf': 'Acf', 
+                    'B_enc': 0, 
+                    'B_rec': 0, 
+                    'B_start': 0, 
+                }
+                if distraction:
+                    list_context_param.update({'B_distract': 0, 'B_retention': 0})
+                if 'Acf' in wp.free:
+                    limits = wp.free['Acf']
+                else:
+                    limits = (0, 1)
+                wp.set_free(Acf=limits)
+                wp.set_sublayer_param('c', 'list', list_context_param)
+
+                # set corresponding other sublayer parameters if necessary
+                for par in list_context_param.keys():
+                    for weight in fcf_features:
+                        if par not in wp.sublayer_param['c'][weight]:
+                            wp.set_sublayer_param('c', weight, {par: par})
+
+                # set pre-experimental weights
+                expr1 = 'ones((loc.shape[0], 1))'
+                expr0 = 'zeros((loc.shape[0], 1))'
+                wp.set_weights('fc', {(('task', 'item'), ('list', 'item')): expr1})
+                wp.set_weights('cf', {(('task', 'item'), ('list', 'item')): expr0})
         else:
             # set weights based on fixed D parameters
             wp.set_sublayers(f=['task'], c=['task'])
