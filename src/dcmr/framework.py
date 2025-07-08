@@ -1298,7 +1298,7 @@ def fit_cmr_cfr_disrupt(
             'B_disrupt',
             'B_distract',
         ],
-        fixed_param={'B_rec_cat': 1, 'B_rec_use': 1, 'B_disrupt_loc': 0, 'B_disrupt_use': 0, 'B_retention': 0},
+        fixed_param={'B_rec_cat': 1, 'B_rec_use': 1, 'B_disrupt_loc': 0, 'B_disrupt_cat': 1, 'B_disrupt_use': 0, 'B_retention': 0},
         dynamic_param={
             ('study', 'trial'): {
                 'B_distract_loc': 'where((block != 1) & (block_pos == 1), B_disrupt_loc, 0)',
