@@ -1306,10 +1306,11 @@ def fit_cmr_cfr_disrupt(
                 'B_distract_use': 'where((block != 1) & (block_pos == 1), B_disrupt_use, 0)',
             }
         },
-        intercept=True,
+        intercept=False,
+        list_context=True,
+        distraction=True,
     )
     del param_def.fixed['T']
-    param_def.set_options(distraction=True)
 
     # fit parameters, simulate using fitted parameters, and save results
     study_keys = ['block', 'block_pos']
