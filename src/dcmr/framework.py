@@ -378,6 +378,7 @@ def model_variant(
     scaling=True,
     sublayer_param=None,
     intercept=False,
+    distraction=False,
     fixed_param=None,
     free_param=None,
     dependent_param=None,
@@ -453,6 +454,7 @@ def model_variant(
         parameters to evaluate likelihood or run a simulation.
     """
     wp = WeightParameters()
+    wp.set_options(distraction=distraction)
     wp.set_fixed(T=0.1)
     wp.set_free(
         Lfc=(0, 1),
