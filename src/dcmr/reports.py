@@ -8,6 +8,7 @@ import numpy as np
 from scipy.spatial import distance
 import pandas as pd
 import matplotlib
+import matplotlib.pyplot as plt
 import seaborn as sns
 import click
 
@@ -91,7 +92,10 @@ def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='sv
     # snapshots
     if snapshots is not None:
         d_snapshot = {
-            snapshot: os.path.join(fit_dir, 'figs', f'snapshot_{snapshot}.{ext}')
+            snapshot: (
+                os.path.join(fit_dir, 'figs', f'snapshot_{snapshot}.{ext}'),
+                os.path.join(fit_dir, 'figs', f'support_{snapshot}.{ext}'),
+            )
             for snapshot in snapshots
         }
     else:
@@ -201,9 +205,14 @@ def plot_fit(
             study_keys=study_keys,
             index_segments=[('loc', 'item')],
         )
-        state[-1].plot(ax=ax)
+        net = state[-1]
+        net.plot(ax=ax)
         fig.savefig(os.path.join(fig_dir, f'snapshot_sub-{subj}.{ext}'), dpi=300)
         snapshots.append(f'sub-{subj}')
+
+        g = figures.plot_support(net, height=3)
+        g.savefig(os.path.join(fig_dir, f'support_sub-{subj}.{ext}'))
+        plt.close(g.figure)
 
     # scalar stats
     logging.info('Plotting fits to individual scalar statistics.')

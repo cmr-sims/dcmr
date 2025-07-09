@@ -65,11 +65,16 @@
 
         <h2>Snapshots</h2>
 
-        {% for label, file in snapshots.items() %}
+        {% for subject, (snapshot_file, support_file) in snapshots.items() %}
+        <h3>{{ subject }}</h3>
         <div class="panel">
             <figure>
-                <img src="{{ file }}" alt="{{ label }} snapshot">
+                <img src="{{ snapshot_file }}" alt="{{ subject }} snapshot">
                 <figcaption>{{ label }} snapshot</figcaption>
+            </figure>
+            <figure>
+                <img src="{{ support_file }}" alt="{{ subject }} support">
+                <figcaption>{{ label }} support</figcaption>
             </figure>
         </div>
         {% endfor %}
