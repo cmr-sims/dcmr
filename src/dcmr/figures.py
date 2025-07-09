@@ -26,6 +26,68 @@ def save_image(fig, fig_file):
     fig.savefig(fig_file, pad_inches=0, bbox_inches='tight')
 
 
+def plot_support(net, item_cues=None, **kwargs):
+    """Plot support for items based on item cues."""
+    if item_cues is None:
+        item_cues = ["start", "middle", "end"]
+    
+    df_list = []
+    item_range = net.get_segment('f', 'task', 'item')
+    item = np.arange(*item_range) + 1
+    n = item_range[1] - item_range[0]
+    f_item_units = slice(*item_range)
+    for item_cue in item_cues:
+        # item to cue with
+        if item_cue == "start":
+            ind = 0
+        elif item_cue == "middle":
+            ind = int(n / 2)
+        elif item_cue == "end":
+            ind = n - 1
+        else:
+            raise ValueError(f'Invalid item cue type: {item_cue}')
+        f_unit = net.get_unit('f', 'task', 'item', ind)
+        for sublayer in net.c_sublayers:
+            # sublayer of context to use as retrieval cue
+            c_units = slice(*net.get_sublayer('c', sublayer))
+            for fc in ['pre', 'exp']:
+                # retrieve context for this sublayer and item
+                fc_mat = net.w_fc_pre if fc == 'pre' else net.w_fc_exp
+                c = fc_mat[f_unit, c_units]
+                for cf in ['pre', 'exp']:
+                    # cue with retrieved context to get item support
+                    cf_mat = net.w_cf_pre if cf == 'pre' else net.w_cf_exp
+                    support = np.dot(cf_mat[f_item_units, c_units], c)
+                    support[f_unit] = np.inf  # remove self-support
+
+                    # package support for plotting
+                    df = pd.DataFrame(
+                        {
+                            'item_cue': item_cue, 
+                            'sublayer': sublayer, 
+                            'fc': fc, 
+                            'cf': cf, 
+                            'item': item,
+                            'support': support,
+                        }
+                    )
+                    df_list.append(df)
+    # plot item support by cue, association matrices, and sublayer
+    support = pd.concat(df_list, ignore_index=True)
+    g = sns.relplot(
+        support, 
+        x='item', 
+        y='support', 
+        style='fc', 
+        hue='cf', 
+        col='item_cue', 
+        row='sublayer',
+        kind='line',
+        **kwargs,
+    )
+    return g
+
+
 def plot_fit(
     data,
     group_var,
