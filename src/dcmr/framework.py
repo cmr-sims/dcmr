@@ -1697,10 +1697,11 @@ def xval_cmr(
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("fit_dir", type=click.Path(exists=True))
 @click.option("--n-rep", "-r", type=int, default=1)
-def sim_cmr(data_file, patterns_file, fit_dir, n_rep=1):
+@click.option("--study-key", multiple=True)
+def sim_cmr(data_file, patterns_file, fit_dir, n_rep=1, study_key=None):
     """Run a simulation using best-fitting parameters."""
     # load trials to simulate
-    data = pd.read_csv(data_file)
+    data = task.read_study_recall(data_file)
     study_data = data.loc[(data['trial_type'] == 'study')]
 
     # get model, patterns, and weights
@@ -1714,7 +1715,15 @@ def sim_cmr(data_file, patterns_file, fit_dir, n_rep=1):
     subj_param = read_fit_param(fit_file)
 
     # run simulation
-    sim = model.generate(study_data, {}, subj_param, param_def, patterns, n_rep=n_rep)
+    sim = model.generate(
+        study_data, 
+        {}, 
+        subj_param, 
+        param_def, 
+        patterns, 
+        n_rep=n_rep, 
+        study_keys=list(study_key),
+    )
 
     # save
     sim_file = os.path.join(fit_dir, 'sim.csv')
