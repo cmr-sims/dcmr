@@ -1255,6 +1255,7 @@ def fit_cmr(
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("res_dir", type=click.Path())
+@click.option("--disrupt/--no-disrupt", default=True)
 @fit_options
 @sim_options
 @filter_options
@@ -1262,6 +1263,7 @@ def fit_cmr_cfr_disrupt(
     data_file,
     patterns_file,
     res_dir,
+    disrupt=True,
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
@@ -1283,33 +1285,50 @@ def fit_cmr_cfr_disrupt(
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
 
-    param_def = model_variant(
-        ['loc', 'cat', 'use'], 
-        sublayers=True,
-        free_param={
-            'T': (0.001, 0.1),
-            'B_disrupt': (0, 1),
-        },
-        sublayer_param=[
-            'B_enc', 
-            'B_rec', 
-            'Lfc', 
-            'Lcf',
-            'B_disrupt',
-            'B_distract',
-        ],
-        fixed_param={'B_rec_cat': 1, 'B_rec_use': 1, 'B_disrupt_loc': 0, 'B_disrupt_use': 0, 'B_retention': 0},
-        dynamic_param={
-            ('study', 'trial'): {
-                'B_distract_loc': 'where((block != 1) & (block_pos == 1), B_disrupt_loc, 0)',
-                'B_distract_cat': 'where((block != 1) & (block_pos == 1), B_disrupt_cat, 0)',
-                'B_distract_use': 'where((block != 1) & (block_pos == 1), B_disrupt_use, 0)',
-            }
-        },
-        intercept=False,
-        list_context=True,
-        distraction=True,
-    )
+    if disrupt:
+        param_def = model_variant(
+            ['loc', 'cat', 'use'], 
+            sublayers=True,
+            free_param={
+                'T': (0.001, 0.1),
+                'B_disrupt': (0, 1),
+            },
+            sublayer_param=[
+                'B_enc', 
+                'B_rec', 
+                'Lfc', 
+                'Lcf',
+                'B_disrupt',
+                'B_distract',
+            ],
+            fixed_param={'B_rec_cat': 1, 'B_rec_use': 1, 'B_disrupt_loc': 0, 'B_disrupt_use': 0, 'B_retention': 0},
+            dynamic_param={
+                ('study', 'trial'): {
+                    'B_distract_loc': 'where((block != 1) & (block_pos == 1), B_disrupt_loc, 0)',
+                    'B_distract_cat': 'where((block != 1) & (block_pos == 1), B_disrupt_cat, 0)',
+                    'B_distract_use': 'where((block != 1) & (block_pos == 1), B_disrupt_use, 0)',
+                }
+            },
+            intercept=False,
+            list_context=True,
+            distraction=True,
+        )
+    else:
+        param_def = model_variant(
+            ['loc', 'cat', 'use'], 
+            sublayers=True,
+            free_param={
+                'T': (0.001, 0.1),
+            },
+            sublayer_param=[
+                'B_enc', 
+                'B_rec', 
+                'Lfc', 
+                'Lcf',
+            ],
+            intercept=False,
+            list_context=True,
+        )
     del param_def.fixed['T']
 
     # fit parameters, simulate using fitted parameters, and save results
