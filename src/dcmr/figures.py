@@ -50,11 +50,12 @@ def plot_support(net, item_cues=None, **kwargs):
         for sublayer in net.c_sublayers:
             # sublayer of context to use as retrieval cue
             c_units = slice(*net.get_sublayer('c', sublayer))
+            c_tot = net.w_fc_pre[f_unit, c_units] + net.w_fc_exp[f_unit, c_units]
+            l2 = np.linalg.norm(c_tot)
             for fc in ['pre', 'exp']:
                 # retrieve context for this sublayer and item
                 fc_mat = net.w_fc_pre if fc == 'pre' else net.w_fc_exp
-                c = fc_mat[f_unit, c_units]
-                c = c / np.linalg.norm(c)
+                c = fc_mat[f_unit, c_units] / l2
                 for cf in ['pre', 'exp']:
                     # cue with retrieved context to get item support
                     cf_mat = net.w_cf_pre if cf == 'pre' else net.w_cf_exp
