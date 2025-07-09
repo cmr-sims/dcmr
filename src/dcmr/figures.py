@@ -54,6 +54,7 @@ def plot_support(net, item_cues=None, **kwargs):
                 # retrieve context for this sublayer and item
                 fc_mat = net.w_fc_pre if fc == 'pre' else net.w_fc_exp
                 c = fc_mat[f_unit, c_units]
+                c = c / np.linalg.norm(c)
                 for cf in ['pre', 'exp']:
                     # cue with retrieved context to get item support
                     cf_mat = net.w_cf_pre if cf == 'pre' else net.w_cf_exp
