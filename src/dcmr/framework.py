@@ -6,13 +6,10 @@ import json
 import logging
 from itertools import combinations
 from importlib import resources
-import functools
 import numpy as np
 import pandas as pd
-import click
 from cymr import cmr
 from cymr import fit
-from psifr import fr
 from cymr.cmr import CMRParameters
 from dcmr import task
 from dcmr import reports
@@ -586,6 +583,65 @@ def model_variant(
     return wp
 
 
+def get_study_paths(study):
+    """Get relevant paths based on environment."""
+    study_dir = os.environ['STUDYDIR']
+    if not study_dir:
+        raise EnvironmentError('STUDYDIR not defined.')
+
+    study_dir = Path(study_dir)
+    if not study_dir.exists():
+        raise IOError(f'Study directory does not exist: {study_dir}')
+
+    data_file = study_dir / study / f'{study}_data.csv'
+    if not data_file.exists():
+        raise IOError(f'Data file does not exist: {data_file}')
+
+    patterns_file = study_dir / study / f'{study}_patterns.hdf5'
+    if not patterns_file.exists():
+        raise IOError(f'Patterns file does not exist: {patterns_file}')
+
+    return study_dir, data_file, patterns_file
+
+
+def generate_model_name(
+    fcf_features,
+    ff_features,
+    intercept,
+    sublayers,
+    scaling,
+    subpar,
+    fixed,
+    free,
+    dependent,
+):
+    """Generate standard model name from configuration."""
+    if sublayers:
+        res_name = 'cmrs'
+    else:
+        res_name = 'cmr'
+    
+    if not scaling:
+        res_name += 'n'
+
+    if intercept:
+        res_name += 'i'
+
+    if fcf_features and fcf_features != 'none':
+        res_name += f'_fcf-{fcf_features}'
+    if ff_features and ff_features != 'none':
+        res_name += f'_ff-{ff_features}'
+    if subpar:
+        res_name += f'_sl-{subpar}'
+    if fixed:
+        res_name += f'_fix-{fixed.replace("=", "")}'
+    if free:
+        res_name += f'_free-{free.replace("=", "").replace(":", "to")}'
+    if dependent:
+        res_name += f'_dep-{dependent.replace("=", "")}'
+    return res_name
+
+
 def read_fit_param(fit_file):
     """Read subject parameters from a fit results file."""
     fit = pd.read_csv(fit_file, index_col=0)
@@ -808,21 +864,6 @@ def print_restricted_models():
     print(s)
 
 
-def split_arg(arg):
-    """Split a dash-separated argument."""
-    if arg is not None:
-        if isinstance(arg, str):
-            if arg != 'none':
-                split = arg.split('-')
-            else:
-                split = None
-        else:
-            split = arg.split('-')
-    else:
-        split = None
-    return split
-
-
 def apply_list_mask(data, mask):
     """Apply relative mask of lists to include."""
     lists = np.sort(data['list'].unique())
@@ -831,78 +872,7 @@ def apply_list_mask(data, mask):
     return masked
 
 
-def configure_model(
-    data_file,
-    patterns_file,
-    fcf_features,
-    ff_features,
-    intercept,
-    sublayers,
-    scaling,
-    sublayer_param,
-    fixed_param,
-    free_param,
-    dependent_param,
-    include,
-):
-    """Configure a model based on commandline input."""
-    # unpack lists
-    fcf_features = split_arg(fcf_features)
-    ff_features = split_arg(ff_features)
-    if include is not None:
-        include = [int(s) for s in split_arg(include)]
-    sublayer_param = split_arg(sublayer_param)
-    fixed_param_list = split_arg(fixed_param)
-    fixed_param = {}
-    if fixed_param_list is not None:
-        for expr in fixed_param_list:
-            param_name, val = expr.split('=')
-            fixed_param[param_name] = float(val)
-    free_param_list = split_arg(free_param)
-    free_param = {}
-    if free_param_list is not None:
-        for expr in free_param_list:
-            param_name, val = expr.split('=')
-            low, high = val.split(':')
-            free_param[param_name] = (float(low), float(high))
-    dependent_param_list = split_arg(dependent_param)
-    dependent_param = {}
-    if dependent_param_list is not None:
-        for expr in dependent_param_list:
-            param_name, val = expr.split('=')
-            dependent_param[param_name] = val
-
-    # load data to simulate
-    logging.info(f'Loading data from {data_file}.')
-    data = pd.read_csv(data_file)
-    if include is not None:
-        data = data.loc[data['subject'].isin(include)]
-
-    # set parameter definitions based on model framework
-    param_def = model_variant(
-        fcf_features,
-        ff_features,
-        sublayers=sublayers,
-        scaling=scaling,
-        sublayer_param=sublayer_param,
-        intercept=intercept,
-        fixed_param=fixed_param,
-        free_param=free_param,
-        dependent_param=dependent_param,
-    )
-    logging.info(f'Loading network patterns from {patterns_file}.')
-    patterns = cmr.load_patterns(patterns_file)
-
-    # make sure item index is defined for looking up weight patterns
-    if 'item_index' not in data.columns:
-        data['item_index'] = fr.pool_index(data['item'], patterns['items'])
-        study = fr.filter_data(data, trial_type='study')
-        if study['item_index'].isna().any():
-            raise ValueError('Patterns not found for one or more items.')
-    return data, param_def, patterns
-
-
-def _run_fit(
+def run_fit(
     res_dir, 
     data, 
     param_def, 
@@ -976,7 +946,7 @@ def _run_fit(
     )
 
 
-def _run_xval(
+def run_xval(
     res_dir,
     data,
     param_def,
@@ -1092,720 +1062,3 @@ def _run_xval(
     search_file = os.path.join(res_dir, f'xval_search.csv')
     logging.info(f'Saving full search results to {search_file}.')
     search.to_csv(search_file)
-
-
-def filter_options(f):
-    """Set options for data filtering."""
-    @click.option(
-        "--include",
-        "-i",
-        help="dash-separated list of subject to include (default: all in data file)",
-    )
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        return f(*args, **kwargs)
-    return wrapper
-
-
-def model_options(f):
-    """Set options for model configuration."""
-    @click.option("--intercept/--no-intercept", default=False)
-    @click.option("--sublayers/--no-sublayers", default=False)
-    @click.option(
-        "--scaling/--no-scaling", 
-        default=True,
-        help="Include scaling parameters",
-    )
-    @click.option(
-        "--sublayer-param",
-        "-p",
-        help="parameters free to vary between sublayers (e.g., B_enc-B_rec)",
-    )
-    @click.option(
-        "--fixed-param",
-        "-f",
-        help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
-    )
-    @click.option(
-        "--free-param",
-        "-e",
-        help="dash-separated list of values for free parameter ranges (e.g., B_enc_cat=0:0.8)",
-    )
-    @click.option(
-        "--dependent-param",
-        "-a",
-        help="dash-separated list of values for dependent parameter expressions (e.g., B_enc_cat=B_enc_use)",
-    )
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        return f(*args, **kwargs)
-    return wrapper
-
-
-def fit_options(f):
-    @click.option(
-        "--n-reps",
-        "-n",
-        type=int,
-        default=1,
-        help="number of times to replicate the search",
-    )
-    @click.option(
-        "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
-    )
-    @click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        return f(*args, **kwargs)
-    return wrapper
-
-
-def sim_options(f):
-    @click.option(
-        "--n-sim-reps",
-        "-r",
-        type=int,
-        default=1,
-        help="number of experiment replications to simulate",
-    )
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        return f(*args, **kwargs)
-    return wrapper
-
-
-def xval_options(f):
-    @click.option(
-        "--n-folds",
-        "-d",
-        type=int,
-        help="number of cross-validation folds to run",
-    )
-    @click.option(
-        "--fold-key",
-        "-k",
-        help="events column to use when defining cross-validation folds",
-    )
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        return f(*args, **kwargs)
-    return wrapper
-
-
-@click.command()
-@click.argument("data_file", type=click.Path(exists=True))
-@click.argument("patterns_file", type=click.Path(exists=True))
-@click.argument("fcf_features")
-@click.argument("ff_features")
-@click.argument("res_dir", type=click.Path())
-@model_options
-@fit_options
-@sim_options
-@filter_options
-def fit_cmr(
-    data_file,
-    patterns_file,
-    fcf_features,
-    ff_features,
-    res_dir,
-    intercept,
-    sublayers,
-    scaling,
-    sublayer_param=None,
-    fixed_param=None,
-    free_param=None,
-    dependent_param=None,
-    n_reps=1,
-    n_jobs=1,
-    tol=0.00001,
-    n_sim_reps=1,
-    include=None,
-):
-    """Run a parameter search to fit a model and simulate data."""
-    os.makedirs(res_dir, exist_ok=True)
-    log_file = os.path.join(res_dir, 'log_fit.txt')
-    logging.basicConfig(
-        filename=log_file,
-        filemode='w',
-        level=logging.INFO,
-        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
-    )
-
-    # set up data and model based on script input
-    data, param_def, patterns = configure_model(
-        data_file,
-        patterns_file,
-        fcf_features,
-        ff_features,
-        intercept,
-        sublayers,
-        scaling,
-        sublayer_param,
-        fixed_param,
-        free_param,
-        dependent_param,
-        include,
-    )
-
-    # fit parameters, simulate using fitted parameters, and save results
-    _run_fit(res_dir, data, param_def, patterns, n_jobs, n_reps, tol, n_sim_reps)
-
-
-@click.command()
-@click.argument("data_file", type=click.Path(exists=True))
-@click.argument("patterns_file", type=click.Path(exists=True))
-@click.argument("res_dir", type=click.Path())
-@click.option("--disrupt/--no-disrupt", default=True)
-@fit_options
-@sim_options
-@filter_options
-def fit_cmr_cfr_disrupt(
-    data_file,
-    patterns_file,
-    res_dir,
-    disrupt=True,
-    n_reps=1,
-    n_jobs=1,
-    tol=0.00001,
-    n_sim_reps=1,
-    include=None,
-):
-    os.makedirs(res_dir, exist_ok=True)
-    log_file = os.path.join(res_dir, 'log_fit.txt')
-    logging.basicConfig(
-        filename=log_file,
-        filemode='w',
-        level=logging.INFO,
-        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
-    )
-
-    logging.info(f'Loading data from {data_file}.')
-    data = task.read_study_recall(data_file, include=include)
-
-    logging.info(f'Loading network patterns from {patterns_file}.')
-    patterns = cmr.load_patterns(patterns_file)
-
-    if disrupt:
-        param_def = model_variant(
-            ['loc', 'cat', 'use'], 
-            sublayers=True,
-            free_param={
-                'T': (0.00001, 1),
-                'B_disrupt': (0, 1),
-                'B_enc': (0.3, 1),
-            },
-            sublayer_param=[
-                'B_enc', 
-                'B_rec', 
-                'Lfc', 
-                'Lcf',
-                'B_disrupt',
-                'B_distract',
-            ],
-            fixed_param={'B_rec_cat': 1, 'B_rec_use': 1, 'B_disrupt_loc': 0, 'B_disrupt_use': 0, 'B_retention': 0},
-            dynamic_param={
-                ('study', 'trial'): {
-                    'B_distract_loc': 'where((block != 1) & (block_pos == 1), B_disrupt_loc, 0)',
-                    'B_distract_cat': 'where((block != 1) & (block_pos == 1), B_disrupt_cat, 0)',
-                    'B_distract_use': 'where((block != 1) & (block_pos == 1), B_disrupt_use, 0)',
-                }
-            },
-            intercept=False,
-            list_context=True,
-            distraction=True,
-        )
-    else:
-        param_def = model_variant(
-            ['loc', 'cat', 'use'], 
-            sublayers=True,
-            free_param={
-                'T': (0.00001, 1),
-                'B_enc': (0.3, 1),
-            },
-            sublayer_param=[
-                'B_enc', 
-                'B_rec', 
-                'Lfc', 
-                'Lcf',
-            ],
-            fixed_param={'B_rec_cat': 1, 'B_rec_use': 1},
-            intercept=False,
-            list_context=True,
-        )
-    del param_def.fixed['T']
-
-    # fit parameters, simulate using fitted parameters, and save results
-    study_keys = ['block', 'block_pos']
-    _run_fit(
-        res_dir, 
-        data, 
-        param_def, 
-        patterns, 
-        n_jobs, 
-        n_reps, 
-        tol, 
-        n_sim_reps, 
-        study_keys,
-    )
-
-    # evaluate using cross-validation
-    n_folds = None
-    fold_key = "session"
-    _run_xval(
-        res_dir, 
-        data, 
-        param_def, 
-        patterns, 
-        n_folds, 
-        fold_key, 
-        n_reps, 
-        n_jobs, 
-        tol,
-        study_keys,
-    )
-
-
-@click.command()
-@click.argument("data_file", type=click.Path(exists=True))
-@click.argument("patterns_file", type=click.Path(exists=True))
-@click.argument("res_dir", type=click.Path())
-@fit_options
-@sim_options
-@filter_options
-def fit_cmr_asymfr(
-    data_file,
-    patterns_file,
-    res_dir,
-    n_reps=1,
-    n_jobs=1,
-    tol=0.00001,
-    n_sim_reps=1,
-    include=None,
-):
-    os.makedirs(res_dir, exist_ok=True)
-    log_file = os.path.join(res_dir, 'log_fit.txt')
-    logging.basicConfig(
-        filename=log_file,
-        filemode='w',
-        level=logging.INFO,
-        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
-    )
-
-    logging.info(f'Loading data from {data_file}.')
-    data = task.read_study_recall(
-        data_file, block=False, block_category=False, include=include
-    )
-
-    logging.info(f'Loading network patterns from {patterns_file}.')
-    patterns = cmr.load_patterns(patterns_file)
-
-    param_def = model_variant(
-        ['loc', 'use'], 
-        sublayers=True,
-        intercept=True,
-        sublayer_param=[
-            'B_enc', 
-            'B_rec', 
-            'Lfc', 
-            'Lcf',
-        ],
-        free_param={
-            'Aff': (-2, 2),
-            'w00': (0, 1),
-            'w01': (0, 1),
-            'w02': (0, 1),
-            'X10': (0, 1),
-            'X11': (0, 1),
-            'X12': (0, 1),
-            'X20': (0, 2),
-            'X21': (0, 2),
-            'X22': (0, 2),
-        },
-        fixed_param={'B_rec_use': 1, 'w0': 1},
-        dynamic_param={
-            ('study', 'list'): {
-                'w0': 'where(list_type == "same", w00, where(list_type == "mixed", w01, w02))',
-                'X1': 'where(list_type == "same", X10, where(list_type == "mixed", X11, X12))',
-                'X2': 'where(list_type == "same", X20, where(list_type == "mixed", X21, X22))',
-            }
-        }
-    )
-    del param_def.free['X1']
-    del param_def.free['X2']
-
-    # fit parameters, simulate using fitted parameters, and save results
-    _run_fit(
-        res_dir, 
-        data, 
-        param_def, 
-        patterns, 
-        n_jobs, 
-        n_reps, 
-        tol, 
-        n_sim_reps, 
-        study_keys=['list_type'],
-    )
-
-
-@click.command()
-@click.argument("data_file", type=click.Path(exists=True))
-@click.argument("patterns_file", type=click.Path(exists=True))
-@click.argument("res_dir", type=click.Path())
-@fit_options
-@sim_options
-@filter_options
-def fit_cmr_cdcatfr2(
-    data_file,
-    patterns_file,
-    res_dir,
-    n_reps=1,
-    n_jobs=1,
-    tol=0.00001,
-    n_sim_reps=1,
-    include=None,
-):
-    os.makedirs(res_dir, exist_ok=True)
-    log_file = os.path.join(res_dir, 'log_fit.txt')
-    logging.basicConfig(
-        filename=log_file,
-        filemode='w',
-        level=logging.INFO,
-        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
-    )
-
-    logging.info(f'Loading data from {data_file}.')
-    data = task.read_study_recall(data_file, include=include)
-
-    logging.info(f'Loading network patterns from {patterns_file}.')
-    patterns = cmr.load_patterns(patterns_file)
-
-    param_def = model_variant(
-        ['loc', 'cat', 'use'], 
-        sublayers=True,
-        free_param={
-            'B_distract_raw': (0, 0.4), 
-            'B_disrupt': (0, 1),
-            'B_start0': (0, 1),
-            'B_start1': (0, 1),
-            'B_start2': (0, 1),
-            'X10': (0, 1),
-            'X11': (0, 1),
-            'X12': (0, 1),
-            'X20': (0, 1),
-            'X21': (0, 1),
-            'X22': (0, 1),
-        },
-        sublayer_param=[
-            'B_enc', 
-            'B_rec', 
-            'Lfc', 
-            'Lcf', 
-            'B_distract', 
-            'B_retention', 
-            'B_distract_raw', 
-            'B_retention_raw',
-        ],
-        fixed_param={'B_rec_cat': 1, 'B_rec_use': 1},
-        dependent_param={
-            'B_retention_raw_loc': 'B_distract_raw_loc',
-            'B_retention_raw_cat': 'B_distract_raw_cat',
-            'B_retention_raw_use': 'B_distract_raw_use',
-        },
-        dynamic_param={
-            ('study', 'list'): {
-                'B_distract_loc': 'clip(B_distract_raw_loc * distractor, 0, 1)',
-                'B_distract_use': 'clip(B_distract_raw_use * distractor, 0, 1)',
-                'B_retention_loc': 'clip(B_retention_raw_loc * distractor, 0, 1)',
-                'B_retention_cat': 'clip(B_retention_raw_cat * distractor, 0, 1)',
-                'B_retention_use': 'clip(B_retention_raw_use * distractor, 0, 1)',
-                'X1': 'where(distractor == 0, X10, where(distractor == 2.5, X11, X12))',
-                'X2': 'where(distractor == 0, X20, where(distractor == 2.5, X21, X22))',
-                'B_start': 'where(distractor == 0, B_start0, where(distractor == 2.5, B_start1, B_start2))',
-            },
-            ('study', 'trial'): {
-                'B_distract_cat': 'clip(B_distract_raw_cat * distractor + where((block != 1) & (block_pos == 1), B_disrupt, 0), 0, 1)',
-            }
-        }
-    )
-    del param_def.free['B_start']
-    del param_def.free['X1']
-    del param_def.free['X2']
-    param_def.set_options(distraction=True)
-
-    # fit parameters, simulate using fitted parameters, and save results
-    study_keys = ['distractor', 'block', 'block_pos']
-    _run_fit(
-        res_dir, 
-        data, 
-        param_def, 
-        patterns, 
-        n_jobs, 
-        n_reps, 
-        tol, 
-        n_sim_reps, 
-        study_keys,
-    )
-
-    # evaluate using cross-validation
-    n_folds = None
-    fold_key = "session"
-    _run_xval(
-        res_dir, 
-        data, 
-        param_def, 
-        patterns, 
-        n_folds, 
-        fold_key, 
-        n_reps, 
-        n_jobs, 
-        tol,
-        study_keys,
-    )
-
-
-@click.command()
-@click.argument("data_file", type=click.Path(exists=True))
-@click.argument("patterns_file", type=click.Path(exists=True))
-@click.argument("res_dir", type=click.Path())
-@fit_options
-@sim_options
-@filter_options
-def fit_cmr_incidental(
-    data_file,
-    patterns_file,
-    res_dir,
-    n_reps=1,
-    n_jobs=1,
-    tol=0.00001,
-    n_sim_reps=1,
-    include=None,
-):
-    os.makedirs(res_dir, exist_ok=True)
-    log_file = os.path.join(res_dir, 'log_fit.txt')
-    logging.basicConfig(
-        filename=log_file,
-        filemode='w',
-        level=logging.INFO,
-        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
-    )
-
-    logging.info(f'Loading data from {data_file}.')
-    data = task.read_study_recall(
-        data_file, block=False, block_category=False, include=include
-    )
-
-    logging.info(f'Loading network patterns from {patterns_file}.')
-    patterns = cmr.load_patterns(patterns_file)
-
-    param_def = model_variant(
-        ['loc', 'use'], 
-        sublayers=True,
-        free_param={
-            'B_distract_raw': (0, 1), 
-            'w0_intent': (0, 1),
-            'w0_incid': (0, 1),
-            'X1_intent': (0, 1),
-            'X1_incid': (0, 1),
-            'X2_intent': (0, 5),
-            'X2_incid': (0, 5),
-        },
-        sublayer_param=[
-            'B_enc', 
-            'B_rec', 
-            'B_distract', 
-            'B_retention', 
-            'B_distract_raw', 
-            'B_retention_raw',
-        ],
-        fixed_param={'B_rec_use': 1, 'w0': 0.5},
-        dependent_param={
-            'B_retention_raw_loc': 'B_distract_raw_loc',
-            'B_retention_raw_use': 'B_distract_raw_use',
-        },
-        dynamic_param={
-            ('study', 'list'): {
-                'B_distract_loc': 'where(distractor == 16, B_distract_raw_loc, 0)',
-                'B_distract_use': 'where(distractor == 16, B_distract_raw_use, 0)',
-                'B_retention_loc': 'where(retention == 16, B_retention_raw_loc, 0)',
-                'B_retention_use': 'where(retention == 16, B_retention_raw_use, 0)',
-                'w0': 'where(encoding == "intentional", w0_intent, w0_incid)',
-                'X1': 'where(encoding == "intentional", X1_intent, X1_incid)',
-                'X2': 'where(encoding == "intentional", X2_intent, X2_incid)',
-            }
-        }
-    )
-    del param_def.free['X1']
-    del param_def.free['X2']
-    param_def.set_options(distraction=True)
-
-    # fit parameters, simulate using fitted parameters, and save results
-    _run_fit(
-        res_dir, 
-        data, 
-        param_def, 
-        patterns, 
-        n_jobs, 
-        n_reps, 
-        tol, 
-        n_sim_reps, 
-        study_keys=['distractor', 'retention', 'encoding'],
-    )
-
-
-@click.command()
-@click.argument("data_file", type=click.Path(exists=True))
-@click.argument("patterns_file", type=click.Path(exists=True))
-@click.argument("fcf_features")
-@click.argument("ff_features")
-@click.argument("res_dir", type=click.Path())
-@model_options
-@xval_options
-@fit_options
-@filter_options
-def xval_cmr(
-    data_file,
-    patterns_file,
-    fcf_features,
-    ff_features,
-    res_dir,
-    intercept,
-    sublayers,
-    scaling,
-    sublayer_param=None,
-    fixed_param=None,
-    free_param=None,
-    dependent_param=None,
-    n_folds=None,
-    fold_key=None,
-    n_reps=1,
-    n_jobs=1,
-    tol=0.00001,
-    include=None,
-):
-    """Evaluate a model using cross-validation."""
-    os.makedirs(res_dir, exist_ok=True)
-    log_file = os.path.join(res_dir, 'log_xval.txt')
-    logging.basicConfig(
-        filename=log_file,
-        filemode='w',
-        level=logging.INFO,
-        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
-    )
-
-    # set up data and model based on script input
-    data, param_def, patterns = configure_model(
-        data_file,
-        patterns_file,
-        fcf_features,
-        ff_features,
-        intercept,
-        sublayers,
-        scaling,
-        sublayer_param,
-        fixed_param,
-        free_param,
-        dependent_param,
-        include,
-    )
-
-    # split data into folds, fit to training set, evaluate on testing set
-    _run_xval(
-        res_dir, data, param_def, patterns, n_folds, fold_key, n_reps, n_jobs, tol
-    )
-
-
-@click.command()
-@click.argument("data_file", type=click.Path(exists=True))
-@click.argument("patterns_file", type=click.Path(exists=True))
-@click.argument("fit_dir", type=click.Path(exists=True))
-@click.option("--n-rep", "-r", type=int, default=1)
-@click.option("--study-key", multiple=True)
-def sim_cmr(data_file, patterns_file, fit_dir, n_rep=1, study_key=None):
-    """Run a simulation using best-fitting parameters."""
-    # load trials to simulate
-    data = task.read_study_recall(data_file)
-    study_data = data.loc[(data['trial_type'] == 'study')]
-
-    # get model, patterns, and weights
-    model = cmr.CMR()
-    patterns = cmr.load_patterns(patterns_file)
-    param_file = os.path.join(fit_dir, 'parameters.json')
-    param_def = cmr.read_config(param_file)
-
-    # load parameters
-    fit_file = os.path.join(fit_dir, 'fit.csv')
-    subj_param = read_fit_param(fit_file)
-
-    # run simulation
-    sim = model.generate(
-        study_data, 
-        {}, 
-        subj_param, 
-        param_def, 
-        patterns, 
-        n_rep=n_rep, 
-        study_keys=list(study_key),
-    )
-
-    # save
-    sim_file = os.path.join(fit_dir, 'sim.csv')
-    sim.to_csv(sim_file, index=False)
-
-
-def generate_model_name(
-    fcf_features,
-    ff_features,
-    intercept,
-    sublayers,
-    scaling,
-    subpar,
-    fixed,
-    free,
-    dependent,
-):
-    """Generate standard model name from configuration."""
-    if sublayers:
-        res_name = 'cmrs'
-    else:
-        res_name = 'cmr'
-    
-    if not scaling:
-        res_name += 'n'
-
-    if intercept:
-        res_name += 'i'
-
-    if fcf_features and fcf_features != 'none':
-        res_name += f'_fcf-{fcf_features}'
-    if ff_features and ff_features != 'none':
-        res_name += f'_ff-{ff_features}'
-    if subpar:
-        res_name += f'_sl-{subpar}'
-    if fixed:
-        res_name += f'_fix-{fixed.replace("=", "")}'
-    if free:
-        res_name += f'_free-{free.replace("=", "").replace(":", "to")}'
-    if dependent:
-        res_name += f'_dep-{dependent.replace("=", "")}'
-    return res_name
-
-
-def get_study_paths(study):
-    """Get relevant paths based on environment."""
-    study_dir = os.environ['STUDYDIR']
-    if not study_dir:
-        raise EnvironmentError('STUDYDIR not defined.')
-
-    study_dir = Path(study_dir)
-    if not study_dir.exists():
-        raise IOError(f'Study directory does not exist: {study_dir}')
-
-    data_file = study_dir / study / f'{study}_data.csv'
-    if not data_file.exists():
-        raise IOError(f'Data file does not exist: {data_file}')
-
-    patterns_file = study_dir / study / f'{study}_patterns.hdf5'
-    if not patterns_file.exists():
-        raise IOError(f'Patterns file does not exist: {patterns_file}')
-
-    return study_dir, data_file, patterns_file
