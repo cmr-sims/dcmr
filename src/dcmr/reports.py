@@ -10,7 +10,6 @@ import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
-import click
 
 matplotlib.use('Agg')
 from psifr import fr
