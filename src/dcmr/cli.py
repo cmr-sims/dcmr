@@ -11,6 +11,7 @@ from psifr import fr
 from cymr import cmr
 from dcmr import framework
 from dcmr import task
+from dcmr import reports
 
 
 def split_arg(arg):
@@ -812,3 +813,56 @@ def join_xval(out_dir, split_dirs):
     search.sort_values(["fold", "subject", "rep"]).to_csv(search_file, index=False)
     xval = pd.concat(xval_list, ignore_index=True)
     xval.sort_values(["fold", "subject"]).to_csv(xval_file, index=False)
+
+
+@click.command()
+@click.argument("data_file")
+@click.argument("patterns_file")
+@click.argument("fit_dir")
+@click.option("--data-filter", "-d", help="filter to apply to data before plotting")
+@click.option("--report-name", "-r", help="name of the report directory")
+@click.option("--ext", "-e", default="svg", help="figure file type (default: svg)")
+@click.option("--study-keys", "-k", multiple=True, help="study keys for simulation")
+@click.option("--category/--no-category", default=False, help="include category analyses")
+def run_plot_fit(
+    data_file, 
+    patterns_file, 
+    fit_dir, 
+    data_filter, 
+    report_name, 
+    ext, 
+    study_keys,
+    category,
+):
+    log_file = os.path.join(fit_dir, 'log_plot.txt')
+    logging.basicConfig(
+        filename=log_file,
+        filemode='w',
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
+    )
+    logging.info(f'Plotting fitted simulation data in {fit_dir}.')
+
+    # load data and simulated data
+    sim_file = os.path.join(fit_dir, 'sim.csv')
+    logging.info(f'Loading data from {data_file}.')
+    data = task.read_study_recall(data_file, block=True, block_category=False)
+    logging.info(f'Loading simulation from {sim_file}.')
+    sim = task.read_study_recall(sim_file, block=True, block_category=False)
+
+    # filter the data
+    if data_filter is not None:
+        logging.info(f'Applying filter to data: {data_filter}')
+        data = data.query(data_filter).copy()
+        sim = sim.query(data_filter).copy()
+
+    # load patterns
+    logging.info(f'Loading network patterns from {patterns_file}.')
+    patterns = cmr.load_patterns(patterns_file)
+
+    logging.info(f'Creating {report_name} report.')
+    if not study_keys:
+        study_keys = None
+    else:
+        study_keys = list(study_keys)
+    reports.plot_fit(data, sim, patterns, fit_dir, report_name, ext, study_keys, category)
