@@ -884,6 +884,50 @@ def run_fit(
     study_keys=None,
     recall_keys=None,
 ):
+    """
+    Fit parameters to individual subjects of a dataset.
+    
+    Given data, parameter configuration, and patterns, estimate 
+    parameters to fit the model to the dataset. Then generate simulated
+    data for analysis. Finally, create a fit report with common 
+    statistics, parameters, and model snapshots.
+
+    Parameters
+    ----------
+    res_dir : str
+        Path to directory to save results.
+    
+    data : pandas.DataFrame
+        Dataset in Psifr format to be fitted.
+    
+    param_def : framework.WeightParameters
+        Parameter definition object with model configuration.
+    
+    patterns : dict
+        Pattern definitions in CyMR format.
+    
+    n_jobs : int
+        Number of cores to use during search.
+    
+    n_reps : int
+        Number of times to replicate the search. Best-fitting 
+        parameters will be selected from each subject's search.
+
+    tol : float
+        Tolerance for terminating the search, based on likelihood.
+
+    n_sim_reps : int
+        Number of times to replicate simulation of the dataset using
+        the best-fitting values.
+    
+    study_keys : list of str
+        Columns of data to include in the study data during fitting and
+        simulations.
+
+    recall_keys : list of str
+        Columns of data to include in the recall data during 
+        simulations.
+    """
     # save model information
     json_file = os.path.join(res_dir, 'parameters.json')
     logging.info(f'Saving parameter definition to {json_file}.')
@@ -959,7 +1003,57 @@ def run_xval(
     study_keys=None,
     recall_keys=None,
 ):
-    """Evaluate a model using cross-validation."""
+    """
+    Evaluate a model using cross-validation.
+    
+    Given data, parameter configuration, and patterns, run a cross-
+    validation analysis. This involves splitting the data into groups
+    of lists, estimating parameters based on a subset of lists, and
+    evaluating the likelihood for those parameters on a left-out set of
+    lists. Results include best-fitting parameters for each cross-
+    validation fold, training-set likelihood, and testing-set 
+    likelihood.
+
+    Parameters
+    ----------
+    res_dir : str
+        Path to directory to save results.
+    
+    data : pandas.DataFrame
+        Dataset in Psifr format to be fitted.
+    
+    param_def : framework.WeightParameters
+        Parameter definition object with model configuration.
+    
+    patterns : dict
+        Pattern definitions in CyMR format.
+    
+    n_folds : int
+        Number of folds to split lists into. Must specify either this
+        or fold_key. Folds will be interleaved across lists.
+    
+    fold_key : str
+        Column of data to use when dividing lists. Each unique value
+        will result in one fold.
+    
+    n_reps : int
+        Number of times to replicate the search. Best-fitting 
+        parameters will be selected from each subject's search.
+
+    n_jobs : int
+        Number of cores to use during search.
+    
+    tol : float
+        Tolerance for terminating the search, based on likelihood.
+
+    study_keys : list of str
+        Columns of data to include in the study data during fitting and
+        simulations.
+
+    recall_keys : list of str
+        Columns of data to include in the recall data during 
+        simulations.
+    """
     # check cross-validation settings
     if (n_folds is None and fold_key is None) or (
         n_folds is not None and fold_key is not None
