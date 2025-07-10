@@ -1290,8 +1290,9 @@ def fit_cmr_cfr_disrupt(
             ['loc', 'cat', 'use'], 
             sublayers=True,
             free_param={
-                'T': (0.001, 0.1),
+                'T': (0.00001, 1),
                 'B_disrupt': (0, 1),
+                'B_enc': (0.3, 1),
             },
             sublayer_param=[
                 'B_enc', 
@@ -1318,7 +1319,8 @@ def fit_cmr_cfr_disrupt(
             ['loc', 'cat', 'use'], 
             sublayers=True,
             free_param={
-                'T': (0.001, 0.1),
+                'T': (0.00001, 1),
+                'B_enc': (0.3, 1),
             },
             sublayer_param=[
                 'B_enc', 
