@@ -1,2 +1,2 @@
-.. click:: dcmr.framework:fit_cmr
+.. click:: dcmr.cli:fit_cmr
     :prog: dcmr-fit
