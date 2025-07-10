@@ -416,11 +416,10 @@ def fit_cmr_cdcatfr2(
         ['loc', 'cat', 'use'], 
         sublayers=True,
         free_param={
+            'T': (0.00001, 1),
+            'B_enc': (0.3, 1),
             'B_distract_raw': (0, 0.4), 
             'B_disrupt': (0, 1),
-            'B_start0': (0, 1),
-            'B_start1': (0, 1),
-            'B_start2': (0, 1),
             'X10': (0, 1),
             'X11': (0, 1),
             'X12': (0, 1),
@@ -453,17 +452,18 @@ def fit_cmr_cdcatfr2(
                 'B_retention_use': 'clip(B_retention_raw_use * distractor, 0, 1)',
                 'X1': 'where(distractor == 0, X10, where(distractor == 2.5, X11, X12))',
                 'X2': 'where(distractor == 0, X20, where(distractor == 2.5, X21, X22))',
-                'B_start': 'where(distractor == 0, B_start0, where(distractor == 2.5, B_start1, B_start2))',
             },
             ('study', 'trial'): {
                 'B_distract_cat': 'clip(B_distract_raw_cat * distractor + where((block != 1) & (block_pos == 1), B_disrupt, 0), 0, 1)',
             }
-        }
+        },
+        intercept=False,
+        list_context=True,
+        distraction=True,
     )
-    del param_def.free['B_start']
+    del param_def.fixed['T']
     del param_def.free['X1']
     del param_def.free['X2']
-    param_def.set_options(distraction=True)
 
     # fit parameters, simulate using fitted parameters, and save results
     study_keys = ['distractor', 'block', 'block_pos']
