@@ -11,7 +11,7 @@ implement the distributed context maintenance and retrieval (DCMR) model.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    /api/overview
