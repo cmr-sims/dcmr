@@ -3,6 +3,13 @@ Framework
 
 .. currentmodule:: dcmr.framework
 
+The :code:`framework` module specifies the operation of the DCMR model using the CyMR engine. 
+Model variants may be configured using :py:func:`model_variant`. Model specifications
+are defined by :py:class:`WeightParameters` objects, which may be stored in JSON files.
+
+This module also provides functions for running parameter searches, evaluating models using
+cross-validation, and working with fit and cross-validation results.
+
 Model configuration
 ~~~~~~~~~~~~~~~~~~~
 
@@ -10,6 +17,15 @@ Model configuration
     :toctree: api/
 
     model_variant
+
+Evaluating models
+~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: api/
+
+    run_fit
+    run_xval
 
 Fit results
 ~~~~~~~~~~~
