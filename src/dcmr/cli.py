@@ -227,7 +227,14 @@ def fit_cmr(
     n_sim_reps=1,
     include=None,
 ):
-    """Run a parameter search to fit a model and simulate data."""
+    """
+    Run a parameter search to fit a model and simulate data.
+
+    Fit the data in DATA_FILE, setting model weights using the patterns
+    in PATTERNS_FILE, with Mfc and Mcf sublayers FCF_FEATURES and Mff
+    weights FF_FEATURES, and saving results to RES_DIR. Features may
+    include multiple features, separated by dashes.
+    """
     os.makedirs(res_dir, exist_ok=True)
     log_file = os.path.join(res_dir, 'log_fit.txt')
     logging.basicConfig(
@@ -690,7 +697,14 @@ def xval_cmr(
     tol=0.00001,
     include=None,
 ):
-    """Evaluate a model using cross-validation."""
+    """
+    Evaluate a model using cross-validation.
+    
+    Evaluate data in DATA_FILE, setting model weights using the 
+    patterns in PATTERNS_FILE, with Mfc and Mcf sublayers FCF_FEATURES 
+    and Mff weights FF_FEATURES, and saving results to RES_DIR. 
+    Features may include multiple features, separated by dashes.
+    """
     os.makedirs(res_dir, exist_ok=True)
     log_file = os.path.join(res_dir, 'log_xval.txt')
     logging.basicConfig(
@@ -834,6 +848,20 @@ def run_plot_fit(
     study_keys,
     category,
 ):
+    """
+    Create an HTML report with fit diagnostics.
+
+    Given fitted data in DATA_FILE, model weights specified in
+    PATTERNS_FILE, and fit results in FIT_DIR, create a report with
+    plots of common summary statistics, fitted parameters, and model
+    diagnostics.
+
+    Optionally, statistics may take stimulus category into account if 
+    the category option is set and there is a column in DATA_FILE 
+    called "category". These statistics include category clustering and
+    versions of other organization statistics that are split by whether
+    transitions are within- or across-category.
+    """
     log_file = os.path.join(fit_dir, 'log_plot.txt')
     logging.basicConfig(
         filename=log_file,
