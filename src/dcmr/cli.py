@@ -418,8 +418,8 @@ def fit_cmr_cdcatfr2(
         ['loc', 'cat', 'use'], 
         sublayers=True,
         free_param={
-            'T': (0.00001, 1),
-            'B_enc': (0.3, 1),
+            'T': (0, 1),
+            'B_enc': (0, 1),
             'B_distract_raw': (0, 0.4), 
             'B_disrupt': (0, 1),
             'X10': (0, 1),
@@ -466,6 +466,8 @@ def fit_cmr_cdcatfr2(
     del param_def.fixed['T']
     del param_def.free['X1']
     del param_def.free['X2']
+    param_def.set_free(w0=(0, 2))
+    param_def.set_dependent(wr_cat="2 - w0")
 
     # fit parameters, simulate using fitted parameters, and save results
     study_keys = ['distractor', 'block', 'block_pos']
