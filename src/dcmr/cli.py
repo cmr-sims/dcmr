@@ -880,12 +880,6 @@ def run_plot_fit(
     logging.info(f'Loading simulation from {sim_file}.')
     sim = task.read_study_recall(sim_file, block=True, block_category=False)
 
-    # filter the data
-    if data_filter is not None:
-        logging.info(f'Applying filter to data: {data_filter}')
-        data = data.query(data_filter).copy()
-        sim = sim.query(data_filter).copy()
-
     # load patterns
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
@@ -895,4 +889,6 @@ def run_plot_fit(
         study_keys = None
     else:
         study_keys = list(study_keys)
-    reports.plot_fit(data, sim, patterns, fit_dir, report_name, ext, study_keys, category)
+    reports.plot_fit(
+        data, sim, patterns, fit_dir, report_name, ext, study_keys, category, data_filter
+    )

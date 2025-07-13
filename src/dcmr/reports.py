@@ -150,6 +150,7 @@ def plot_fit(
     ext='svg', 
     study_keys=None,
     category=None,
+    data_filter=None,
 ):
     """Make a report with fit information."""
     # information about the data
@@ -158,6 +159,12 @@ def plot_fit(
         category = 'category' in data.columns and not asymfr
     if study_keys is None:
         study_keys = task.get_study_keys(data)
+
+    # filter the data
+    if data_filter is not None:
+        logging.info(f'Applying filter to data: {data_filter}')
+        data = data.query(data_filter).copy()
+        sim = sim.query(data_filter).copy()
 
     # prep semantic similarity
     distances = distance.squareform(
