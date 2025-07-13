@@ -481,6 +481,24 @@ def fit_cmr_cdcatfr2(
         study_keys,
     )
 
+    # plot results by condition
+    sim = pd.read_csv(os.path.join(res_dir, 'sim.csv'))
+    distract_list = [0.0, 2.5, 7.5]
+    for distract in distract_list:
+        report_name = f'distract{distract}'
+        data_filter = f'distractor == {distract}'
+        reports.plot_fit(
+            data, 
+            sim, 
+            patterns, 
+            res_dir, 
+            report_name=report_name, 
+            ext='svg', 
+            study_keys=study_keys,
+            category=True,
+            data_filter=data_filter,
+        )
+
     # evaluate using cross-validation
     n_folds = None
     fold_key = "session"
