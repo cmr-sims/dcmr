@@ -348,6 +348,8 @@ def fit_cmr_cfr_disrupt(
             list_context=True,
         )
     del param_def.fixed['T']
+    param_def.set_free(w0=(0, 2))
+    param_def.set_dependent(wr_cat="2 - w0")
 
     # fit parameters, simulate using fitted parameters, and save results
     study_keys = ['block', 'block_pos']
