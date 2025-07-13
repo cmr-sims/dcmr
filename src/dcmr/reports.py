@@ -154,7 +154,8 @@ def plot_fit(
     """Make a report with fit information."""
     # information about the data
     if category is None:
-        category = 'category' in sim.columns and not 'toronto' in sim['list_type'].unique()
+        asymfr = 'list_type' in data.columns and 'toronto' in data['list_type'].unique()
+        category = 'category' in data.columns and not asymfr
     if study_keys is None:
         study_keys = task.get_study_keys(data)
 

@@ -984,7 +984,8 @@ def run_fit(
     sim.to_csv(sim_file, index=False)
 
     # make a report of the fit
-    category = 'category' in data.columns and not 'toronto' in data['list_type'].unique()
+    asymfr = 'list_type' in data.columns and 'toronto' in data['list_type'].unique()
+    category = 'category' in data.columns and not asymfr
     reports.plot_fit(
         data, sim, patterns, res_dir, study_keys=study_keys, category=category
     )
