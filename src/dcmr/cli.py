@@ -305,9 +305,9 @@ def fit_cmr_cfr_disrupt(
             ['loc', 'cat', 'use'], 
             sublayers=True,
             free_param={
-                'T': (0.00001, 1),
+                'T': (0, 1),
                 'B_disrupt': (0, 1),
-                'B_enc': (0.3, 1),
+                'B_enc': (0, 1),
             },
             sublayer_param=[
                 'B_enc', 
@@ -317,7 +317,7 @@ def fit_cmr_cfr_disrupt(
                 'B_disrupt',
                 'B_distract',
             ],
-            fixed_param={'B_rec_cat': 1, 'B_rec_use': 1, 'B_disrupt_loc': 0, 'B_disrupt_use': 0, 'B_retention': 0},
+            fixed_param={'B_rec_cat': 1, 'B_rec_use': 1, 'B_disrupt_loc': 0, 'B_disrupt_use': 0, 'B_retention': 0, 'B_start': 0},
             dynamic_param={
                 ('study', 'trial'): {
                     'B_distract_loc': 'where((block != 1) & (block_pos == 1), B_disrupt_loc, 0)',
@@ -334,7 +334,7 @@ def fit_cmr_cfr_disrupt(
             ['loc', 'cat', 'use'], 
             sublayers=True,
             free_param={
-                'T': (0.00001, 1),
+                'T': (0, 1),
                 'B_enc': (0.3, 1),
             },
             sublayer_param=[
@@ -343,7 +343,7 @@ def fit_cmr_cfr_disrupt(
                 'Lfc', 
                 'Lcf',
             ],
-            fixed_param={'B_rec_cat': 1, 'B_rec_use': 1},
+            fixed_param={'B_rec_cat': 1, 'B_rec_use': 1, 'B_start': 0},
             intercept=False,
             list_context=True,
         )
