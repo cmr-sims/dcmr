@@ -210,7 +210,7 @@ def plot_fit(
         fig.savefig(os.path.join(fig_dir, f'snapshot_sub-{subj}.{ext}'), dpi=300)
         snapshots.append(f'sub-{subj}')
 
-        g = figures.plot_support(net, height=3)
+        g = figures.plot_support(net, height=3, facet_kws={'sharey': False})
         g.savefig(os.path.join(fig_dir, f'support_sub-{subj}.{ext}'))
         plt.close(g.figure)
 
