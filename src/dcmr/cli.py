@@ -14,16 +14,16 @@ from dcmr import task
 from dcmr import reports
 
 
-def split_arg(arg):
+def split_arg(arg, sep='-'):
     """Split a dash-separated argument."""
     if arg is not None:
         if isinstance(arg, str):
             if arg != 'none':
-                split = arg.split('-')
+                split = arg.split(sep)
             else:
                 split = None
         else:
-            split = arg.split('-')
+            split = arg.split(sep)
     else:
         split = None
     return split
