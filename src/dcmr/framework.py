@@ -987,7 +987,16 @@ def run_fit(
     asymfr = 'list_type' in data.columns and 'toronto' in data['list_type'].unique()
     category = 'category' in data.columns and not asymfr
     reports.plot_fit(
-        data, sim, patterns, res_dir, study_keys=study_keys, category=category
+        data, 
+        sim, 
+        {},
+        subj_param,
+        param_def,
+        patterns, 
+        best,
+        res_dir, 
+        study_keys=study_keys, 
+        category=category,
     )
     return best
 

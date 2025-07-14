@@ -487,7 +487,7 @@ def fit_cmr_cdcatfr2(
 
     # fit parameters, simulate using fitted parameters, and save results
     study_keys = ['distractor', 'block', 'block_pos']
-    framework.run_fit(
+    fit = framework.run_fit(
         res_dir, 
         data, 
         param_def, 
@@ -498,6 +498,7 @@ def fit_cmr_cdcatfr2(
         n_sim_reps, 
         study_keys,
     )
+    subj_param = best.T.to_dict()
 
     # plot results by condition
     sim = pd.read_csv(os.path.join(res_dir, 'sim.csv'))
@@ -508,7 +509,11 @@ def fit_cmr_cdcatfr2(
         reports.plot_fit(
             data, 
             sim, 
+            {},
+            subj_param,
+            param_def,
             patterns, 
+            fit,
             res_dir, 
             report_name=report_name, 
             ext='svg', 
@@ -925,6 +930,26 @@ def run_plot_fit(
         study_keys = None
     else:
         study_keys = list(study_keys)
+
+    # prep simulation
+    param_def = cmr.read_config(os.path.join(fit_dir, 'parameters.json'))
+    fit_file = os.path.join(fit_dir, 'fit.csv')
+    subj_param = framework.read_fit_param(fit_file)
+    fit = pd.read_csv(fit_file)
+
+    # generate plots and report
     reports.plot_fit(
-        data, sim, patterns, fit_dir, report_name, ext, study_keys, category, data_filter
+        data, 
+        sim, 
+        {},
+        subj_param,
+        param_def,
+        patterns, 
+        fit,
+        fit_dir, 
+        report_name, 
+        ext, 
+        study_keys, 
+        category, 
+        data_filter,
     )

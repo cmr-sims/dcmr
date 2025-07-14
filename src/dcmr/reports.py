@@ -20,17 +20,20 @@ from dcmr import framework
 from dcmr import figures
 
 
-def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='svg'):
+def render_fit_html(fit, report_dir, curves, points, grids=None, snapshots=None, ext='svg'):
     """
     Create an HTML report with figures and parameter tables.
 
-    After running, open {fit_dir}/report.html in a browser to view the
+    After running, open {report_dir}/report.html in a browser to view the
     report.
 
     Parameters
     ----------
-    fit_dir : str
-        Path to directory with fit results.
+    fit : pandas.DataFrame
+        Fit results.
+
+    report_dir : str
+        Path to report directory.
     
     curves : list of str
         Names of curves to include in the report. Files named 
@@ -58,15 +61,15 @@ def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='sv
         autoescape=jn.select_autoescape(['html']),
     )
     template = env.get_template('report.html')
-    model = os.path.basename(os.path.abspath(fit_dir))
+    model = os.path.basename(os.path.abspath(report_dir))
 
     # define curve plots to include
     d_curve = {}
     for curve in curves:
         entry = {
-            'mean': os.path.join(fit_dir, 'figs', f'{curve}.{ext}'),
-            'comp': os.path.join(fit_dir, 'figs', f'{curve}_comp.{ext}'),
-            'subj': os.path.join(fit_dir, 'figs', f'{curve}_comp_subject.{ext}'),
+            'mean': os.path.join(report_dir, 'figs', f'{curve}.{ext}'),
+            'comp': os.path.join(report_dir, 'figs', f'{curve}_comp.{ext}'),
+            'subj': os.path.join(report_dir, 'figs', f'{curve}_comp_subject.{ext}'),
         }
         d_curve[curve] = entry
 
@@ -74,7 +77,7 @@ def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='sv
     d_point = {}
     for point, analyses in points.items():
         entry = {
-            analysis: os.path.join(fit_dir, 'figs', f'{analysis}_comp_subject.{ext}')
+            analysis: os.path.join(report_dir, 'figs', f'{analysis}_comp_subject.{ext}')
             for analysis in analyses
         }
         d_point[point] = entry
@@ -82,7 +85,7 @@ def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='sv
     # define subject curves to include
     if grids is not None:
         d_grid = {
-            grid: os.path.join(fit_dir, 'figs', f'{grid}_subject.{ext}')
+            grid: os.path.join(report_dir, 'figs', f'{grid}_subject.{ext}')
             for grid in grids
         }
     else:
@@ -92,8 +95,8 @@ def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='sv
     if snapshots is not None:
         d_snapshot = {
             snapshot: (
-                os.path.join(fit_dir, 'figs', f'snapshot_{snapshot}.{ext}'),
-                os.path.join(fit_dir, 'figs', f'support_{snapshot}.{ext}'),
+                os.path.join(report_dir, 'figs', f'snapshot_{snapshot}.{ext}'),
+                os.path.join(report_dir, 'figs', f'support_{snapshot}.{ext}'),
             )
             for snapshot in snapshots
         }
@@ -101,7 +104,6 @@ def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='sv
         d_snapshot = None
 
     # tables
-    fit = pd.read_csv(os.path.join(fit_dir, 'fit.csv'))
     opt = {'float_format': '%.2f'}
     table_opt = {'Summary': {**opt}, 'Parameters': {'index': False, **opt}}
 
@@ -125,18 +127,18 @@ def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='sv
         tables=tables,
         table_opt=table_opt,
     )
-    html_file = os.path.join(fit_dir, 'report.html')
+    html_file = os.path.join(report_dir, 'report.html')
     with open(html_file, 'w') as f:
         f.write(page)
 
     # copy css
     css = env.get_template('bootstrap.min.css')
-    os.makedirs(os.path.join(fit_dir, '.css'), exist_ok=True)
-    css_file = os.path.join(fit_dir, '.css', 'bootstrap.min.css')
+    os.makedirs(os.path.join(report_dir, '.css'), exist_ok=True)
+    css_file = os.path.join(report_dir, '.css', 'bootstrap.min.css')
     with open(css_file, 'w') as f:
         f.write(css.render())
     css = env.get_template('report.css')
-    css_file = os.path.join(fit_dir, '.css', 'report.css')
+    css_file = os.path.join(report_dir, '.css', 'report.css')
     with open(css_file, 'w') as f:
         f.write(css.render())
 
@@ -144,9 +146,12 @@ def render_fit_html(fit_dir, curves, points, grids=None, snapshots=None, ext='sv
 def plot_fit(
     data, 
     sim, 
-    patterns, 
-    fit_dir, 
-    report_name=None, 
+    group_param,
+    subj_param,
+    param_def,
+    patterns,
+    fit,
+    report_dir, 
     ext='svg', 
     study_keys=None,
     category=None,
@@ -181,32 +186,23 @@ def plot_fit(
     full.index.rename(['source', 'trial'], inplace=True)
 
     # make plots
-    if report_name is not None:
-        report_dir = os.path.join(fit_dir, report_name)
-        os.makedirs(report_dir, exist_ok=True)
-        shutil.copyfile(
-            os.path.join(fit_dir, "fit.csv"), os.path.join(report_dir, "fit.csv")
-        )
-    else:
-        report_dir = fit_dir
     fig_dir = os.path.join(report_dir, 'figs')
     os.makedirs(fig_dir, exist_ok=True)
     kwargs = {'ext': ext}
 
     # snapshots
-    param_def = cmr.read_config(os.path.join(fit_dir, 'parameters.json'))
-    subj_param = framework.read_fit_param(os.path.join(fit_dir, 'fit.csv'))
     study = data.query('trial_type == "study"')
     model = cmr.CMR()
     s1, l1 = study.groupby(['subject', 'list']).first().index[0]
     sample_study = fr.filter_data(study, subjects=s1, lists=l1)
     fig, ax = network.init_plot(figsize=(13, 9.5))
     snapshots = []
-    for subj, par in subj_param.items():
+    for subj in subj_param.keys():
+        sample_study['subject'] = subj
         state = model.record(
             sample_study,
-            par, 
-            subj_param=None, 
+            group_param, 
+            subj_param=subj_param, 
             param_def=param_def, 
             patterns=patterns, 
             study_keys=study_keys,
@@ -424,7 +420,6 @@ def plot_fit(
         )
 
     # parameter pair plot
-    fit = pd.read_csv(os.path.join(fit_dir, 'fit.csv'))
     g = sns.pairplot(fit[list(param_def.free.keys())])
     g.savefig(os.path.join(fig_dir, f'parameters_subject.{ext}'))
 
@@ -452,7 +447,7 @@ def plot_fit(
         points = {'lag_rank': ['lag_rank'], 'use_rank': ['use_rank']}
         grids = curves.copy() + ['parameters']
     os.chdir(report_dir)
-    render_fit_html('.', curves, points, grids, snapshots)
+    render_fit_html(fit, '.', curves, points, grids, snapshots)
 
 
 def get_param_latex():
