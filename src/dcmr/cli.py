@@ -783,6 +783,98 @@ def xval_cmr(
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("fit_dir", type=click.Path(exists=True))
+@click.argument("report_name")
+@click.option(
+    "--fixed-param",
+    "-f",
+    help="dash-separated list of values for fixed parameters (e.g., B_enc_cat=1)",
+)
+@click.option(
+    "--dependent-param",
+    "-a",
+    help="dash-separated list of values for dependent parameter expressions (e.g., B_enc_cat=B_enc_use)",
+)
+@sim_options
+@click.option("--study-keys", '-k', multiple=True)
+def adjust_sim(
+    data_file, 
+    patterns_file, 
+    fit_dir, 
+    report_name, 
+    fixed_param, 
+    dependent_param, 
+    n_sim_reps, 
+    study_keys,
+):
+    # load trials to simulate
+    data = task.read_study_recall(data_file)
+    study_data = data.loc[(data['trial_type'] == 'study')]
+
+    # get model, patterns, and weights
+    model = cmr.CMR()
+    patterns = cmr.load_patterns(patterns_file)
+    param_file = os.path.join(fit_dir, 'parameters.json')
+    param_def = cmr.read_config(param_file)
+
+    # load parameters
+    fit_file = os.path.join(fit_dir, 'fit.csv')
+    subj_param = framework.read_fit_param(fit_file)
+    fit = pd.read_csv(fit_file)
+
+    # update parameters
+    sublayer_param, fixed_param, free_param, dependent_param = process_param_args(
+        None,
+        fixed_param, 
+        None,
+        dependent_param,
+    )
+    if fixed_param:
+        group_param = fixed_param
+        for par, val in group_param.items():
+            for subj, param in subj_param.items():
+                if par in param:
+                    del subj_param[subj][par]
+    else:
+        group_param = None
+
+    if dependent_param:
+        raise NotImplementedError('Dependent parameters not yet supported.')
+
+    # run simulation
+    sim = model.generate(
+        study_data, 
+        group_param, 
+        subj_param, 
+        param_def, 
+        patterns, 
+        n_rep=n_sim_reps, 
+        study_keys=list(study_keys),
+    )
+    report_dir = os.path.join(fit_dir, report_name)
+    os.makedirs(report_dir, exist_ok=True)
+    sim.to_csv(os.path.join(report_dir, 'sim.csv'))
+
+    # make a report of the fit
+    asymfr = 'list_type' in data.columns and 'toronto' in data['list_type'].unique()
+    category = 'category' in data.columns and not asymfr
+    reports.plot_fit(
+        data, 
+        sim, 
+        group_param,
+        subj_param,
+        param_def,
+        patterns, 
+        fit,
+        report_dir, 
+        study_keys=list(study_keys), 
+        category=category,
+    )
+
+
+@click.command()
+@click.argument("data_file", type=click.Path(exists=True))
+@click.argument("patterns_file", type=click.Path(exists=True))
+@click.argument("fit_dir", type=click.Path(exists=True))
 @click.option("--n-rep", "-r", type=int, default=1)
 @click.option("--study-key", multiple=True)
 def sim_cmr(data_file, patterns_file, fit_dir, n_rep=1, study_key=None):
