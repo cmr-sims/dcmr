@@ -29,6 +29,39 @@ def split_arg(arg):
     return split
 
 
+def process_param_args(
+    sublayer_param,
+    fixed_param,
+    free_param,
+    dependent_param,
+):
+    sublayer_param = split_arg(sublayer_param)
+
+    fixed_param_list = split_arg(fixed_param)
+    fixed_param = {}
+    if fixed_param_list is not None:
+        for expr in fixed_param_list:
+            param_name, val = expr.split('=')
+            fixed_param[param_name] = float(val)
+
+    free_param_list = split_arg(free_param)
+    free_param = {}
+    if free_param_list is not None:
+        for expr in free_param_list:
+            param_name, val = expr.split('=')
+            low, high = val.split(':')
+            free_param[param_name] = (float(low), float(high))
+
+    dependent_param_list = split_arg(dependent_param)
+    dependent_param = {}
+    if dependent_param_list is not None:
+        for expr in dependent_param_list:
+            param_name, val = expr.split('=')
+            dependent_param[param_name] = val
+
+    return sublayer_param, fixed_param, free_param, dependent_param
+
+
 def configure_model(
     data_file,
     patterns_file,
@@ -49,26 +82,9 @@ def configure_model(
     ff_features = split_arg(ff_features)
     if include is not None:
         include = [int(s) for s in split_arg(include)]
-    sublayer_param = split_arg(sublayer_param)
-    fixed_param_list = split_arg(fixed_param)
-    fixed_param = {}
-    if fixed_param_list is not None:
-        for expr in fixed_param_list:
-            param_name, val = expr.split('=')
-            fixed_param[param_name] = float(val)
-    free_param_list = split_arg(free_param)
-    free_param = {}
-    if free_param_list is not None:
-        for expr in free_param_list:
-            param_name, val = expr.split('=')
-            low, high = val.split(':')
-            free_param[param_name] = (float(low), float(high))
-    dependent_param_list = split_arg(dependent_param)
-    dependent_param = {}
-    if dependent_param_list is not None:
-        for expr in dependent_param_list:
-            param_name, val = expr.split('=')
-            dependent_param[param_name] = val
+    sublayer_param, fixed_param, free_param, dependent_param = process_param_args(
+        sublayer_param, fixed_param, free_param, dependent_param
+    )
 
     # load data to simulate
     logging.info(f'Loading data from {data_file}.')
