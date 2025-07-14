@@ -917,6 +917,9 @@ def run_fit(
     tol : float
         Tolerance for terminating the search, based on likelihood.
 
+    init : str
+        Method for initializing the search.
+
     n_sim_reps : int
         Number of times to replicate simulation of the dataset using
         the best-fitting values.
