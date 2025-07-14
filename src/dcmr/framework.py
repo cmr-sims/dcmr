@@ -879,9 +879,9 @@ def run_fit(
     patterns, 
     n_jobs, 
     n_reps, 
-    tol, 
-    init,
-    n_sim_reps, 
+    tol=0.00001, 
+    init='latinhypercube',
+    n_sim_reps=1, 
     study_keys=None,
     recall_keys=None,
 ):
