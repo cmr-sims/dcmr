@@ -176,6 +176,7 @@ def fit_options(f):
         "--n-jobs", "-j", type=int, default=1, help="number of parallel jobs to use"
     )
     @click.option("--tol", "-t", type=float, default=0.00001, help="search tolerance")
+    @click.option("--init", default='latinhypercube', help="search initialization method")
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         return f(*args, **kwargs)
@@ -240,6 +241,7 @@ def fit_cmr(
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
+    init='latinhypercube',
     n_sim_reps=1,
     include=None,
 ):
@@ -278,7 +280,7 @@ def fit_cmr(
 
     # fit parameters, simulate using fitted parameters, and save results
     framework.run_fit(
-        res_dir, data, param_def, patterns, n_jobs, n_reps, tol, n_sim_reps
+        res_dir, data, param_def, patterns, n_jobs, n_reps, tol, init, n_sim_reps
     )
 
 
@@ -298,6 +300,7 @@ def fit_cmr_cfr_disrupt(
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
+    init='latinhypercube',
     n_sim_reps=1,
     include=None,
 ):
@@ -377,6 +380,7 @@ def fit_cmr_cfr_disrupt(
         n_jobs, 
         n_reps, 
         tol, 
+        init,
         n_sim_reps, 
         study_keys,
     )
@@ -394,6 +398,7 @@ def fit_cmr_cfr_disrupt(
         n_reps, 
         n_jobs, 
         tol,
+        init,
         study_keys,
     )
 
@@ -412,6 +417,7 @@ def fit_cmr_cdcatfr2(
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
+    init='latinhypercube',
     n_sim_reps=1,
     include=None,
 ):
@@ -495,6 +501,7 @@ def fit_cmr_cdcatfr2(
         n_jobs, 
         n_reps, 
         tol, 
+        init,
         n_sim_reps, 
         study_keys,
     )
@@ -535,6 +542,7 @@ def fit_cmr_cdcatfr2(
         n_reps, 
         n_jobs, 
         tol,
+        init,
         study_keys,
     )
 
@@ -553,6 +561,7 @@ def fit_cmr_asymfr(
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
+    init='latinhypercube',
     n_sim_reps=1,
     include=None,
 ):
@@ -616,6 +625,7 @@ def fit_cmr_asymfr(
         n_jobs, 
         n_reps, 
         tol, 
+        init,
         n_sim_reps, 
         study_keys=['list_type'],
     )
@@ -635,6 +645,7 @@ def fit_cmr_incidental(
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
+    init='latinhypercube',
     n_sim_reps=1,
     include=None,
 ):
@@ -705,6 +716,7 @@ def fit_cmr_incidental(
         n_jobs, 
         n_reps, 
         tol, 
+        init,
         n_sim_reps, 
         study_keys=['distractor', 'retention', 'encoding'],
     )
@@ -738,6 +750,7 @@ def xval_cmr(
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
+    init='latinhypercube',
     include=None,
 ):
     """
@@ -775,7 +788,7 @@ def xval_cmr(
 
     # split data into folds, fit to training set, evaluate on testing set
     framework.run_xval(
-        res_dir, data, param_def, patterns, n_folds, fold_key, n_reps, n_jobs, tol
+        res_dir, data, param_def, patterns, n_folds, fold_key, n_reps, n_jobs, tol, init
     )
 
 
