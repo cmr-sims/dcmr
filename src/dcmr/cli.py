@@ -846,7 +846,7 @@ def adjust_sim(
         group_param = None
 
     if dependent_param:
-        raise NotImplementedError('Dependent parameters not yet supported.')
+        param_def.set_dependent(dependent_param)
 
     # run simulation
     sim = model.generate(
