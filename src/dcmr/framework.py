@@ -989,6 +989,7 @@ def run_fit(
     reports.plot_fit(
         data, sim, patterns, res_dir, study_keys=study_keys, category=category
     )
+    return best
 
 
 def run_xval(
