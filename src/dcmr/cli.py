@@ -52,7 +52,7 @@ def process_param_args(
             low, high = val.split(':')
             free_param[param_name] = (float(low), float(high))
 
-    dependent_param_list = split_arg(dependent_param)
+    dependent_param_list = split_arg(dependent_param, '$')
     dependent_param = {}
     if dependent_param_list is not None:
         for expr in dependent_param_list:
@@ -156,7 +156,7 @@ def model_options(f):
     @click.option(
         "--dependent-param",
         "-a",
-        help="dash-separated list of values for dependent parameter expressions (e.g., B_enc_cat=B_enc_use)",
+        help="list of values for dependent parameter expressions, separated by $ (e.g., B_enc_cat=B_enc_use$wr_cat=1 - w0)",
     )
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
