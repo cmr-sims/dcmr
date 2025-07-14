@@ -880,6 +880,7 @@ def run_fit(
     n_jobs, 
     n_reps, 
     tol, 
+    init='latinhypercube',
     n_sim_reps, 
     study_keys=None,
     recall_keys=None,
