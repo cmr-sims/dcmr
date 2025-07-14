@@ -28,6 +28,11 @@ pip install -e dcmr
 
 ## Usage
 
+The DCMR package is designed for flexible implementation and evaluation of many model variants,
+which may be applied to any free-recall paradigm with data stored in Psifr format.
+See the [documentation](https://dcmr.readthedocs.io/en/latest/) for details about
+running parameter searches, comparing models, and evaluating goodness of fit.
+
 See the 
 [Analysis protocol](https://github.com/cmr-sims/dcmr/wiki)
 for details of the analyses for the DCMR paper (in preparation). 
@@ -60,21 +65,30 @@ dcmr-fit data.csv patterns.hdf5 loc none cmr_fit
 will fit a model with localist weights (as defined in the patterns file) to a dataset and save out the fit results to a `cmr_fit` directory. 
 Results include the best-fitting parameters for each subject, 
 the log likelihood of the observed data according to the model with those parameters,
-and simulated data generated using the model with the best-fitting parameters.
-The simulated data are saved in a Psifr-format CSV file and can be analyzed just like real observed data.
-Run `dcmr-fit -h` to see the many options for configuring model variants.
+simulated data generated using the model with the best-fitting parameters,
+and an HTML report with fit diagnostics.
+The simulated data are saved in a Psifr-format CSV file and can be analyzed just like real observed data
+using [Psifr](https://dcmr.readthedocs.io/en/latest/).
+Run `dcmr-fit --help` to see the many options for configuring model variants.
 
 ### Evaluating a fit
 
 After running a fit, you'll want to evaluate how well the model captures the observed data.
-To create an HTML report comparing observed data to simulated data from a fitted model,
-using analyses like the serial position curve, probability of first recall, and conditional response probability by lag: 
+The `dcmr-fit` script will automatically create a fit diagnostics report comparing observed data to simulated data from a fitted model,
+using analyses like the serial position curve, probability of first recall, and conditional response probability by lag.
+
+The `dcmr-plot-fit` script allows you to create additional reports after a fit has finished.
+For example, to recreate the report for the fit in the `cmr_fit` directory:
 
 ```bash
 dcmr-plot-fit data.csv patterns.hdf5 cmr_fit
 ```
 
 After the script runs, you should have a `report.html` file in the fit directory that you can open using a web browser.
+
+Run `dcmr-plot-fit --help` to see options. To separately examine different conditions, set the `--data-filter` option
+to specify an expression that will yield the correct trials; for example `--data-filter 'condition == 1'` will plot
+just condition 1 trials. Use `--report-name` to indicate a subdirectory that the results should be placed int.
 
 ### Using cross-validation to evaluate a model
 
