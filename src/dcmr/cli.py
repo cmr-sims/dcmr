@@ -806,6 +806,14 @@ def adjust_sim(
     n_sim_reps, 
     study_keys,
 ):
+    """
+    Run a simulation by adjusting an existing fit.
+
+    Given data in DATA_FILE, model weights in the PATTERNS_FILE, and
+    fit results in FIT_DIR, run an adjusted simulation with changes to
+    parameters and save results to a report subdirectory called 
+    REPORT_NAME.
+    """
     # load trials to simulate
     data = task.read_study_recall(data_file)
     study_data = data.loc[(data['trial_type'] == 'study')]
