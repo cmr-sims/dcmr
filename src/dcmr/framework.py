@@ -998,7 +998,7 @@ def run_fit(
         subj_param,
         param_def,
         patterns, 
-        best,
+        best.reset_index(),
         res_dir, 
         study_keys=study_keys, 
         category=category,
