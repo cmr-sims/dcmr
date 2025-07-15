@@ -939,8 +939,12 @@ def run_fit(
 
     # run individual subject fits
     n = data['subject'].nunique()
+    method = 'de'
     logging.info(
         f'Running {n_reps} parameter optimization repeat(s) for {n} participant(s).'
+    )
+    logging.info(
+        f'Using search method {method} with parameter initialization method {init}.'
     )
     logging.info(f'Using {n_jobs} core(s).')
     model = cmr.CMR()
@@ -949,7 +953,7 @@ def run_fit(
         param_def,
         patterns=patterns,
         n_jobs=n_jobs,
-        method='de',
+        method=method,
         n_rep=n_reps,
         tol=tol,
         study_keys=study_keys,
@@ -1101,7 +1105,11 @@ def run_xval(
         logging.info(f'Running {len(folds)} cross-validation folds for {n} participants.')
     
     # run cross-validation
+    method = 'de'
     logging.info(f'Running {n_reps} parameter optimization repeat(s).')
+    logging.info(
+        f'Using search method {method} with parameter initialization method {init}.'
+    )
     logging.info(f'Using {n_jobs} core(s).')
     xval_list = []
     search_list = []
@@ -1121,7 +1129,7 @@ def run_xval(
             param_def,
             patterns=patterns,
             n_jobs=n_jobs,
-            method='de',
+            method=method,
             n_rep=n_reps,
             tol=tol,
             init=init,
