@@ -1016,6 +1016,7 @@ def run_xval(
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
+    init='latinhypercube',
     study_keys=None,
     recall_keys=None,
 ):
@@ -1061,6 +1062,9 @@ def run_xval(
     
     tol : float
         Tolerance for terminating the search, based on likelihood.
+
+    init : str
+        Method for initializing the search.
 
     study_keys : list of str
         Columns of data to include in the study data during fitting and
@@ -1120,6 +1124,7 @@ def run_xval(
             method='de',
             n_rep=n_reps,
             tol=tol,
+            init=init,
             study_keys=study_keys,
             recall_keys=recall_keys,
         )
