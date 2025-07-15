@@ -345,10 +345,10 @@ def fit_cmr_cfr_disrupt(
                 'B_disrupt_use': 0, 
                 'B_retention': 0, 
                 'B_start': 0,
-                'Lfc_cat': 0.5,
-                'Lcf_cat': 0.5,
-                'Lfc_use': 0.5,
-                'Lcf_use': 0.5,
+                'Lfc_cat_raw': 0.5,
+                'Lcf_cat_raw': 0.5,
+                'Lfc_use_raw': 0.5,
+                'Lcf_use_raw': 0.5,
             },
             dynamic_param={
                 ('study', 'trial'): {
@@ -379,18 +379,15 @@ def fit_cmr_cfr_disrupt(
                 'B_rec_cat': 1, 
                 'B_rec_use': 1, 
                 'B_start': 0,
-                'Lfc_cat': 0.5,
-                'Lcf_cat': 0.5,
-                'Lfc_use': 0.5,
-                'Lcf_use': 0.5,
+                'Lfc_cat_raw': 0.5,
+                'Lcf_cat_raw': 0.5,
+                'Lfc_use_raw': 0.5,
+                'Lcf_use_raw': 0.5,
             },
             intercept=False,
             list_context=True,
         )
     del param_def.fixed['T']
-    remove_free = ['Lfc_cat', 'Lcf_cat', 'Lfc_use', 'Lcf_use']
-    for p in remove_free:
-        del param_def.free[p]
     param_def.set_free(w0=(0, 2))
     param_def.set_dependent(wr_cat="2 - w0")
 
