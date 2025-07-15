@@ -1074,6 +1074,10 @@ def run_plot_fit(
     fit = pd.read_csv(fit_file)
 
     # generate plots and report
+    if report_name is not None:
+        report_dir = os.path.join(fit_dir, report_name)
+    else:
+        report_dir = fit_dir
     reports.plot_fit(
         data, 
         sim, 
@@ -1082,8 +1086,7 @@ def run_plot_fit(
         param_def,
         patterns, 
         fit,
-        fit_dir, 
-        report_name, 
+        report_dir, 
         ext, 
         study_keys, 
         category, 
