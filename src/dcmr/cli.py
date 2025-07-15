@@ -388,6 +388,9 @@ def fit_cmr_cfr_disrupt(
             list_context=True,
         )
     del param_def.fixed['T']
+    remove_free = ['Lfc_cat', 'Lcf_cat', 'Lfc_use', 'Lcf_use']
+    for p in remove_free:
+        del param_def.free[p]
     param_def.set_free(w0=(0, 2))
     param_def.set_dependent(wr_cat="2 - w0")
 
