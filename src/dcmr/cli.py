@@ -343,12 +343,9 @@ def fit_cmr_cfr_disrupt(
                 'B_rec_use': 1, 
                 'B_disrupt_loc': 0, 
                 'B_disrupt_use': 0, 
+                'B_disrupt_cat': 0.9,
                 'B_retention': 0, 
                 'B_start': 0,
-                'Lfc_cat_raw': 0.5,
-                'Lcf_cat_raw': 0.5,
-                'Lfc_use_raw': 0.5,
-                'Lcf_use_raw': 0.5,
             },
             dynamic_param={
                 ('study', 'trial'): {
@@ -360,6 +357,14 @@ def fit_cmr_cfr_disrupt(
             intercept=False,
             list_context=True,
             distraction=True,
+        )
+        param_def.set_free(
+            {
+                'Lfc_cat_raw': (0.1, 0.9),
+                'Lcf_cat_raw': (0.1, 0.9),
+                'Lfc_use_raw': (0.1, 0.9),
+                'Lcf_use_raw': (0.1, 0.9),
+            }
         )
     else:
         param_def = framework.model_variant(
@@ -388,7 +393,7 @@ def fit_cmr_cfr_disrupt(
             list_context=True,
         )
     del param_def.fixed['T']
-    param_def.set_free(w0=(0, 2))
+    param_def.set_free(w0=(0.1, 1.9), w1=(0.1, 1))
     param_def.set_dependent(wr_cat="2 - w0")
 
     # fit parameters, simulate using fitted parameters, and save results
