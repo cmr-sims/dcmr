@@ -942,6 +942,11 @@ def run_fit(
         If True, the fit report will include semantic similarity 
         analyses. If None, will attempt to determine from the data.
     """
+    if study_keys is not None:
+        study_keys = list(study_keys)
+    if recall_keys is not None:
+        recall_keys = list(recall_keys)
+
     # save model information
     json_file = os.path.join(res_dir, 'parameters.json')
     logging.info(f'Saving parameter definition to {json_file}.')
@@ -1087,6 +1092,11 @@ def run_xval(
         Columns of data to include in the recall data during 
         simulations.
     """
+    if study_keys is not None:
+        study_keys = list(study_keys)
+    if recall_keys is not None:
+        recall_keys = list(recall_keys)
+
     # check cross-validation settings
     if (n_folds is None and fold_key is None) or (
         n_folds is not None and fold_key is not None
