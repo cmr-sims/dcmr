@@ -129,6 +129,26 @@ def filter_options(f):
     return wrapper
 
 
+def data_options(f):
+    """Set data column options."""
+    @click.option(
+        "--study-keys", 
+        '-s', 
+        multiple=True, 
+        help="names of data columns to include during study",
+    )
+    @click.option(
+        "--recall-keys", 
+        '-l', 
+        multiple=True, 
+        help="names of data columns to include during recall",
+    )
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return wrapper
+
+
 def model_options(f):
     """Set options for model configuration."""
     @click.option("--intercept/--no-intercept", default=False)
@@ -235,6 +255,7 @@ def xval_options(f):
 @fit_options
 @sim_options
 @filter_options
+@data_options
 def fit_cmr(
     data_file,
     patterns_file,
@@ -254,6 +275,8 @@ def fit_cmr(
     init,
     n_sim_reps,
     include,
+    study_keys,
+    recall_keys,
 ):
     """
     Run a parameter search to fit a model and simulate data.
@@ -290,7 +313,17 @@ def fit_cmr(
 
     # fit parameters, simulate using fitted parameters, and save results
     framework.run_fit(
-        res_dir, data, param_def, patterns, n_jobs, n_reps, tol, init, n_sim_reps
+        res_dir, 
+        data, 
+        param_def, 
+        patterns, 
+        n_jobs, 
+        n_reps, 
+        tol, 
+        init, 
+        n_sim_reps,
+        study_keys,
+        recall_keys,
     )
 
 
@@ -774,6 +807,7 @@ def fit_cmr_incidental(
 @xval_options
 @fit_options
 @filter_options
+@data_options
 def xval_cmr(
     data_file,
     patterns_file,
@@ -794,6 +828,8 @@ def xval_cmr(
     tol,
     init,
     include,
+    study_keys,
+    recall_keys,
 ):
     """
     Evaluate a model using cross-validation.
@@ -830,7 +866,18 @@ def xval_cmr(
 
     # split data into folds, fit to training set, evaluate on testing set
     framework.run_xval(
-        res_dir, data, param_def, patterns, n_folds, fold_key, n_reps, n_jobs, tol, init
+        res_dir, 
+        data, 
+        param_def, 
+        patterns, 
+        n_folds, 
+        fold_key, 
+        n_reps, 
+        n_jobs, 
+        tol, 
+        init,
+        study_keys,
+        recall_keys,
     )
 
 
