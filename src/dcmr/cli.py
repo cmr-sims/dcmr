@@ -228,12 +228,12 @@ def sim_options(f):
 def report_options(f):
     @click.option(
         "--category/--no-category", 
-        default=False, 
+        default=None, 
         help="include category analyses in report",
     )
     @click.option(
         "--similarity/--no-similarity", 
-        default=False, 
+        default=None, 
         help="include semantic similarity analyses in report",
     )
     @functools.wraps(f)
