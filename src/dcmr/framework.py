@@ -884,6 +884,8 @@ def run_fit(
     n_sim_reps=1, 
     study_keys=None,
     recall_keys=None,
+    category=None,
+    similarity=None,
 ):
     """
     Fit parameters to individual subjects of a dataset.
@@ -931,6 +933,14 @@ def run_fit(
     recall_keys : list of str
         Columns of data to include in the recall data during 
         simulations.
+    
+    category : bool
+        If True, the fit report will include category-related analyses.
+        If None, will attempt to determine from the data.
+    
+    similarity : bool
+        If True, the fit report will include semantic similarity 
+        analyses. If None, will attempt to determine from the data.
     """
     # save model information
     json_file = os.path.join(res_dir, 'parameters.json')
@@ -993,8 +1003,6 @@ def run_fit(
     sim.to_csv(sim_file, index=False)
 
     # make a report of the fit
-    asymfr = 'list_type' in data.columns and 'toronto' in data['list_type'].unique()
-    category = 'category' in data.columns and not asymfr
     reports.plot_fit(
         data, 
         sim, 
@@ -1006,6 +1014,7 @@ def run_fit(
         res_dir, 
         study_keys=study_keys, 
         category=category,
+        similarity=similarity,
     )
     return best
 
