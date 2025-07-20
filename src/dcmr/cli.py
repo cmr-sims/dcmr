@@ -290,6 +290,8 @@ def fit_cmr(
     include,
     study_keys,
     recall_keys,
+    category,
+    similarity,
 ):
     """
     Run a parameter search to fit a model and simulate data.
@@ -337,6 +339,8 @@ def fit_cmr(
         n_sim_reps,
         study_keys,
         recall_keys,
+        category,
+        similarity,
     )
 
 
