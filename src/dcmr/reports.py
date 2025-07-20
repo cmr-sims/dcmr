@@ -155,6 +155,7 @@ def plot_fit(
     ext='svg', 
     study_keys=None,
     category=None,
+    similarity=None,
     data_filter=None,
 ):
     """Make a report with fit information."""
@@ -172,10 +173,13 @@ def plot_fit(
         sim = sim.query(data_filter).copy()
 
     # prep semantic similarity
-    distances = distance.squareform(
-        distance.pdist(patterns['vector']['use'], 'correlation')
-    )
-    edges = np.percentile(distance.squareform(distances), np.linspace(1, 100, 11))
+    if similarity is None:
+        similarity = 'use' in patterns['vector']
+    if similarity:
+        distances = distance.squareform(
+            distance.pdist(patterns['vector']['use'], 'correlation')
+        )
+        edges = np.percentile(distance.squareform(distances), np.linspace(1, 100, 11))
     data['item_index'] = fr.pool_index(data['item'], patterns['items'])
     sim['item_index'] = fr.pool_index(sim['item'], patterns['items'])
 
@@ -219,47 +223,48 @@ def plot_fit(
 
     # scalar stats
     logging.info('Plotting fits to individual scalar statistics.')
-    figures.plot_fit_scatter(
-        full,
-        'source',
-        'use_rank',
-        fr.distance_rank,
-        {'index_key': 'item_index', 'distances': distances},
-        'rank',
-        fig_dir,
-        **kwargs,
-    )
-    if category:
+    if similarity:
         figures.plot_fit_scatter(
             full,
             'source',
-            'use_rank_within',
+            'use_rank',
             fr.distance_rank,
-            {
-                'index_key': 'item_index',
-                'distances': distances,
-                'test_key': 'category',
-                'test': lambda x, y: x == y,
-            },
+            {'index_key': 'item_index', 'distances': distances},
             'rank',
             fig_dir,
             **kwargs,
         )
-        figures.plot_fit_scatter(
-            full,
-            'source',
-            'use_rank_across',
-            fr.distance_rank,
-            {
-                'index_key': 'item_index',
-                'distances': distances,
-                'test_key': 'category',
-                'test': lambda x, y: x != y,
-            },
-            'rank',
-            fig_dir,
-            **kwargs,
-        )
+        if category:
+            figures.plot_fit_scatter(
+                full,
+                'source',
+                'use_rank_within',
+                fr.distance_rank,
+                {
+                    'index_key': 'item_index',
+                    'distances': distances,
+                    'test_key': 'category',
+                    'test': lambda x, y: x == y,
+                },
+                'rank',
+                fig_dir,
+                **kwargs,
+            )
+            figures.plot_fit_scatter(
+                full,
+                'source',
+                'use_rank_across',
+                fr.distance_rank,
+                {
+                    'index_key': 'item_index',
+                    'distances': distances,
+                    'test_key': 'category',
+                    'test': lambda x, y: x != y,
+                },
+                'rank',
+                fig_dir,
+                **kwargs,
+            )
     figures.plot_fit_scatter(
         full, 'source', 'lag_rank', fr.lag_rank, {}, 'rank', fig_dir, **kwargs
     )
@@ -310,32 +315,13 @@ def plot_fit(
         fig_dir,
         **kwargs,
     )
-    figures.plot_fit(
-        full,
-        'source',
-        'use_crp',
-        fr.distance_crp,
-        {'index_key': 'item_index', 'distances': distances, 'edges': edges},
-        'prob',
-        'center',
-        fr.plot_distance_crp,
-        {'min_samples': None},
-        fig_dir,
-        **kwargs,
-    )
-    if category:
+    if similarity:
         figures.plot_fit(
             full,
             'source',
-            'use_crp_within',
+            'use_crp',
             fr.distance_crp,
-            {
-                'index_key': 'item_index',
-                'distances': distances,
-                'edges': edges,
-                'test_key': 'category',
-                'test': lambda x, y: x == y,
-            },
+            {'index_key': 'item_index', 'distances': distances, 'edges': edges},
             'prob',
             'center',
             fr.plot_distance_crp,
@@ -343,25 +329,45 @@ def plot_fit(
             fig_dir,
             **kwargs,
         )
-        figures.plot_fit(
-            full,
-            'source',
-            'use_crp_across',
-            fr.distance_crp,
-            {
-                'index_key': 'item_index',
-                'distances': distances,
-                'edges': edges,
-                'test_key': 'category',
-                'test': lambda x, y: x != y,
-            },
-            'prob',
-            'center',
-            fr.plot_distance_crp,
-            {'min_samples': None},
-            fig_dir,
-            **kwargs,
-        )
+        if category:
+            figures.plot_fit(
+                full,
+                'source',
+                'use_crp_within',
+                fr.distance_crp,
+                {
+                    'index_key': 'item_index',
+                    'distances': distances,
+                    'edges': edges,
+                    'test_key': 'category',
+                    'test': lambda x, y: x == y,
+                },
+                'prob',
+                'center',
+                fr.plot_distance_crp,
+                {'min_samples': None},
+                fig_dir,
+                **kwargs,
+            )
+            figures.plot_fit(
+                full,
+                'source',
+                'use_crp_across',
+                fr.distance_crp,
+                {
+                    'index_key': 'item_index',
+                    'distances': distances,
+                    'edges': edges,
+                    'test_key': 'category',
+                    'test': lambda x, y: x != y,
+                },
+                'prob',
+                'center',
+                fr.plot_distance_crp,
+                {'min_samples': None},
+                fig_dir,
+                **kwargs,
+            )
     figures.plot_fit(
         full, 'source', 'spc', fr.spc, {}, 'recall', 'input', fr.plot_spc, {}, fig_dir, **kwargs
     )
@@ -424,28 +430,19 @@ def plot_fit(
     g.savefig(os.path.join(fig_dir, f'parameters_subject.{ext}'))
 
     # report
+    curves = ['spc', 'pfr', 'input_crp', 'lag_crp']
+    points = {'lag_rank': ['lag_rank']}
     if category:
-        curves = [
-            'spc',
-            'pfr',
-            'input_crp',
-            'lag_crp',
-            'lag_crp_within',
-            'lag_crp_across',
-            'use_crp',
-            'use_crp_within',
-            'use_crp_across',
-        ]
-        points = {
-            'lag_rank': ['lag_rank', 'lag_rank_within', 'lag_rank_across'],
-            'cat_crp': ['cat_crp'],
-            'use_rank': ['use_rank', 'use_rank_within', 'use_rank_across'],
-        }
-        grids = curves.copy() + ['parameters']
-    else:
-        curves = ['spc', 'pfr', 'input_crp', 'lag_crp', 'use_crp']
-        points = {'lag_rank': ['lag_rank'], 'use_rank': ['use_rank']}
-        grids = curves.copy() + ['parameters']
+        curves.extend(['lag_crp_within', 'lag_crp_across'])
+        points['lag_rank'].extend(['lag_rank_within', 'lag_rank_across'])
+        points['cat_crp'] = ['cat_crp']
+    if similarity:
+        curves.append('use_crp')
+        points['use_rank'] = ['use_rank']
+        if category:
+            curves.extend(['use_crp_within', 'use_crp_across'])
+            points['use_rank'].extend(['use_rank_within', 'use_rank_across'])
+    grids = curves.copy() + ['parameters']
     os.chdir(report_dir)
     render_fit_html(fit, '.', curves, points, grids, snapshots)
 
