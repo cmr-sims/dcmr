@@ -271,6 +271,7 @@ def xval_options(f):
 @sim_options
 @filter_options
 @data_options
+@report_options
 def fit_cmr(
     data_file,
     patterns_file,
