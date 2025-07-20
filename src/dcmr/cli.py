@@ -302,7 +302,8 @@ def fit_cmr(
     Fit the data in DATA_FILE, setting model weights using the patterns
     in PATTERNS_FILE, with Mfc and Mcf sublayers FCF_FEATURES and Mff
     weights FF_FEATURES, and saving results to RES_DIR. Features may
-    include multiple features, separated by dashes.
+    include multiple features, separated by dashes, or may be "none" to
+    indicate no features of those kind.
     """
     os.makedirs(res_dir, exist_ok=True)
     log_file = os.path.join(res_dir, 'log_fit.txt')
