@@ -328,7 +328,7 @@ def fit_cmr_cfr_disrupt(
             free_param={
                 'T': (0, 1),
                 'B_disrupt': (0, 1),
-                'B_enc': (0.2, 1),
+                'B_enc': (0.1, 1),
             },
             sublayer_param=[
                 'B_enc', 
@@ -343,7 +343,7 @@ def fit_cmr_cfr_disrupt(
                 'B_rec_use': 1, 
                 'B_disrupt_loc': 0, 
                 'B_disrupt_use': 0, 
-                'B_disrupt_cat': 0.95,
+                'B_disrupt_cat': 0.9,
                 'B_retention': 0, 
                 'B_start': 0,
             },
@@ -360,10 +360,10 @@ def fit_cmr_cfr_disrupt(
         )
         param_def.set_free(
             {
-                'Lfc_cat_raw': (0.01, 0.99),
-                'Lcf_cat_raw': (0.01, 0.99),
-                'Lfc_use_raw': (0.01, 0.99),
-                'Lcf_use_raw': (0.01, 0.99),
+                'Lfc_cat_raw': (0.1, 0.9),
+                'Lcf_cat_raw': (0.1, 0.9),
+                'Lfc_use_raw': (0.1, 0.9),
+                'Lcf_use_raw': (0.1, 0.9),
             }
         )
     else:
@@ -393,7 +393,7 @@ def fit_cmr_cfr_disrupt(
             list_context=True,
         )
     del param_def.fixed['T']
-    param_def.set_free(w0=(0.01, 1.99), w1=(0.01, 1))
+    param_def.set_free(w0=(0.1, 1.9), w1=(0.1, 1))
     param_def.set_dependent(wr_cat="2 - w0")
 
     # fit parameters, simulate using fitted parameters, and save results
