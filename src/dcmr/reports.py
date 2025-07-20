@@ -163,6 +163,8 @@ def plot_fit(
     if category is None:
         asymfr = 'list_type' in data.columns and 'toronto' in data['list_type'].unique()
         category = 'category' in data.columns and not asymfr
+    if similarity is None:
+        similarity = 'use' in patterns['vector']
     if study_keys is None:
         study_keys = task.get_study_keys(data)
 
@@ -173,8 +175,6 @@ def plot_fit(
         sim = sim.query(data_filter).copy()
 
     # prep semantic similarity
-    if similarity is None:
-        similarity = 'use' in patterns['vector']
     if similarity:
         distances = distance.squareform(
             distance.pdist(patterns['vector']['use'], 'correlation')
