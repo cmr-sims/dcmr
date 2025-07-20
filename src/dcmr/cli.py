@@ -296,7 +296,7 @@ def fit_cmr(
     )
 
     # set up data and model based on script input
-    data, param_def, patterns = framework.configure_model(
+    data, param_def, patterns = configure_model(
         data_file,
         patterns_file,
         fcf_features,
@@ -849,7 +849,7 @@ def xval_cmr(
     )
 
     # set up data and model based on script input
-    data, param_def, patterns = framework.configure_model(
+    data, param_def, patterns = configure_model(
         data_file,
         patterns_file,
         fcf_features,
