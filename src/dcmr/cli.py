@@ -229,6 +229,11 @@ def report_options(f):
     @click.option(
         "--category/--no-category", default=False, help="include category analyses"
     )
+    @click.option(
+        "--similarity/--no-similarity", 
+        default=False, 
+        help="include semantic similarity analyses",
+    )
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         return f(*args, **kwargs)
@@ -605,6 +610,7 @@ def fit_cmr_cdcatfr2(
             ext='svg', 
             study_keys=study_keys,
             category=True,
+            similarity=True,
             data_filter=data_filter,
         )
 
@@ -917,6 +923,7 @@ def adjust_sim(
     n_sim_reps, 
     study_keys,
     category,
+    similarity,
 ):
     """
     Run a simulation by adjusting an existing fit.
@@ -986,6 +993,7 @@ def adjust_sim(
         report_dir, 
         study_keys=list(study_keys), 
         category=category,
+        similarity=similarity,
     )
 
 
@@ -1100,6 +1108,7 @@ def run_plot_fit(
     ext, 
     study_keys,
     category,
+    similarity,
 ):
     """
     Create an HTML report with fit diagnostics.
@@ -1164,5 +1173,6 @@ def run_plot_fit(
         ext, 
         study_keys, 
         category, 
+        similarity,
         data_filter,
     )
