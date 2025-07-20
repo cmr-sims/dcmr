@@ -197,6 +197,16 @@ def sim_options(f):
     return wrapper
 
 
+def report_options(f):
+    @click.option(
+        "--category/--no-category", default=False, help="include category analyses"
+    )
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return wrapper
+
+
 def xval_options(f):
     @click.option(
         "--n-folds",
@@ -841,6 +851,7 @@ def xval_cmr(
 )
 @sim_options
 @click.option("--study-keys", '-k', multiple=True)
+@report_options
 def adjust_sim(
     data_file, 
     patterns_file, 
@@ -850,6 +861,7 @@ def adjust_sim(
     dependent_param, 
     n_sim_reps, 
     study_keys,
+    category,
 ):
     """
     Run a simulation by adjusting an existing fit.
@@ -908,8 +920,6 @@ def adjust_sim(
     sim.to_csv(os.path.join(report_dir, 'sim.csv'))
 
     # make a report of the fit
-    asymfr = 'list_type' in data.columns and 'toronto' in data['list_type'].unique()
-    category = 'category' in data.columns and not asymfr
     reports.plot_fit(
         data, 
         sim, 
@@ -1025,7 +1035,7 @@ def join_xval(out_dir, split_dirs):
 @click.option("--report-name", "-r", help="name of the report directory")
 @click.option("--ext", "-e", default="svg", help="figure file type (default: svg)")
 @click.option("--study-keys", "-k", multiple=True, help="study keys for simulation")
-@click.option("--category/--no-category", default=False, help="include category analyses")
+@report_options
 def run_plot_fit(
     data_file, 
     patterns_file, 
