@@ -151,8 +151,16 @@ def data_options(f):
 
 def model_options(f):
     """Set options for model configuration."""
-    @click.option("--intercept/--no-intercept", default=False)
-    @click.option("--sublayers/--no-sublayers", default=False)
+    @click.option(
+        "--intercept/--no-intercept", 
+        default=False, 
+        help="include an intercept term to item-item associations",
+    )
+    @click.option(
+        "--sublayers/--no-sublayers", 
+        default=False, 
+        help="put components in separate sublayers with independent dynamics",
+    )
     @click.option(
         "--scaling/--no-scaling", 
         default=True,
