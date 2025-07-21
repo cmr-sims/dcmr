@@ -407,7 +407,7 @@ def fit_cmr_cfr_disrupt(
                 'B_rec_use': 1, 
                 'B_disrupt_loc': 0, 
                 'B_disrupt_use': 0, 
-                'B_disrupt_cat': 0.9,
+                'B_disrupt_cat': 0.95,
                 'B_retention': 0, 
                 'B_start': 0,
             },
