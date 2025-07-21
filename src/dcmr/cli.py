@@ -403,7 +403,6 @@ def fit_cmr_cfr_disrupt(
                 'B_distract',
             ],
             fixed_param={
-                'B_enc_cat': 0.5,
                 'B_rec_cat': 1, 
                 'B_rec_use': 1, 
                 'B_disrupt_loc': 0, 
