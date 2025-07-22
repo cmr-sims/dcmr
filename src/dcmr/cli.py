@@ -392,7 +392,7 @@ def fit_cmr_cfr_disrupt(
             free_param={
                 'T': (0, 1),
                 'B_disrupt': (0, 1),
-                'B_enc': (0.05, 1),
+                'B_enc': (0, 1),
             },
             sublayer_param=[
                 'B_enc', 
