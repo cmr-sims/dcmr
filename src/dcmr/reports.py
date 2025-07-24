@@ -443,8 +443,10 @@ def plot_fit(
             curves.extend(['use_crp_within', 'use_crp_across'])
             points['use_rank'].extend(['use_rank_within', 'use_rank_across'])
     grids = curves.copy() + ['parameters']
+    wd = os.getcwd()
     os.chdir(report_dir)
     render_fit_html(fit, '.', curves, points, grids, snapshots)
+    os.chdir(wd)
 
 
 def get_param_latex():
