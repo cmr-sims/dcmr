@@ -412,7 +412,7 @@ def fit_cmr_cfr_disrupt(
             intercept=False,
             distraction=True,
             block_disrupt_sublayers=['cat'],
-            special_sublayers=['list'],
+            special_sublayers=['list', 'block'],
         )
         param_def.set_free(
             {
