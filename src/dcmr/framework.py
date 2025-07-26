@@ -443,6 +443,7 @@ def model_variant(
     sublayer_param=None,
     intercept=False,
     distraction=False,
+    block_disrupt_sublayers=None,
     special_sublayers=None,
     fixed_param=None,
     free_param=None,
@@ -491,6 +492,10 @@ def model_variant(
         If True, distraction units will be added to the network, which
         may be used to disrupt context before and after each item
         presentation.
+    
+    block_disrupt_sublayers : list of str
+        Sublayers that will be disrupted at the start of each new 
+        block, based on the parameter B_disrupt_[sublayer].
 
     special_sublayers : list of str
         Special sublayers to include in the network. May include 'list'
@@ -605,6 +610,9 @@ def model_variant(
 
             # set learning rate to vary by sublayer
             wp.set_weight_sublayer_param(scaling_param, suffix)
+
+            if block_disrupt_sublayers is not None:
+                wp.set_block_disrupt_sublayers(block_disrupt_sublayers)
 
             if 'list' in special_sublayers:
                 # add a static list context sublayer
