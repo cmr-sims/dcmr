@@ -396,6 +396,43 @@ class WeightParameters(CMRParameters):
             for weight in self.sublayers['c']:
                 if par not in self.sublayer_param['c'][weight]:
                     self.set_sublayer_param('c', weight, {par: par})
+        
+    def set_block_disrupt_sublayers(self, sublayers):
+        """
+        Define dynamic parameters to disrupt context in specified sublayers.
+
+        A disruption parameter will be used to define how much 
+        distraction should occur at the start of each new block.
+
+        Parameters
+        ----------
+        sublayers : list of str
+            Sublayers to set to be disrupted at the start of each new 
+            block.
+        
+        Returns
+        -------
+        disrupt_params : dict of (str: str)
+            Name of disruption parameter for each sublayer.
+        
+        distract_params : dict of (str: str)
+            Name of dynamic distraction parameter for each sublayer.
+        """
+        disrupt_params = {}
+        distract_params = {}
+        for weight in sublayers:
+            disrupt_name = f'B_disrupt_{weight}'
+            distract_name = f'B_distract_{weight}'
+            self.set_dynamic(
+                'study', 
+                'trial', 
+                {distract_name: f'where((block != 1) & (block_pos == 1), {disrupt_name}, 0)'}
+            )
+            self.set_sublayer_param('c', weight, B_distract=distract_name)
+            disrupt_params[weight] = disrupt_name
+            distract_params[weight] = distract_name
+        self.expand_sublayer_param(['B_distract'])
+        return disrupt_params, distract_params    
 
 
 def model_variant(
