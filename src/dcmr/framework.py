@@ -449,7 +449,12 @@ def model_variant(
     intercept : bool
         If True, an intercept term will be included in the FF matrix to
         add a baseline level of cuing strength for all included items.
-    
+
+    distraction : bool
+        If True, distraction units will be added to the network, which
+        may be used to disrupt context before and after each item
+        presentation.
+
     fixed_param : dict of (str: float)
         Parameters to set to a specified fixed value. Any free 
         parameters of the same name will be removed from the free 
