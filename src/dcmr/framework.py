@@ -366,6 +366,36 @@ class WeightParameters(CMRParameters):
             # remove the base parameter from the list of free variables
             if param in self.free:
                 del self.free[param]
+    
+    def expand_sublayer_param(self, param_names=None):
+        """
+        Expand sublayer parameters to all have the same parameters defined.
+
+        Update sublayer parameters to ensure that, if a given parameter
+        is set for any one sublayer, that parameter will be defined 
+        explicitly for all sublayers. If a sublayer parameter has not
+        been defined previously, the global value for that parameter
+        will be used.
+
+        Parameters
+        ----------
+        param_names : list of str, optional
+            If defined, only the specified parameter names will be
+            set for each sublayer. If None, all parameters defined
+            for at least one sublayer will be set.
+        """
+        if param_names is None:
+            # get all parameters that are defined for any sublayer
+            param_names = set()
+            for weight, params in self.sublayer_param['c'].items():
+                param_names.update(params.keys())
+
+        # if a parameter is not defined for a sublayer, set it to the
+        # global value of that parameter
+        for par in param_names:
+            for weight in self.sublayers['c']:
+                if par not in self.sublayer_param['c'][weight]:
+                    self.set_sublayer_param('c', weight, {par: par})
 
 
 def model_variant(
