@@ -391,7 +391,6 @@ def fit_cmr_cfr_disrupt(
             sublayers=True,
             free_param={
                 'T': (0, 1),
-                'B_disrupt': (0, 1),
                 'B_enc': (0, 1),
             },
             sublayer_param=[
@@ -399,28 +398,20 @@ def fit_cmr_cfr_disrupt(
                 'B_rec', 
                 'Lfc', 
                 'Lcf',
-                'B_disrupt',
                 'B_distract',
             ],
             fixed_param={
                 'B_rec_cat': 1, 
                 'B_rec_use': 1, 
-                'B_disrupt_loc': 0, 
-                'B_disrupt_use': 0, 
+                'B_distract_loc': 0, 
+                'B_distract_use': 0, 
                 'B_disrupt_cat': 0.9,
                 'B_retention': 0, 
                 'B_start': 0,
             },
-            dynamic_param={
-                ('study', 'trial'): {
-                    'B_distract_loc': 'where((block != 1) & (block_pos == 1), B_disrupt_loc, 0)',
-                    'B_distract_cat': 'where((block != 1) & (block_pos == 1), B_disrupt_cat, 0)',
-                    'B_distract_use': 'where((block != 1) & (block_pos == 1), B_disrupt_use, 0)',
-                    'B_distract_list': 'where((block != 1) & (block_pos == 1), B_disrupt_list, 0)',
-                }
-            },
             intercept=False,
             distraction=True,
+            block_disrupt_sublayers=['cat'],
             special_sublayers=['list'],
         )
         param_def.set_free(
@@ -458,8 +449,7 @@ def fit_cmr_cfr_disrupt(
             special_sublayers=['list'],
         )
     del param_def.fixed['T']
-    param_def.set_free(w0=(0.1, 1.9), w1=(0.1, 1), B_disrupt_list=(0, 1))
-    param_def.set_sublayer_param('c', 'list', B_distract='B_distract_list')
+    param_def.set_free(w0=(0.1, 1.9), w1=(0.1, 1))
     param_def.set_dependent(wr_cat="2 - w0")
 
     # fit parameters, simulate using fitted parameters, and save results
