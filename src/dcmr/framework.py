@@ -652,7 +652,7 @@ def model_variant(
                     'Dcf': 0,  # no effect of pre during recall
                     'Lcf': 'Ablock',  # configurable strength of block cuing
                     'B_enc': 0,  # no context evolution during block
-                    'B_rec': 1,  # context evolution at recall updates current block
+                    'B_rec': 'B_rec_block',  # context evolution at recall updates current block
                     'B_start': 0,  # no start list reinstatement at recall start
                     'B_distract': 'B_distract_block',  # distraction at start of block
                 }
@@ -670,6 +670,8 @@ def model_variant(
                 
                 if 'Ablock' not in wp.free:
                     wp.set_free(Ablock=(0, 1))
+                if 'B_rec_block' not in wp.free:
+                    wp.set_free(B_rec_block=(0, 1))
                 wp.set_sublayer_param('c', 'block', block_context_param)
 
                 # set corresponding other sublayer parameters if necessary
