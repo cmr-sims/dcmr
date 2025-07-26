@@ -647,9 +647,7 @@ def model_variant(
 
                 # set block sublayer parameters
                 block_context_param = {
-                    'Dfc': 0.00001,  # enough to elicit static context during study
                     'Lfc': 1,  # much stronger exp compared to pre during recall
-                    'Dcf': 0,  # no effect of pre during recall
                     'Lcf': 'Ablock',  # configurable strength of block cuing
                     'B_enc': 0,  # no context evolution during block
                     'B_rec': 'B_rec_block',  # context evolution at recall updates current block
@@ -672,6 +670,7 @@ def model_variant(
                     wp.set_free(Ablock=(0, 1))
                 if 'B_rec_block' not in wp.free:
                     wp.set_free(B_rec_block=(0, 1))
+                wp.set_fixed(Dfc_block=0.00001, Dcf_block=0)
                 wp.set_sublayer_param('c', 'block', block_context_param)
 
                 # set corresponding other sublayer parameters if necessary
@@ -679,8 +678,10 @@ def model_variant(
 
                 # set pre-experimental weights
                 expr1 = 'ones((loc.shape[0], 1))'
-                wp.set_weights('fc', {(('task', 'item'), ('block', 'item')): expr1})
-                wp.set_weights('cf', {(('task', 'item'), ('block', 'item')): expr1})
+                fc_expr = f'Dfc_block * {expr1}'
+                cf_expr = f'Dcf_block * {expr1}'
+                wp.set_weights('fc', {(('task', 'item'), ('block', 'item')): fc_expr})
+                wp.set_weights('cf', {(('task', 'item'), ('block', 'item')): cf_expr})
         else:
             # set weights based on fixed D parameters
             wp.set_sublayers(f=['task'], c=['task'])
