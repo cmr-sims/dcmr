@@ -584,10 +584,7 @@ def model_variant(
                 wp.set_sublayer_param('c', 'list', list_context_param)
 
                 # set corresponding other sublayer parameters if necessary
-                for par in list_context_param.keys():
-                    for weight in fcf_features:
-                        if par not in wp.sublayer_param['c'][weight]:
-                            wp.set_sublayer_param('c', weight, {par: par})
+                wp.expand_sublayer_param(list_context_param.keys())
 
                 # set pre-experimental weights
                 expr1 = 'ones((loc.shape[0], 1))'
