@@ -595,6 +595,45 @@ def model_variant(
                 expr0 = 'zeros((loc.shape[0], 1))'
                 wp.set_weights('fc', {(('task', 'item'), ('list', 'item')): expr1})
                 wp.set_weights('cf', {(('task', 'item'), ('list', 'item')): expr0})
+            
+            if 'block' in special_sublayers:
+                # add a static block context sublayer
+                wp.sublayers['c'].append('block')
+
+                # set block sublayer parameters
+                block_context_param = {
+                    'Dfc': 0.00001,  # enough to elicit static context during study
+                    'Lfc': 1,  # much stronger exp compared to pre during recall
+                    'Dcf': 0,  # no effect of pre during recall
+                    'Lcf': 'Ablock',  # configurable strength of block cuing
+                    'B_enc': 0,  # no context evolution during block
+                    'B_rec': 1,  # context evolution at recall updates current block
+                    'B_start': 0,  # no start list reinstatement at recall start
+                    'B_distract': 'B_distract_block',  # distraction at start of block
+                }
+
+                if not distraction:
+                    raise ValueError('Block context requires distraction=True.')
+                else:
+                    wp.set_dynamic(
+                        'study', 
+                        'trial', 
+                        B_distract_block='where((block != 1) & (block_pos == 1), B_disrupt_block, 0)',
+                    )
+                    if 'B_disrupt_block' not in wp.free:
+                        wp.set_free(B_disrupt_block=(0, 1))
+                
+                if 'Ablock' not in wp.free:
+                    wp.set_free(Ablock=(0, 1))
+                wp.set_sublayer_param('c', 'block', block_context_param)
+
+                # set corresponding other sublayer parameters if necessary
+                wp.expand_sublayer_param(list_context_param.keys())
+
+                # set pre-experimental weights
+                expr1 = 'ones((loc.shape[0], 1))'
+                wp.set_weights('fc', {(('task', 'item'), ('block', 'item')): expr1})
+                wp.set_weights('cf', {(('task', 'item'), ('block', 'item')): expr1})
         else:
             # set weights based on fixed D parameters
             wp.set_sublayers(f=['task'], c=['task'])
