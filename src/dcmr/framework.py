@@ -583,11 +583,8 @@ def model_variant(
                 }
                 if distraction:
                     list_context_param.update({'B_distract': 0, 'B_retention': 0})
-                if 'Acf' in wp.free:
-                    limits = wp.free['Acf']
-                else:
-                    limits = (0, 1)
-                wp.set_free(Acf=limits)
+                if 'Acf' not in wp.free:
+                    wp.set_free(Acf=(0, 1))
                 wp.set_sublayer_param('c', 'list', list_context_param)
 
                 # set corresponding other sublayer parameters if necessary
