@@ -405,8 +405,8 @@ def model_variant(
     scaling=True,
     sublayer_param=None,
     intercept=False,
-    list_context=False,
     distraction=False,
+    special_sublayers=None,
     fixed_param=None,
     free_param=None,
     dependent_param=None,
@@ -454,6 +454,10 @@ def model_variant(
         If True, distraction units will be added to the network, which
         may be used to disrupt context before and after each item
         presentation.
+
+    special_sublayers : list of str
+        Special sublayers to include in the network. May include 'list'
+        for a static list context.
 
     fixed_param : dict of (str: float)
         Parameters to set to a specified fixed value. Any free 
@@ -531,6 +535,9 @@ def model_variant(
         intercept_param = None
 
     if fcf_features:
+        if special_sublayers is None:
+            special_sublayers = []
+
         # set global weight scaling
         if scaling:
             scaling_param = wp.set_scaling_param('vector', fcf_features)
@@ -562,7 +569,7 @@ def model_variant(
             # set learning rate to vary by sublayer
             wp.set_weight_sublayer_param(scaling_param, suffix)
 
-            if list_context:
+            if 'list' in special_sublayers:
                 # add a static list context sublayer
                 wp.sublayers['c'].append('list')
 

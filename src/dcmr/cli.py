@@ -420,8 +420,8 @@ def fit_cmr_cfr_disrupt(
                 }
             },
             intercept=False,
-            list_context=True,
             distraction=True,
+            special_sublayers=['list'],
         )
         param_def.set_free(
             {
@@ -455,7 +455,7 @@ def fit_cmr_cfr_disrupt(
                 'Lcf_use_raw': 0.5,
             },
             intercept=False,
-            list_context=True,
+            special_sublayers=['list'],
         )
     del param_def.fixed['T']
     param_def.set_free(w0=(0.1, 1.9), w1=(0.1, 1), B_disrupt_list=(0, 1))
@@ -576,8 +576,8 @@ def fit_cmr_cdcatfr2(
             }
         },
         intercept=False,
-        list_context=True,
         distraction=True,
+        special_sublayers=['list'],
     )
     del param_def.fixed['T']
     del param_def.free['X1']
