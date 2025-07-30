@@ -614,6 +614,7 @@ def model_variant(
             if block_disrupt_sublayers is not None:
                 wp.set_block_disrupt_sublayers(block_disrupt_sublayers)
 
+            expand_param = set()
             if 'list' in special_sublayers:
                 # add a static list context sublayer
                 wp.sublayers['c'].append('list')
@@ -633,7 +634,7 @@ def model_variant(
                 wp.set_sublayer_param('c', 'list', list_context_param)
 
                 # set corresponding other sublayer parameters if necessary
-                wp.expand_sublayer_param(list_context_param.keys())
+                expand_param.update(list_context_param.keys())
 
                 # set pre-experimental weights
                 expr1 = 'ones((loc.shape[0], 1))'
@@ -674,7 +675,7 @@ def model_variant(
                 wp.set_sublayer_param('c', 'block', block_context_param)
 
                 # set corresponding other sublayer parameters if necessary
-                wp.expand_sublayer_param(list_context_param.keys())
+                expand_param.update(block_context_param.keys())
 
                 # set pre-experimental weights
                 expr1 = 'ones((loc.shape[0], 1))'
@@ -682,6 +683,8 @@ def model_variant(
                 cf_expr = f'Dcf_block * {expr1}'
                 wp.set_weights('fc', {(('task', 'item'), ('block', 'item')): fc_expr})
                 wp.set_weights('cf', {(('task', 'item'), ('block', 'item')): cf_expr})
+            if expand_param:
+                wp.expand_sublayer_param(expand_param)
         else:
             # set weights based on fixed D parameters
             wp.set_sublayers(f=['task'], c=['task'])
