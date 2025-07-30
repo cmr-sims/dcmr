@@ -650,6 +650,8 @@ def model_variant(
                 block_context_param = {
                     'Lfc': 1,  # much stronger exp compared to pre during recall
                     'Lcf': 'Ablock',  # configurable strength of block cuing
+                    'P1': 0,  # no primacy
+                    'P2': 0,  # no primacy
                     'B_enc': 0,  # no context evolution during block
                     'B_rec': 'B_rec_block',  # context evolution at recall updates current block
                     'B_start': 0,  # no start list reinstatement at recall start
