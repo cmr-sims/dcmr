@@ -455,11 +455,11 @@ def model_variant(
 
     Parameters are determined in the following order:
 
-        dependent evaluated based on other static parameters
-        dynamic evaluated based on static parameters and data
-        dynamic set for the current list
-        dependent evaluated given current dynamic parameters
-        sublayer parameters evaluated given current parameters
+        (1) dependent evaluated based on other static parameters; 
+        (2) dynamic evaluated based on static parameters and data; 
+        (3) dynamic set for the current list; 
+        (4) dependent evaluated given current dynamic parameters; 
+        (5) sublayer parameters evaluated given current parameters.
 
     Parameters
     ----------
