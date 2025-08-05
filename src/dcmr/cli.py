@@ -414,14 +414,7 @@ def fit_cmr_cfr_disrupt(
             distraction=True,
             block_disrupt_sublayers=['cat'],
             special_sublayers=['list', 'block'],
-        )
-        param_def.set_free(
-            {
-                'Lfc_cat_raw': (0.1, 0.9),
-                'Lcf_cat_raw': (0.1, 0.9),
-                'Lfc_use_raw': (0.1, 0.9),
-                'Lcf_use_raw': (0.1, 0.9),
-            }
+            exp_only_sublayers=['cat', 'use'],
         )
     else:
         param_def = framework.model_variant(
