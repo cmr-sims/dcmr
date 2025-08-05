@@ -388,6 +388,7 @@ def fit_cmr_cfr_disrupt(
     if disrupt:
         param_def = framework.model_variant(
             ['loc', 'cat', 'use'], 
+            ['cat', 'use'],
             sublayers=True,
             free_param={
                 'T': (0, 1),
