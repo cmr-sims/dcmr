@@ -444,6 +444,7 @@ def model_variant(
     intercept=False,
     distraction=False,
     block_disrupt_sublayers=None,
+    exp_only_sublayers=None,
     special_sublayers=None,
     fixed_param=None,
     free_param=None,
@@ -496,6 +497,15 @@ def model_variant(
     block_disrupt_sublayers : list of str
         Sublayers that will be disrupted at the start of each new 
         block, based on the parameter B_disrupt_[sublayer].
+
+    exp_only_sublayers : list of str
+        Sublayers where recall will only be influenced by experimental
+        associations, not pre-experimental associations. A small weight
+        of pre-experimental associations will allow updating of context
+        during study, but will have negligible influence on recall as
+        long as learning rate is substantially greater than zero. 
+        Learning rate will be fixed at 1, but will be multiplied by
+        sublayer weighting.
 
     special_sublayers : list of str
         Special sublayers to include in the network. May include 'list'
@@ -610,6 +620,24 @@ def model_variant(
 
             # set learning rate to vary by sublayer
             wp.set_weight_sublayer_param(scaling_param, suffix)
+
+            if exp_only_sublayers is not None:
+                # modify sublayers to cue based only on learned associations
+                for sublayer in exp_only_sublayers:
+                    # there is no pre-experimental context
+                    for weight in ['fc', 'cf']:
+                        par = f'D{weight}_{sublayer}'
+                        del wp.dependent[par]
+                        value = 0.00001 if weight == 'fc' else 0
+                        wp.set_fixed({par: value})  # small weight for study phase
+
+                    # learning is fixed at 1 (weights take up slack)
+                    for weight in ['fc', 'cf']:
+                        par = f'L{weight}_{sublayer}'
+                        par_raw = f'L{weight}_{sublayer}_raw'
+                        par_w = f'w_{sublayer}'
+                        del wp.free[par_raw]
+                        wp.set_dependent({par: par_w})
 
             if block_disrupt_sublayers is not None:
                 wp.set_block_disrupt_sublayers(block_disrupt_sublayers)
