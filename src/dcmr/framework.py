@@ -893,6 +893,23 @@ def read_model_xvals(fit_dir, models, model_names=None):
     return res
 
 
+def comp_version_variants(fit_dir, model_pattern="cmr*"):
+    """Get relative fit for variants in a directory."""
+    fit_dir = Path(fit_dir)
+    models = []
+    model_names = []
+    for d in fit_dir.glob(model_pattern):
+        xval_file = d / 'xval.csv'
+        if xval_file.exists():
+            models.append(d)
+            model_names.append(d.name)
+    if not models:
+        raise IOError(f'No cross-validation results found in: {fit_dir}')
+    res = read_model_xvals(fit_dir, models, model_names)
+    stat = res.groupby(['model'])['logl_test_list'].mean().sort_values()
+    return stat
+
+
 def read_model_sims(
     data_file, 
     fit_dir, 
