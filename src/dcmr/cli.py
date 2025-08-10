@@ -394,7 +394,6 @@ def fit_cmr_cfr_disrupt(
                 'T': (0, 1),
                 'B_enc': (0, 1),
                 'B_disrupt_cat': (0, 1),
-                'B_disrupt_block': (0.1, 1),
             },
             sublayer_param=[
                 'B_enc', 
@@ -409,12 +408,10 @@ def fit_cmr_cfr_disrupt(
                 'B_distract_loc': 0, 
                 'B_distract_use': 0, 
                 'B_retention': 0, 
-                'B_start': 0,
             },
             intercept=False,
             distraction=True,
             block_disrupt_sublayers=['cat'],
-            special_sublayers=['list', 'block'],
             exp_only_sublayers=['cat', 'use'],
         )
     else:
