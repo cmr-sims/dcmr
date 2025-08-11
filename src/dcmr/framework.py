@@ -788,10 +788,12 @@ def compose_model_variant(
 
     # disruption
     if disruption:
-        fixed_param['B_distract_loc'] = 0
-        fixed_param['B_distract_use'] = 0
         sublayer_param.append('B_distract')
         block_disrupt_sublayers = ['cat']
+        fixed_param['B_distract_loc'] = 0
+        fixed_param['B_distract_use'] = 0
+        free_param['B_disrupt_cat'] = (0, 1)
+        fixed_param['B_retention'] = 0
         distraction = True
     else:
         block_disrupt_sublayers = None
