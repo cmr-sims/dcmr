@@ -756,9 +756,10 @@ def compose_model_variant(
     # base
     sublayers = True
     scaling = True
+    focused = True
     free_param = {}
-    sublayer_param = ['B_enc', 'B_rec', 'Lfc', 'Lcf']
-    fixed_param = {'B_rec_cat': 1, 'B_rec_use': 1}
+    sublayer_param = []
+    fixed_param = {}
 
     # free T parameter
     if free_T:
@@ -779,6 +780,11 @@ def compose_model_variant(
         exp_only_sublayers = ['cat', 'use']
     else:
         raise ValueError(f'Invalid semantics version: {semantics}')
+
+    if semantics in ['context', 'split']:
+        sublayer_param.extend(['B_enc', 'B_rec', 'Lfc', 'Lcf'])
+        if focused:
+            fixed_param.update({'B_rec_cat': 1, 'B_rec_use': 1})
 
     # disruption
     if disruption:
