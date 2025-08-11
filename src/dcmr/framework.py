@@ -809,6 +809,8 @@ def compose_model_variant(
         block_disrupt_sublayers,
         exp_only_sublayers,
         special_sublayers,
+        fixed_param,
+        free_param,
         **kwargs,
     )
     return param_def
