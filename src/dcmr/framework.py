@@ -739,6 +739,77 @@ def model_variant(
     return wp
 
 
+def compose_model_variant(
+    semantics_version,
+    disruption,
+    intercept,
+    list_context,
+    block_context,
+    free_T,
+    **kwargs,
+):
+    """
+    Construct a model from high-level options.
+
+    Use high-level options to set up a model variant.
+    """
+    # base
+    sublayers = True
+    free_param = {}
+    sublayer_param = ['B_enc', 'B_rec', 'Lfc', 'Lcf']
+    fixed_param = {'B_rec_cat': 1, 'B_rec_use': 1}
+
+    # free T parameter
+    if free_T:
+        free_param['T'] = (0, 1)
+
+    # semantics
+    if semantics_version == 'context':
+        fcf_features = ['loc', 'cat', 'use']
+        ff_features = None
+        exp_only_sublayers = None
+    elif semantics_version == 'item':
+        fcf_features = ['loc']
+        ff_features = ['cat', 'use']
+        exp_only_sublayers = None
+    elif semantics_version == 'split':
+        fcf_features = ['loc', 'cat', 'use']
+        ff_features = ['cat', 'use']
+        exp_only_sublayers = ['cat', 'use']
+
+    # disruption
+    if disruption:
+        fixed_param['B_distract_loc'] = 0
+        fixed_param['B_distract_use'] = 0
+        sublayer_param.append('B_distract')
+        block_disrupt_sublayers = ['cat']
+        distraction = True
+    else:
+        block_disrupt_sublayers = None
+        distraction = False
+    
+    # special sublayers
+    special_sublayers = []
+    if list_context:
+        special_sublayers.append('list')
+    if block_context:
+        special_sublayers.append('block')
+    
+    param_def = model_variant(
+        fcf_features, 
+        ff_features, 
+        sublayers, 
+        sublayer_param,
+        intercept,
+        distraction,
+        block_disrupt_sublayers,
+        exp_only_sublayers,
+        special_sublayers,
+        **kwargs,
+    )
+    return param_def
+
+
 def get_study_paths(study):
     """Get relevant paths based on environment."""
     study_dir = os.environ['STUDYDIR']
