@@ -776,6 +776,8 @@ def compose_model_variant(
         fcf_features = ['loc', 'cat', 'use']
         ff_features = ['cat', 'use']
         exp_only_sublayers = ['cat', 'use']
+    else:
+        raise ValueError(f'Invalid semantics version: {semantics_version}')
 
     # disruption
     if disruption:
