@@ -562,7 +562,7 @@ def model_variant(
     if free_param is not None:
         wp.set_free(free_param)
         for param_name in free_param.keys():
-            if param_name in fixed_param:
+            if param_name in wp.fixed:
                 del wp.fixed[param_name]
     
     # add dependent parameters
