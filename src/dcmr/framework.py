@@ -755,6 +755,7 @@ def compose_model_variant(
     """
     # base
     sublayers = True
+    scaling = True
     free_param = {}
     sublayer_param = ['B_enc', 'B_rec', 'Lfc', 'Lcf']
     fixed_param = {'B_rec_cat': 1, 'B_rec_use': 1}
@@ -801,6 +802,7 @@ def compose_model_variant(
         fcf_features, 
         ff_features, 
         sublayers, 
+        scaling, 
         sublayer_param,
         intercept,
         distraction,
