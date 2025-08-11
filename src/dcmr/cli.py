@@ -417,6 +417,7 @@ def fit_cmr_cfr_disrupt(
     else:
         param_def = framework.model_variant(
             ['loc', 'cat', 'use'], 
+            ['cat', 'use'],
             sublayers=True,
             free_param={
                 'T': (0, 1),
@@ -431,14 +432,11 @@ def fit_cmr_cfr_disrupt(
             fixed_param={
                 'B_rec_cat': 1, 
                 'B_rec_use': 1, 
-                'B_start': 0,
-                'Lfc_cat_raw': 0.5,
-                'Lcf_cat_raw': 0.5,
-                'Lfc_use_raw': 0.5,
-                'Lcf_use_raw': 0.5,
+                'B_retention': 0, 
             },
             intercept=False,
-            special_sublayers=['list'],
+            distraction=False,
+            exp_only_sublayers=['cat', 'use'],
         )
     del param_def.fixed['T']
     param_def.set_free(w0=(0.1, 1.9), w1=(0.1, 1))
