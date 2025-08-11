@@ -352,7 +352,7 @@ def fit_cmr(
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("res_dir", type=click.Path())
-@click.option("--semantics-version", default=1, type=int)
+@click.option("--semantics-version", default='context')
 @click.option("--disruption/--no-disruption", default=False)
 @click.option("--intercept/--no-intercept", default=False)
 @click.option("--list-context/--no-list-context", default=False)
