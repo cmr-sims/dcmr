@@ -352,7 +352,7 @@ def fit_cmr(
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("res_dir", type=click.Path())
-@click.option("--semantics-version", default='context')
+@click.option("--semantics", default='context')
 @click.option("--disruption/--no-disruption", default=False)
 @click.option("--intercept/--no-intercept", default=False)
 @click.option("--list-context/--no-list-context", default=False)
@@ -365,7 +365,7 @@ def fit_cmr_cfr_disrupt(
     data_file,
     patterns_file,
     res_dir,
-    semantics_version,
+    semantics,
     disruption,
     intercept,
     list_context,
@@ -397,7 +397,7 @@ def fit_cmr_cfr_disrupt(
 
     # compose a model variant from high-level options
     param_def = framework.compose_model_variant(
-        semantics_version,
+        semantics,
         disruption,
         intercept,
         list_context,

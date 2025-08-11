@@ -740,7 +740,7 @@ def model_variant(
 
 
 def compose_model_variant(
-    semantics_version,
+    semantics,
     disruption,
     intercept,
     list_context,
@@ -765,20 +765,20 @@ def compose_model_variant(
         free_param['T'] = (0, 1)
 
     # semantics
-    if semantics_version == 'context':
+    if semantics == 'context':
         fcf_features = ['loc', 'cat', 'use']
         ff_features = None
         exp_only_sublayers = None
-    elif semantics_version == 'item':
+    elif semantics == 'item':
         fcf_features = ['loc']
         ff_features = ['cat', 'use']
         exp_only_sublayers = None
-    elif semantics_version == 'split':
+    elif semantics == 'split':
         fcf_features = ['loc', 'cat', 'use']
         ff_features = ['cat', 'use']
         exp_only_sublayers = ['cat', 'use']
     else:
-        raise ValueError(f'Invalid semantics version: {semantics_version}')
+        raise ValueError(f'Invalid semantics version: {semantics}')
 
     # disruption
     if disruption:
