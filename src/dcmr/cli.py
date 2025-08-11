@@ -352,7 +352,12 @@ def fit_cmr(
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("res_dir", type=click.Path())
-@click.option("--disrupt/--no-disrupt", default=True)
+@click.option("--semantics-version", default=1, type=int)
+@click.option("--disruption/--no-disruption", default=False)
+@click.option("--intercept/--no-intercept", default=False)
+@click.option("--list-context/--no-list-context", default=False)
+@click.option("--block-context/--no-block-context", default=False)
+@click.option("--free-t/--no-free-t", default=False)
 @fit_options
 @sim_options
 @filter_options
@@ -360,7 +365,12 @@ def fit_cmr_cfr_disrupt(
     data_file,
     patterns_file,
     res_dir,
-    disrupt=True,
+    semantics_version,
+    disruption,
+    intercept,
+    list_context,
+    block_context,
+    free_t,
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
@@ -385,61 +395,15 @@ def fit_cmr_cfr_disrupt(
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
 
-    if disrupt:
-        param_def = framework.model_variant(
-            ['loc', 'cat', 'use'], 
-            ['cat', 'use'],
-            sublayers=True,
-            free_param={
-                'T': (0, 1),
-                'B_enc': (0, 1),
-                'B_disrupt_cat': (0, 1),
-            },
-            sublayer_param=[
-                'B_enc', 
-                'B_rec', 
-                'Lfc', 
-                'Lcf',
-                'B_distract',
-            ],
-            fixed_param={
-                'B_rec_cat': 1, 
-                'B_rec_use': 1, 
-                'B_distract_loc': 0, 
-                'B_distract_use': 0, 
-                'B_retention': 0, 
-            },
-            intercept=False,
-            distraction=True,
-            block_disrupt_sublayers=['cat'],
-            exp_only_sublayers=['cat', 'use'],
-        )
-    else:
-        param_def = framework.model_variant(
-            ['loc', 'cat', 'use'], 
-            ['cat', 'use'],
-            sublayers=True,
-            free_param={
-                'T': (0, 1),
-                'B_enc': (0, 1),
-            },
-            sublayer_param=[
-                'B_enc', 
-                'B_rec', 
-                'Lfc', 
-                'Lcf',
-            ],
-            fixed_param={
-                'B_rec_cat': 1, 
-                'B_rec_use': 1, 
-            },
-            intercept=False,
-            distraction=False,
-            exp_only_sublayers=['cat', 'use'],
-        )
-    del param_def.fixed['T']
-    param_def.set_free(w0=(0.1, 1.9), w1=(0.1, 1))
-    param_def.set_dependent(wr_cat="2 - w0")
+    # compose a model variant from high-level options
+    param_def = framework.compose_model_variant(
+        semantics_version,
+        disruption,
+        intercept,
+        list_context,
+        block_context,
+        free_t,
+    )
 
     # fit parameters, simulate using fitted parameters, and save results
     study_keys = ['block', 'block_pos']
