@@ -1121,7 +1121,7 @@ def model_cue_support(net, item_cues=None, sublayers=None):
             ind = int(n / 2)
         elif item_cue == "end":
             ind = n - 1
-        elif isinstance(item_cue, int):
+        elif isinstance(item_cue, (int, np.int64)):
             ind = item_cue
         else:
             raise ValueError(f'Invalid item cue type: {item_cue}')
