@@ -14,6 +14,7 @@ from skimage import transform
 import pandas as pd
 import polars as pl
 from psifr import fr
+from psifr.measures import TransitionMeasure
 from cymr import cmr
 from wikivector import vector
 
@@ -318,6 +319,163 @@ def crp_recency(data, op_thresh=3, edges=None, labels=None, sp_edges=(5, 19)):
     res = m.reset_index()
     res["Lag"] = res["Lag"].astype(float)
     return res
+
+
+def train_masker(
+    pool_items,
+    recall_items,
+    pool_output,
+    recall_output,
+    train,
+    prev_train_category,
+    next_train_category,
+):
+    pool_items = pool_items.copy()
+    pool_output = pool_output.copy()
+    for n in range(len(recall_items) - 1):
+        # test if the previous item is in the pool
+        if pd.isnull(recall_items[n]) or (recall_items[n] not in pool_items):
+            continue
+
+        # remove the item from the pool
+        ind = pool_items.index(recall_items[n])
+        del pool_items[ind]
+        del pool_output[ind]
+
+        # test if the current item is in the pool
+        if pd.isnull(recall_items[n + 1]) or (recall_items[n + 1] not in pool_items):
+            continue
+
+        # test if the current item is in an adjacent train to the previous
+        abs_train_lag = np.abs(train[n] - train[n + 1])
+        if abs_train_lag == 1:
+            continue
+
+        # test if prev and next train category is defined
+        if pd.isnull(prev_train_category[n]) or pd.isnull(next_train_category[n]):
+            continue
+
+        # test if prev train category is different from next train
+        if prev_train_category[n] == next_train_category[n]:
+            continue
+
+        # previous label is the previous train category and next train category
+        prev = (prev_train_category[n], next_train_category[n])
+
+        # current label is the category of that item
+        curr = recall_output[n + 1]
+
+        # possible labels is categories of all possible items
+        poss = np.array(pool_output)
+        yield n + 1, prev, curr, poss
+
+
+def count_train_clust(
+    pool_items,
+    recall_items,
+    pool_category,
+    recall_category,
+    train,
+    prev_train_category,
+    next_train_category,
+):
+    actual = np.array([0, 0])
+    possible = np.array([0, 0])
+    for i in range(len(recall_items)):
+        # set up masker to filter transitions
+        masker = train_masker(
+            pool_items[i],
+            recall_items[i],
+            pool_category[i],
+            recall_category[i],
+            train[i],
+            prev_train_category[i],
+            next_train_category[i],
+        )
+
+        for output, prev, curr, poss in masker:
+            if prev[0] == curr:
+                actual[0] += 1
+            if prev[1] == curr:
+                actual[1] += 1
+            if np.any(prev[0] == poss):
+                possible[0] += 1
+            if np.any(prev[1] == poss):
+                possible[1] += 1
+    return actual, possible
+
+
+class TransitionTrain(TransitionMeasure):
+
+    def __init__(
+        self, 
+        items_key, 
+        category_key, 
+        train_key,
+        prev_train_category_key,
+        next_train_category_key,
+        item_query=None, 
+        test_key=None, 
+        test=None,
+    ):
+        self.keys = {
+            'items': items_key, 
+            'category': category_key, 
+            'train': train_key,
+            'prev_train_category': prev_train_category_key,
+            'next_train_category': next_train_category_key,
+            'test': test_key,
+        }
+        self.item_query = item_query
+        self.test = test
+    
+    def analyze_subject(self, subject, pool, recall):
+        actual, possible = count_train_clust(
+            pool['items'],
+            recall['items'],
+            pool['category'],
+            recall['category'],
+            recall['train'],
+            recall['prev_train_category'],
+            recall['next_train_category'],
+        )
+        category = ['prev', 'next']
+        index = pd.MultiIndex.from_arrays(
+            [[subject] * 2, category], names=['subject', 'category_context']
+        )
+        crp = pd.DataFrame(
+            {
+                'prob': actual / possible,
+                'actual': actual,
+                'possible': possible,
+            },
+            index=index,
+        )
+        return crp
+
+
+def category_context_crp(
+    df, 
+    category_key, 
+    train_key, 
+    prev_train_category_key,
+    next_train_category_key,
+    item_query=None, 
+    test_key=None, 
+    test=None,
+):
+    measure = TransitionTrain(
+        'item', 
+        category_key, 
+        train_key,
+        prev_train_category_key,
+        next_train_category_key,
+        item_query=None, 
+        test_key=None, 
+        test=None,
+    )
+    crp = measure.analyze(df)
+    return crp
 
 
 def label_clean_trials(data):
