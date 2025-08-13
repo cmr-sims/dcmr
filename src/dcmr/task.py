@@ -208,6 +208,7 @@ def _pl_read_study_recall(
             .with_columns(
                 pl.col("category").alias("curr"),
                 pl.col("category").shift(1).over(trial_cols).alias("prev"),
+                pl.col("category").shift(-1).over(trial_cols).alias("next"),
             )
             .with_columns(
                 pl.when(diff.list.len() == 1)
@@ -233,7 +234,7 @@ def _pl_read_study_recall(
 
     if as_pandas:
         mod = mod.to_pandas(use_pyarrow_extension_array=True)
-        cat_cols = ["category", "curr", "prev", "base"]
+        cat_cols = ["category", "curr", "prev", "next", "base"]
         convert_cols = [col for col in cat_cols if col in mod]
         mod = mod.astype({col: "category" for col in convert_cols})
         for col in convert_cols:
@@ -256,6 +257,7 @@ def get_study_keys(data):
         'block_len',
         'curr',
         'prev',
+        'next',
         'base',
     ]
     study_keys = [i for i in _study_keys if i in data]
