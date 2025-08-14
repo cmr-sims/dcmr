@@ -548,6 +548,7 @@ def model_variant(
     wp = WeightParameters()
     wp.set_options(distraction=distraction)
     wp.set_fixed(T=0.1)
+    eps = 0.000001
     wp.set_free(
         Lfc=(0, 1),
         Lcf=(0, 1),
@@ -595,7 +596,7 @@ def model_variant(
 
         # set global weight scaling
         if scaling:
-            scaling_param = wp.set_scaling_param('vector', fcf_features)
+            scaling_param = wp.set_scaling_param('vector', fcf_features, eps, 1 - eps)
         else:
             scaling_param = {key: None for key in fcf_features}
 
@@ -631,7 +632,7 @@ def model_variant(
                     for weight in ['fc', 'cf']:
                         par = f'D{weight}_{sublayer}'
                         del wp.dependent[par]
-                        value = 0.00001 if weight == 'fc' else 0
+                        value = eps if weight == 'fc' else 0
                         wp.set_fixed({par: value})  # small weight for study phase
 
                     # learning is fixed at 1 (weights take up slack)
@@ -725,7 +726,7 @@ def model_variant(
             wp.set_region_weights('cf', scaling_param, 'Dcf')
 
     if ff_features:
-        scaling_param = wp.set_scaling_param('similarity', ff_features)
+        scaling_param = wp.set_scaling_param('similarity', ff_features, eps, 1 - eps)
         wp.set_item_weights(scaling_param, 'Dff', intercept_param)
         wp.set_free(Dff=(0, 10))
     elif intercept_param is not None:
