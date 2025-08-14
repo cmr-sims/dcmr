@@ -59,7 +59,7 @@ class WeightParameters(CMRParameters):
         probability by output position. [0, Inf]
     """
 
-    def set_scaling_param(self, scaling_type, weights, upper=1):
+    def set_scaling_param(self, scaling_type, weights, lower=0, upper=1):
         """
         Add scaling parameters for patterns or similarity.
 
@@ -76,9 +76,12 @@ class WeightParameters(CMRParameters):
 
         weights : list of str
             Labels of weights to include.
+        
+        lower : float
+            Lower bound of scaling parameters.
 
         upper : float
-            Upper bound of parameters beyond the first two.
+            Upper bound of scaling parameters.
         
         Returns
         -------
@@ -115,14 +118,14 @@ class WeightParameters(CMRParameters):
             # set up scaling parameter and translate to original name
             if n == 0:
                 ref_param = w_param[m]
-                self.set_free({ref_param: (0, 1)})
+                self.set_free({ref_param: (lower, upper)})
                 self.set_dependent({raw_param: ref_param})
                 m += 1
             elif n == 1:
                 self.set_dependent({raw_param: f'1 - {ref_param}'})
             else:
                 new_param = w_param[m]
-                self.set_free({new_param: (0, upper)})
+                self.set_free({new_param: (lower, upper)})
                 self.set_dependent({raw_param: new_param})
                 m += 1
 
