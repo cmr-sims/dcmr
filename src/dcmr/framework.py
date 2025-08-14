@@ -550,8 +550,8 @@ def model_variant(
     wp.set_fixed(T=0.1)
     eps = 0.000001
     wp.set_free(
-        Lfc=(0, 1),
-        Lcf=(0, 1),
+        Lfc=(0, 1 - eps),
+        Lcf=(0, 1 - eps),
         P1=(0, 10),
         P2=(0.1, 5),
         B_enc=(0, 1),
