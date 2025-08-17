@@ -143,11 +143,11 @@ def render_fit_html(fit, report_dir, curves, points, grids=None, snapshots=None,
         f.write(css.render())
 
 
-def within_category(x, y):
+def within(x, y):
     return x == y
 
 
-def across_category(x, y):
+def across(x, y):
     return x != y
 
 
@@ -188,7 +188,7 @@ def plot_fit(
 
     # prep category tests
     if category:
-        test = {'within': within_category, 'across': across_category}
+        test = {'within': within, 'across': across}
 
     # prep semantic similarity
     if similarity:
