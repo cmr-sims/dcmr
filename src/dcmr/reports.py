@@ -285,6 +285,21 @@ def plot_fit(
             fig_dir,
             **kwargs,
         )
+        if block:
+            figures.plot_fit_scatter(
+                full,
+                'source',
+                'cat_crp_remote',
+                fr.category_crp,
+                {
+                    'category_key': 'category', 
+                    'test_key': 'block', 
+                    'test': test['across']
+                },
+                'prob',
+                fig_dir,
+                **kwargs,
+            )
 
     # curves
     logging.info('Plotting fits to curves.')
@@ -453,6 +468,8 @@ def plot_fit(
         curves.extend(['lag_crp_within', 'lag_crp_across'])
         points['lag_rank'].extend(['lag_rank_within', 'lag_rank_across'])
         points['cat_crp'] = ['cat_crp']
+        if block:
+            points['cat_crp'].append('cat_crp_remote')
     if block:
         curves.append('block_spc')
         curves.append('block_lag_crp')
