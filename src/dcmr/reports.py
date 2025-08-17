@@ -418,14 +418,14 @@ def plot_fit(
         curves.extend(['lag_crp_within', 'lag_crp_across'])
         points['lag_rank'].extend(['lag_rank_within', 'lag_rank_across'])
         points['cat_crp'] = ['cat_crp']
+    if block:
+        curves.append('block_lag_crp')
     if similarity:
         curves.append('use_crp')
         points['use_rank'] = ['use_rank']
         if category:
             curves.extend(['use_crp_within', 'use_crp_across'])
             points['use_rank'].extend(['use_rank_within', 'use_rank_across'])
-    if block:
-        curves.append('block_lag_crp')
     grids = curves.copy() + ['parameters']
     if snapshot:
         snapshots = [f'sub-{subj}' for subj in subj_param.keys()]
