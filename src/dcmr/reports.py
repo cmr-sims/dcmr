@@ -297,7 +297,7 @@ def plot_fit(
             {'block_key': 'block', 'n_block_key': 'n_block'},
             'prob',
             ['lag', 'n_block'],
-            fr.plot_lag_crp,
+            figures.plot_block_lag_crp,
             {},
             fig_dir,
             **kwargs,
