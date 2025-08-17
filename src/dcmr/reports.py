@@ -425,6 +425,7 @@ def plot_fit(
     if block:
         curves.append('block_lag_crp')
     grids = curves.copy() + ['parameters']
+    snapshots = [f'sub-{subj}' for subj in subj_param.keys()]
     wd = os.getcwd()
     os.chdir(report_dir)
     render_fit_html(fit, '.', curves, points, grids, snapshots)
