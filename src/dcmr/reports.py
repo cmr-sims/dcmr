@@ -210,31 +210,16 @@ def plot_fit(
     kwargs = {'ext': ext}
 
     # snapshots
-    study = data.query('trial_type == "study"')
-    model = cmr.CMR()
-    s1, l1 = study.groupby(['subject', 'list']).first().index[0]
-    sample_study = fr.filter_data(study, subjects=s1, lists=l1)
-    fig, ax = network.init_plot(figsize=(13, 9.5))
-    snapshots = []
-    for subj in subj_param.keys():
-        sample_study['subject'] = subj
-        state = model.record(
-            sample_study,
-            group_param, 
-            subj_param=subj_param, 
-            param_def=param_def, 
-            patterns=patterns, 
-            study_keys=study_keys,
-            index_segments=[('loc', 'item')],
-        )
-        net = state[-1]
-        net.plot(ax=ax)
-        fig.savefig(os.path.join(fig_dir, f'snapshot_sub-{subj}.{ext}'), dpi=300)
-        snapshots.append(f'sub-{subj}')
-
-        g = figures.plot_support(net, height=3, facet_kws={'sharey': False})
-        g.savefig(os.path.join(fig_dir, f'support_sub-{subj}.{ext}'))
-        plt.close(g.figure)
+    figures.plot_model_snapshots(
+        data, 
+        group_param, 
+        subj_param, 
+        param_def, 
+        patterns, 
+        study_keys, 
+        fig_dir, 
+        **kwargs,
+    )
 
     # scalar stats
     logging.info('Plotting fits to individual scalar statistics.')
