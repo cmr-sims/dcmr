@@ -478,6 +478,20 @@ def category_context_crp(
     return crp
 
 
+def block_lag_crp(df, block_key, n_block_key=None):
+    """Conditional response probability by block lag."""
+    if n_block_key is not None:
+        crp = df.groupby(n_block_key).apply(
+            fr.lag_crp, lag_key=block_key, count_unique=True
+        ).reset_index()
+        if n_block_key != 'n_block':
+            crp = crp.rename(columns={n_block_key: 'n_block'})
+    else:
+        crp = fr.lag_crp(df, lag_key=block_key, count_unique=True)
+    crp = crp.rename(columns={block_key: 'block'})
+    return crp
+
+
 def label_clean_trials(data):
     """Label study and recall trials as clean or not."""
     # score data
