@@ -51,6 +51,13 @@ def plot_support(net, item_cues=None, sublayers=None, **kwargs):
 def plot_model_snapshots(
     data, group_param, subj_param, param_def, patterns, study_keys, out_dir, ext='pdf'
 ):
+    """
+    Plot model network and support snapshots for each fitted subject.
+
+    Given a parameter definition, patterns, and subject parameters, 
+    plot a snapshot of the model network after studying a sample list
+    and support from various components of context.
+    """
     study = data.query('trial_type == "study"')
     model = cmr.CMR()
     s1, l1 = study.groupby(['subject', 'list']).first().index[0]
