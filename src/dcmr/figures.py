@@ -46,6 +46,27 @@ def plot_support(net, item_cues=None, sublayers=None, **kwargs):
     return g
 
 
+def plot_block_lag_crp(crp, hue='current', style=None, palette=None, **facet_kws):
+    """
+    Plot block lag CRP curves.
+
+    Additional arguments are passed to seaborn.relplot.
+
+    Parameters
+    ----------
+    crp : pandas.DataFrame
+        Results from calling `block_lag_crp`.
+    """
+    g = sns.FacetGrid(dropna=False, **facet_kws, data=crp.reset_index())
+    g.map_dataframe(
+        sns.lineplot, x='lag', y='prob', hue=hue, style=style, palette=palette
+    )
+    g.set_xlabels('Lag')
+    g.set_ylabels('CRP')
+    g.set(ylim=(0, 1))
+    return g
+
+
 def plot_fit(
     data,
     group_var,
