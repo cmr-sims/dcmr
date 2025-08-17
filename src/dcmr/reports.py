@@ -304,6 +304,26 @@ def plot_fit(
             fig_dir,
             **kwargs,
         )
+        if category:
+            for cond in ['within', 'across']:
+                figures.plot_fit(
+                    full,
+                    'source',
+                    f'block_lag_crp_{cond}',
+                    task.block_lag_crp,
+                    {
+                        'block_key': 'block', 
+                        'n_block_key': 'n_block', 
+                        'test_key': 'category', 
+                        'test': test[cond],
+                    },
+                    'prob',
+                    ['lag', 'n_block'],
+                    figures.plot_block_lag_crp,
+                    {},
+                    fig_dir,
+                    **kwargs,
+                )
 
     # input CRP
     figures.plot_fit(
@@ -420,6 +440,8 @@ def plot_fit(
         points['cat_crp'] = ['cat_crp']
     if block:
         curves.append('block_lag_crp')
+        if category:
+            curves.extend(['block_lag_crp_within', 'block_lag_crp_across'])
     if similarity:
         curves.append('use_crp')
         points['use_rank'] = ['use_rank']
