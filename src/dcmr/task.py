@@ -478,6 +478,22 @@ def category_context_crp(
     return crp
 
 
+def block_spc(df, block_key, n_block_key=None):
+    """Recall probability by block."""
+    clean = df.query('study')
+    clean['block'] = clean[block_key]
+    if n_block_key is not None:
+        clean['n_block'] = clean[n_block_key]
+        block_recall = clean.groupby(
+            ['subject', 'list', 'n_block', 'block']
+        )['recall'].mean()
+        recall = block_recall.groupby(['subject', 'n_block', 'block']).mean()
+    else:
+        block_recall = clean.groupby(['subject', 'list', 'block'])['recall'].mean()
+        recall = block_recall.groupby(['subject', 'block']).mean()
+    return recall.reset_index()
+
+
 def block_lag_crp(df, block_key, n_block_key=None, **kwargs):
     """Conditional response probability by block lag."""
     if n_block_key is not None:
