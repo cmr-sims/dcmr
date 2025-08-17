@@ -236,6 +236,11 @@ def report_options(f):
         default=None, 
         help="include semantic similarity analyses in report",
     )
+    @click.option(
+        "--snapshot/--no-snapshot",
+        default=True,
+        help="include model snapshots in report",
+    )
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         return f(*args, **kwargs)
@@ -1062,6 +1067,7 @@ def run_plot_fit(
     study_keys,
     category,
     similarity,
+    snapshot,
 ):
     """
     Create an HTML report with fit diagnostics.
@@ -1125,6 +1131,7 @@ def run_plot_fit(
         report_dir, 
         ext, 
         study_keys, 
+        snapshot,
         category, 
         similarity,
         data_filter,

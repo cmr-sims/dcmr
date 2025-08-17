@@ -162,6 +162,7 @@ def plot_fit(
     report_dir, 
     ext='svg', 
     study_keys=None,
+    snapshot=True,
     category=None,
     block=None,
     similarity=None,
@@ -210,16 +211,17 @@ def plot_fit(
     kwargs = {'ext': ext}
 
     # snapshots
-    figures.plot_model_snapshots(
-        data, 
-        group_param, 
-        subj_param, 
-        param_def, 
-        patterns, 
-        study_keys, 
-        fig_dir, 
-        **kwargs,
-    )
+    if snapshot:
+        figures.plot_model_snapshots(
+            data, 
+            group_param, 
+            subj_param, 
+            param_def, 
+            patterns, 
+            study_keys, 
+            fig_dir, 
+            **kwargs,
+        )
 
     # scalar stats
     logging.info('Plotting fits to individual scalar statistics.')
@@ -425,7 +427,10 @@ def plot_fit(
     if block:
         curves.append('block_lag_crp')
     grids = curves.copy() + ['parameters']
-    snapshots = [f'sub-{subj}' for subj in subj_param.keys()]
+    if snapshot:
+        snapshots = [f'sub-{subj}' for subj in subj_param.keys()]
+    else:
+        snapshots = None
     wd = os.getcwd()
     os.chdir(report_dir)
     render_fit_html(fit, '.', curves, points, grids, snapshots)
