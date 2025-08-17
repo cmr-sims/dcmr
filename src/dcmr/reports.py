@@ -182,6 +182,10 @@ def plot_fit(
         data = data.query(data_filter).copy()
         sim = sim.query(data_filter).copy()
 
+    # prep category tests
+    if category:
+        test = {'within': within_category, 'across': across_category}
+
     # prep semantic similarity
     if similarity:
         distances = distance.squareform(
@@ -243,60 +247,37 @@ def plot_fit(
             **kwargs,
         )
         if category:
-            figures.plot_fit_scatter(
-                full,
-                'source',
-                'use_rank_within',
-                fr.distance_rank,
-                {
-                    'index_key': 'item_index',
-                    'distances': distances,
-                    'test_key': 'category',
-                    'test': within_category,
-                },
-                'rank',
-                fig_dir,
-                **kwargs,
-            )
-            figures.plot_fit_scatter(
-                full,
-                'source',
-                'use_rank_across',
-                fr.distance_rank,
-                {
-                    'index_key': 'item_index',
-                    'distances': distances,
-                    'test_key': 'category',
-                    'test': across_category,
-                },
-                'rank',
-                fig_dir,
-                **kwargs,
-            )
+            for cond in ['within', 'across']:
+                figures.plot_fit_scatter(
+                    full,
+                    'source',
+                    f'use_rank_{cond}',
+                    fr.distance_rank,
+                    {
+                        'index_key': 'item_index',
+                        'distances': distances,
+                        'test_key': 'category',
+                        'test': test[cond],
+                    },
+                    'rank',
+                    fig_dir,
+                    **kwargs,
+                )
     figures.plot_fit_scatter(
         full, 'source', 'lag_rank', fr.lag_rank, {}, 'rank', fig_dir, **kwargs
     )
     if category:
-        figures.plot_fit_scatter(
-            full,
-            'source',
-            'lag_rank_within',
-            fr.lag_rank,
-            {'test_key': 'category', 'test': within_category},
-            'rank',
-            fig_dir,
-            **kwargs,
-        )
-        figures.plot_fit_scatter(
-            full,
-            'source',
-            'lag_rank_across',
-            fr.lag_rank,
-            {'test_key': 'category', 'test': across_category},
-            'rank',
-            fig_dir,
-            **kwargs,
-        )
+        for cond in ['within', 'across']:
+            figures.plot_fit_scatter(
+                full,
+                'source',
+                f'lag_rank_{cond}',
+                fr.lag_rank,
+                {'test_key': 'category', 'test': test[cond]},
+                'rank',
+                fig_dir,
+                **kwargs,
+            )
         figures.plot_fit_scatter(
             full,
             'source',
@@ -338,44 +319,26 @@ def plot_fit(
             **kwargs,
         )
         if category:
-            figures.plot_fit(
-                full,
-                'source',
-                'use_crp_within',
-                fr.distance_crp,
-                {
-                    'index_key': 'item_index',
-                    'distances': distances,
-                    'edges': edges,
-                    'test_key': 'category',
-                    'test': within_category,
-                },
-                'prob',
-                'center',
-                fr.plot_distance_crp,
-                {'min_samples': None},
-                fig_dir,
-                **kwargs,
-            )
-            figures.plot_fit(
-                full,
-                'source',
-                'use_crp_across',
-                fr.distance_crp,
-                {
-                    'index_key': 'item_index',
-                    'distances': distances,
-                    'edges': edges,
-                    'test_key': 'category',
-                    'test': across_category,
-                },
-                'prob',
-                'center',
-                fr.plot_distance_crp,
-                {'min_samples': None},
-                fig_dir,
-                **kwargs,
-            )
+            for cond in ['within', 'across']:
+                figures.plot_fit(
+                    full,
+                    'source',
+                    f'use_crp_{cond}',
+                    fr.distance_crp,
+                    {
+                        'index_key': 'item_index',
+                        'distances': distances,
+                        'edges': edges,
+                        'test_key': 'category',
+                        'test': test[cond],
+                    },
+                    'prob',
+                    'center',
+                    fr.plot_distance_crp,
+                    {'min_samples': None},
+                    fig_dir,
+                    **kwargs,
+                )
     figures.plot_fit(
         full, 'source', 'spc', fr.spc, {}, 'recall', 'input', fr.plot_spc, {}, fig_dir, **kwargs
     )
@@ -406,32 +369,20 @@ def plot_fit(
         **kwargs,
     )
     if category:
-        figures.plot_fit(
-            full,
-            'source',
-            'lag_crp_within',
-            fr.lag_crp,
-            {'test_key': 'category', 'test': within_category},
-            'prob',
-            'lag',
-            fr.plot_lag_crp,
-            {'max_lag': None},
-            fig_dir,
-            **kwargs,
-        )
-        figures.plot_fit(
-            full,
-            'source',
-            'lag_crp_across',
-            fr.lag_crp,
-            {'test_key': 'category', 'test': across_category},
-            'prob',
-            'lag',
-            fr.plot_lag_crp,
-            {'max_lag': None},
-            fig_dir,
-            **kwargs,
-        )
+        for cond in ['within', 'across']:
+            figures.plot_fit(
+                full,
+                'source',
+                f'lag_crp_{cond}',
+                fr.lag_crp,
+                {'test_key': 'category', 'test': test[cond]},
+                'prob',
+                'lag',
+                fr.plot_lag_crp,
+                {'max_lag': None},
+                fig_dir,
+                **kwargs,
+            )
 
     # parameter pair plot
     g = sns.pairplot(fit[list(param_def.free.keys())])
