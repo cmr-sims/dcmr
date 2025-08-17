@@ -163,6 +163,7 @@ def plot_fit(
     ext='svg', 
     study_keys=None,
     category=None,
+    block=None,
     similarity=None,
     data_filter=None,
 ):
@@ -171,6 +172,8 @@ def plot_fit(
     if category is None:
         asymfr = 'list_type' in data.columns and 'toronto' in data['list_type'].unique()
         category = 'category' in data.columns and not asymfr
+    if block is None:
+        block = 'n_block' in data.columns and 'block' in data.columns
     if similarity is None:
         similarity = 'use' in patterns['vector']
     if study_keys is None:
@@ -299,6 +302,22 @@ def plot_fit(
     # curves
     logging.info('Plotting fits to curves.')
 
+    # block lag CRP
+    if block:
+        figures.plot_fit(
+            full,
+            'source',
+            'block_lag_crp',
+            task.block_lag_crp,
+            {'block_key': 'block', 'n_block_key': 'n_block'},
+            'prob',
+            ['lag', 'n_block'],
+            fr.plot_lag_crp,
+            {},
+            fig_dir,
+            **kwargs,
+        )
+
     # input CRP
     figures.plot_fit(
         full,
@@ -418,6 +437,8 @@ def plot_fit(
         if category:
             curves.extend(['use_crp_within', 'use_crp_across'])
             points['use_rank'].extend(['use_rank_within', 'use_rank_across'])
+    if block:
+        curves.append('block_lag_crp')
     grids = curves.copy() + ['parameters']
     wd = os.getcwd()
     os.chdir(report_dir)
