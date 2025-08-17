@@ -289,8 +289,23 @@ def plot_fit(
     # curves
     logging.info('Plotting fits to curves.')
 
-    # block lag CRP
     if block:
+        # block SPC
+        figures.plot_fit(
+            full,
+            'source',
+            'block_spc',
+            task.block_spc,
+            {'block_key': 'block', 'n_block_key': 'n_block'},
+            'recall',
+            ['block', 'n_block'],
+            fr.plot_spc,
+            {'input_key': 'block'},
+            fig_dir,
+            **kwargs,
+        )
+
+        # block lag CRP
         figures.plot_fit(
             full,
             'source',
@@ -439,6 +454,7 @@ def plot_fit(
         points['lag_rank'].extend(['lag_rank_within', 'lag_rank_across'])
         points['cat_crp'] = ['cat_crp']
     if block:
+        curves.append('block_spc')
         curves.append('block_lag_crp')
         if category:
             curves.extend(['block_lag_crp_within', 'block_lag_crp_across'])
