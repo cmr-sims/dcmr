@@ -143,6 +143,14 @@ def render_fit_html(fit, report_dir, curves, points, grids=None, snapshots=None,
         f.write(css.render())
 
 
+def within_category(x, y):
+    return x == y
+
+
+def across_category(x, y):
+    return x != y
+
+
 def plot_fit(
     data, 
     sim, 
@@ -244,7 +252,7 @@ def plot_fit(
                     'index_key': 'item_index',
                     'distances': distances,
                     'test_key': 'category',
-                    'test': lambda x, y: x == y,
+                    'test': within_category,
                 },
                 'rank',
                 fig_dir,
@@ -259,7 +267,7 @@ def plot_fit(
                     'index_key': 'item_index',
                     'distances': distances,
                     'test_key': 'category',
-                    'test': lambda x, y: x != y,
+                    'test': across_category,
                 },
                 'rank',
                 fig_dir,
@@ -274,7 +282,7 @@ def plot_fit(
             'source',
             'lag_rank_within',
             fr.lag_rank,
-            {'test_key': 'category', 'test': lambda x, y: x == y},
+            {'test_key': 'category', 'test': within_category},
             'rank',
             fig_dir,
             **kwargs,
@@ -284,7 +292,7 @@ def plot_fit(
             'source',
             'lag_rank_across',
             fr.lag_rank,
-            {'test_key': 'category', 'test': lambda x, y: x != y},
+            {'test_key': 'category', 'test': across_category},
             'rank',
             fig_dir,
             **kwargs,
@@ -340,7 +348,7 @@ def plot_fit(
                     'distances': distances,
                     'edges': edges,
                     'test_key': 'category',
-                    'test': lambda x, y: x == y,
+                    'test': within_category,
                 },
                 'prob',
                 'center',
@@ -359,7 +367,7 @@ def plot_fit(
                     'distances': distances,
                     'edges': edges,
                     'test_key': 'category',
-                    'test': lambda x, y: x != y,
+                    'test': across_category,
                 },
                 'prob',
                 'center',
@@ -403,7 +411,7 @@ def plot_fit(
             'source',
             'lag_crp_within',
             fr.lag_crp,
-            {'test_key': 'category', 'test': lambda x, y: x == y},
+            {'test_key': 'category', 'test': within_category},
             'prob',
             'lag',
             fr.plot_lag_crp,
@@ -416,7 +424,7 @@ def plot_fit(
             'source',
             'lag_crp_across',
             fr.lag_crp,
-            {'test_key': 'category', 'test': lambda x, y: x != y},
+            {'test_key': 'category', 'test': across_category},
             'prob',
             'lag',
             fr.plot_lag_crp,
