@@ -12,6 +12,7 @@
 
         <h2>Summary plots</h2>
 
+        {% if curves is not none %}
         {% for curve, files in curves.items() %}
         <h3>{{ curve }}</h3>
         <div class="panel">
@@ -29,7 +30,9 @@
             </figure>
         </div>
         {% endfor %}
+        {% endif %}
 
+        {% if analysis is not none %}
         {% for analysis, stats in points.items() %}
         <h3>{{ analysis }}</h3>
         <div class="panel">
@@ -41,6 +44,7 @@
             {% endfor %}
         </div>
         {% endfor %}
+        {% endif %}
 
         {% if grids is not none %}
         <h2>Subject plots</h2>
@@ -56,15 +60,18 @@
         {% endfor %}
         {% endif %}
 
+        {% if tables is not none %}
         <h2>Tables</h2>
-
+        
         {% for name, table in tables.items() %}
         <h3>{{ name }}</h3>
         {{ table.to_html(classes=['table', 'table-hover'], border=0, justify='left', **table_opt[name])|safe }}
         {% endfor %}
+        {% endif %}
 
+        {% if snapshots is not none %}
         <h2>Snapshots</h2>
-
+        
         {% for subject, (snapshot_file, support_file) in snapshots.items() %}
         <h3>{{ subject }}</h3>
         <div class="panel">
@@ -78,5 +85,6 @@
             </figure>
         </div>
         {% endfor %}
+        {% endif %}
     </body>
 </html>
