@@ -235,6 +235,8 @@ def plot_fit(
 
     # scalar stats
     logging.info('Plotting fits to individual scalar statistics.')
+
+    # distance rank
     if similarity:
         figures.plot_fit_scatter(
             full,
@@ -263,6 +265,8 @@ def plot_fit(
                     fig_dir,
                     **kwargs,
                 )
+    
+    # lag rank
     figures.plot_fit_scatter(
         full, 'source', 'lag_rank', fr.lag_rank, {}, 'rank', fig_dir, **kwargs
     )
@@ -278,6 +282,9 @@ def plot_fit(
                 fig_dir,
                 **kwargs,
             )
+    
+    # category crp
+    if category:
         figures.plot_fit_scatter(
             full,
             'source',
@@ -291,6 +298,8 @@ def plot_fit(
 
     # curves
     logging.info('Plotting fits to curves.')
+
+    # input CRP
     figures.plot_fit(
         full,
         'source',
@@ -304,6 +313,8 @@ def plot_fit(
         fig_dir,
         **kwargs,
     )
+
+    # distance CRP
     if similarity:
         figures.plot_fit(
             full,
@@ -339,9 +350,13 @@ def plot_fit(
                     fig_dir,
                     **kwargs,
                 )
+    
+    # SPC
     figures.plot_fit(
         full, 'source', 'spc', fr.spc, {}, 'recall', 'input', fr.plot_spc, {}, fig_dir, **kwargs
     )
+
+    # PFR
     figures.plot_fit(
         full,
         'source',
@@ -355,6 +370,8 @@ def plot_fit(
         fig_dir,
         **kwargs,
     )
+
+    # lag CRP
     figures.plot_fit(
         full,
         'source',
