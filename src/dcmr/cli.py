@@ -237,6 +237,11 @@ def report_options(f):
         help="include semantic similarity analyses in report",
     )
     @click.option(
+        "--block/--no-block",
+        default=None,
+        help="include block analyses in report",
+    )
+    @click.option(
         "--snapshot/--no-snapshot",
         default=True,
         help="include model snapshots in report",
@@ -1067,6 +1072,7 @@ def run_plot_fit(
     study_keys,
     category,
     similarity,
+    block,
     snapshot,
 ):
     """
@@ -1134,5 +1140,6 @@ def run_plot_fit(
         snapshot,
         category, 
         similarity,
+        block,
         data_filter,
     )

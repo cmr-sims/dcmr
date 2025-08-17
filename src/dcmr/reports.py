@@ -164,8 +164,8 @@ def plot_fit(
     study_keys=None,
     snapshot=True,
     category=None,
-    block=None,
     similarity=None,
+    block=None,
     data_filter=None,
 ):
     """Make a report with fit information."""
