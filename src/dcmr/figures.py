@@ -63,7 +63,6 @@ def plot_model_snapshots(
     s1, l1 = study.groupby(['subject', 'list']).first().index[0]
     sample_study = fr.filter_data(study, subjects=s1, lists=l1)
     fig, ax = network.init_plot(figsize=(13, 9.5))
-    snapshots = []
     for subj in subj_param.keys():
         sample_study['subject'] = subj
         state = model.record(
@@ -78,7 +77,6 @@ def plot_model_snapshots(
         net = state[-1]
         net.plot(ax=ax)
         fig.savefig(os.path.join(out_dir, f'snapshot_sub-{subj}.{ext}'), dpi=300)
-        snapshots.append(f'sub-{subj}')
 
         g = plot_support(net, height=3, facet_kws={'sharey': False})
         g.savefig(os.path.join(out_dir, f'support_sub-{subj}.{ext}'))
