@@ -300,6 +300,21 @@ def plot_fit(
     # curves
     logging.info('Plotting fits to curves.')
 
+    # compound lag CRP
+    figures.plot_fit(
+        full,
+        'source',
+        'lag_crp_compound',
+        fr.lag_crp_compound,
+        {},
+        'prob',
+        ['current', 'previous'],
+        figures.plot_lag_crp_compound,
+        {},
+        fig_dir,
+        **kwargs,
+    )
+
     if block:
         # block SPC
         figures.plot_fit(
@@ -473,7 +488,7 @@ def plot_fit(
     g.savefig(os.path.join(fig_dir, f'parameters_subject.{ext}'))
 
     # report
-    curves = ['spc', 'pfr', 'input_crp', 'lag_crp']
+    curves = ['spc', 'pfr', 'input_crp', 'lag_crp', 'lag_crp_compound']
     points = {'lag_rank': ['lag_rank']}
     if category:
         curves.extend(['lag_crp_within', 'lag_crp_across'])
