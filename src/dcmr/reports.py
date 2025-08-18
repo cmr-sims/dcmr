@@ -427,8 +427,8 @@ def plot_fit(
             {'index_key': 'item_index', 'distances': distances, 'max_shift': 3},
             'rank',
             'shift',
-            sns.relplot,
-            {'kind': 'line'},
+            figures.plot_distance_rank_shifted,
+            {},
             fig_dir,
             **kwargs,
         )
