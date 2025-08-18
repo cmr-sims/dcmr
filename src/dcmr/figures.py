@@ -120,6 +120,14 @@ def plot_block_lag_crp(crp, hue='current', style=None, palette=None, **facet_kws
     return g
 
 
+def plot_distance_rank_shifted(data, **kwargs):
+    """Plot distance rank shifted curves."""
+    g = sns.relplot(data.reset_index(), x='shift', y='rank', kind='line', **kwargs)
+    g.set_ylabels('Semantic rank')
+    g.set_xlabels('Anchor item position')
+    return g
+
+
 def plot_fit(
     data,
     group_var,
