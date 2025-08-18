@@ -314,6 +314,21 @@ def plot_fit(
         fig_dir,
         **kwargs,
     )
+    if category:
+        for cond in ['within', 'across']:
+            figures.plot_fit(
+                full,
+                'source',
+                f'lag_crp_compound_{cond}',
+                fr.lag_crp_compound,
+                {'test_key': 'category', 'test': test[cond]},
+                'prob',
+                ['current', 'previous'],
+                figures.plot_lag_crp_compound,
+                {},
+                fig_dir,
+                **kwargs,
+            )
 
     if block:
         # block SPC
@@ -488,7 +503,7 @@ def plot_fit(
     g.savefig(os.path.join(fig_dir, f'parameters_subject.{ext}'))
 
     # report
-    curves = ['spc', 'pfr', 'input_crp', 'lag_crp', 'lag_crp_compound']
+    curves = ['spc', 'pfr', 'input_crp', 'lag_crp']
     points = {'lag_rank': ['lag_rank']}
     if category:
         curves.extend(['lag_crp_within', 'lag_crp_across'])
@@ -496,6 +511,9 @@ def plot_fit(
         points['cat_crp'] = ['cat_crp']
         if block:
             points['cat_crp'].append('cat_crp_remote')
+    curves.append('lag_crp_compound')
+    if category:
+        curves.extend(['lag_crp_compound_within', 'lag_crp_compound_across'])
     if block:
         curves.append('block_spc')
         curves.append('block_lag_crp')
