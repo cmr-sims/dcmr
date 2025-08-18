@@ -366,8 +366,8 @@ def plot_fit(
         **kwargs,
     )
 
-    # distance CRP
     if similarity:
+        # distance CRP
         figures.plot_fit(
             full,
             'source',
@@ -378,19 +378,6 @@ def plot_fit(
             'center',
             fr.plot_distance_crp,
             {'min_samples': None},
-            fig_dir,
-            **kwargs,
-        )
-        figures.plot_fit(
-            full,
-            'source',
-            'use_rank_shifted',
-            fr.distance_rank_shifted,
-            {'index_key': 'index', 'distances': distances, 'max_shift': 3},
-            'rank',
-            'shift',
-            sns.relplot,
-            {'kind': 'line'},
             fig_dir,
             **kwargs,
         )
@@ -415,6 +402,21 @@ def plot_fit(
                     fig_dir,
                     **kwargs,
                 )
+
+        # shifted distance CRP
+        figures.plot_fit(
+            full,
+            'source',
+            'use_rank_shifted',
+            fr.distance_rank_shifted,
+            {'index_key': 'item_index', 'distances': distances, 'max_shift': 3},
+            'rank',
+            'shift',
+            sns.relplot,
+            {'kind': 'line'},
+            fig_dir,
+            **kwargs,
+        )
     
     # SPC
     figures.plot_fit(
