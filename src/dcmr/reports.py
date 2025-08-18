@@ -381,6 +381,19 @@ def plot_fit(
             fig_dir,
             **kwargs,
         )
+        figures.plot_fit(
+            full,
+            'source',
+            'use_rank_shifted',
+            fr.distance_rank_shifted,
+            {'index_key': 'index', 'distances': distances, 'max_shift': 3},
+            'rank',
+            'shift',
+            sns.relplot,
+            {'kind': 'line'},
+            fig_dir,
+            **kwargs,
+        )
         if category:
             for cond in ['within', 'across']:
                 figures.plot_fit(
@@ -472,7 +485,7 @@ def plot_fit(
         if category:
             curves.extend(['block_lag_crp_within', 'block_lag_crp_across'])
     if similarity:
-        curves.append('use_crp')
+        curves.append(['use_crp', 'use_rank_shifted'])
         points['use_rank'] = ['use_rank']
         if category:
             curves.extend(['use_crp_within', 'use_crp_across'])
