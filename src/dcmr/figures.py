@@ -83,6 +83,22 @@ def plot_model_snapshots(
         plt.close(g.figure)
 
 
+def plot_lag_crp_compound(crp, style=None, **kwargs):
+    """Plot compound lag CRP curves."""
+    binned = crp.reset_index()
+    binned.loc[binned['previous'].abs() > 3, 'Previous'] = '|Lag|>3'
+    binned.loc[binned['previous'] == 1, 'Previous'] = 'Lag=+1'
+    binned.loc[binned['previous'] == -1, 'Previous'] = 'Lag=-1'
+    summed = binned.groupby(
+        ['source', 'subject', 'Previous', 'current']
+    )[['actual', 'possible']].sum()
+    summed['prob'] = summed['actual'] / summed['possible']
+    g = fr.plot_lag_crp(
+        summed, lag_key='current', style='Previous', max_lag=3, **kwargs
+    )
+    return g
+
+
 def plot_block_lag_crp(crp, hue='current', style=None, palette=None, **facet_kws):
     """
     Plot block lag CRP curves.
