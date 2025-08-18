@@ -1,20 +1,16 @@
 """Reports for summarizing behavior and model fit."""
 
 import os
-import shutil
 import logging
 import jinja2 as jn
 import numpy as np
 from scipy.spatial import distance
 import pandas as pd
 import matplotlib
-import matplotlib.pyplot as plt
 import seaborn as sns
 
 matplotlib.use('Agg')
 from psifr import fr
-from cymr import cmr
-from cymr import network
 from dcmr import task
 from dcmr import framework
 from dcmr import figures
