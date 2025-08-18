@@ -447,6 +447,27 @@ def plot_fit(
             fig_dir,
             **kwargs,
         )
+        if category:
+            for cond in ['within', 'across']:
+                figures.plot_fit(
+                    full,
+                    'source',
+                    f'use_rank_shifted_{cond}',
+                    fr.distance_rank_shifted,
+                    {
+                        'index_key': 'item_index', 
+                        'distances': distances, 
+                        'max_shift': 3,
+                        'test_key': 'category',
+                        'test': test[cond],
+                    },
+                    'rank',
+                    'shift',
+                    figures.plot_distance_rank_shifted,
+                    {},
+                    fig_dir,
+                    **kwargs,
+                )
     
     # SPC
     figures.plot_fit(
@@ -526,6 +547,8 @@ def plot_fit(
             curves.extend(['use_crp_within', 'use_crp_across'])
             points['use_rank'].extend(['use_rank_within', 'use_rank_across'])
         curves.append('use_rank_shifted')
+        if category:
+            curves.extend(['use_rank_shifted_within', 'use_rank_shifted_across'])
     grids = curves.copy() + ['parameters']
     if snapshot:
         snapshots = [f'sub-{subj}' for subj in subj_param.keys()]
