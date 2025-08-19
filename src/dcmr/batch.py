@@ -280,3 +280,16 @@ def plan_plot_fit(study, fit, models, **kwargs):
     """Print command lines for plotting fit for multiple models."""
     for model in models.split(","):
         command_plot_fit(study, fit, model, **kwargs)
+
+
+@click.command()
+@click.argument("study")
+@click.argument("fit")
+@click.argument("model_name")
+@click.argument("flags")
+def plan_compose_fit(study, fit, model_name, flags):
+    study_dir, data_file, patterns_file = framework.get_study_paths(study)
+    fit_dir = study_dir / fit / model_name
+
+    if study == 'cfr':
+        print(f'dcmr-fit-cfr-disrupt {data_file} {patterns_file} {fit_dir} {flags}')
