@@ -192,6 +192,20 @@ def model_options(f):
     return wrapper
 
 
+def compose_options(f):
+    """Set options for model composition."""
+    @click.option("--semantics", default='context')
+    @click.option("--disruption", multiple=True)
+    @click.option("--intercept/--no-intercept", default=False)
+    @click.option("--list-context/--no-list-context", default=False)
+    @click.option("--block-context/--no-block-context", default=False)
+    @click.option("--free-t/--no-free-t", default=False)
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return wrapper
+
+
 def fit_options(f):
     @click.option(
         "--n-reps",
@@ -362,12 +376,7 @@ def fit_cmr(
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("res_dir", type=click.Path())
-@click.option("--semantics", default='context')
-@click.option("--disruption", multiple=True)
-@click.option("--intercept/--no-intercept", default=False)
-@click.option("--list-context/--no-list-context", default=False)
-@click.option("--block-context/--no-block-context", default=False)
-@click.option("--free-t/--no-free-t", default=False)
+@compose_options
 @fit_options
 @sim_options
 @filter_options
