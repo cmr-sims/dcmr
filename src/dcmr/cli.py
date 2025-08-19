@@ -363,7 +363,7 @@ def fit_cmr(
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("res_dir", type=click.Path())
 @click.option("--semantics", default='context')
-@click.option("--disruption/--no-disruption", default=False)
+@click.option("--disruption", multiple=True)
 @click.option("--intercept/--no-intercept", default=False)
 @click.option("--list-context/--no-list-context", default=False)
 @click.option("--block-context/--no-block-context", default=False)
@@ -388,6 +388,8 @@ def fit_cmr_cfr_disrupt(
     n_sim_reps=1,
     include=None,
 ):
+    if not disruption:
+        disruption = None
     os.makedirs(res_dir, exist_ok=True)
     log_file = os.path.join(res_dir, 'log_fit.txt')
     logging.basicConfig(
