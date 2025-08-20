@@ -748,8 +748,7 @@ def compose_model_variant(
     cuing,
     disruption,
     intercept,
-    list_context,
-    block_context,
+    special_sublayers,
     free_T,
     **kwargs,
 ):
@@ -805,14 +804,7 @@ def compose_model_variant(
     else:
         block_disrupt_sublayers = None
         distraction = False
-    
-    # special sublayers
-    special_sublayers = []
-    if list_context:
-        special_sublayers.append('list')
-    if block_context:
-        special_sublayers.append('block')
-    
+
     param_def = model_variant(
         fcf_features, 
         ff_features, 
