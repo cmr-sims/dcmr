@@ -198,8 +198,8 @@ def compose_options(f):
     @click.option("--cuing", default="integrative")
     @click.option("--intercept/--no-intercept", default=False)
     @click.option("--free-t/--no-free-t", default=False)
-    @click.option("--disrupt-sublayers", multiple=True)
-    @click.option("--special-sublayers", multiple=True)
+    @click.option("-x", "--disrupt-sublayers", multiple=True)
+    @click.option("-y", "--special-sublayers", multiple=True)
     
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
