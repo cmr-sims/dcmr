@@ -767,7 +767,8 @@ def compose_model_variant(
     cuing : str
         Form of semantic cuing. May be 'integrative' (semantic context
         cues evolve during recall) or 'focused' (semantic context cues
-        update completely after each recall).
+        update completely after each recall). Only applies to models
+        with semantic context (semantics is 'context' or 'split').
     
     intercept : bool
         If True, an intercept term will be added to Mff to adjust the
