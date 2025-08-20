@@ -745,6 +745,7 @@ def model_variant(
 
 def compose_model_variant(
     semantics,
+    cuing,
     disruption,
     intercept,
     list_context,
@@ -760,7 +761,6 @@ def compose_model_variant(
     # base
     sublayers = True
     scaling = True
-    focused = True
     free_param = {}
     sublayer_param = []
     fixed_param = {}
@@ -787,7 +787,7 @@ def compose_model_variant(
 
     if semantics in ['context', 'split']:
         sublayer_param.extend(['B_enc', 'B_rec', 'Lfc', 'Lcf'])
-        if focused:
+        if cuing == 'focused':
             fixed_param.update({'B_rec_cat': 1, 'B_rec_use': 1})
 
     # disruption
