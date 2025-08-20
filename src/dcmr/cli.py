@@ -398,8 +398,6 @@ def fit_cmr_cfr_disrupt(
     n_sim_reps=1,
     include=None,
 ):
-    if not disruption:
-        disruption = None
     os.makedirs(res_dir, exist_ok=True)
     log_file = os.path.join(res_dir, 'log_fit.txt')
     logging.basicConfig(
