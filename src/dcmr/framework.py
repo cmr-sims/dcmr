@@ -755,7 +755,42 @@ def compose_model_variant(
     """
     Construct a model from high-level options.
 
-    Use high-level options to set up a model variant.
+    Parameters
+    ----------
+    semantics : str
+        Form of semantic weights. May be 'context' (weights in context 
+        only, including full pre-experimental and experimental 
+        weights), 'item' (semantic weights in item-item associations 
+        only), or 'split' (pre-experimental and experimental weights,
+        but no readout or forward cuing).
+    
+    cuing : str
+        Form of semantic cuing. May be 'integrative' (semantic context
+        cues evolve during recall) or 'focused' (semantic context cues
+        update completely after each recall).
+    
+    intercept : bool
+        If True, an intercept term will be added to Mff to adjust the
+        overall item-item cue strength.
+    
+    free_T : bool
+        If True, T will be free to vary instead of fixed at 0.1.
+    
+    disrupt_sublayers : tuple of str, None
+        Sublayers that will be disrupted at the start of each block
+        after the first (based on block and block_pos columns in the 
+        data). Each sublayer will be assigned an independent free 
+        disruption parameter.
+    
+    special_sublayers : tuple of str, None
+        Special sublayers to include in the model. May include 'list'
+        (fixed context with a primacy gradient) and 'block' (block-
+        specific context with no primacy gradient).
+    
+    Returns
+    -------
+    param_def : WeightParameters
+        Parameter definition object specifying the model variant.
     """
     # base
     sublayers = True
