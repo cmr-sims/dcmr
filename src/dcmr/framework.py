@@ -862,6 +862,36 @@ def compose_model_variant(
     return param_def
 
 
+def compose_model_name(
+    semantics,
+    cuing,
+    intercept,
+    free_T,
+    disrupt_sublayers,
+    special_sublayers,
+):
+    """Generate a standard name for a composed model variant."""
+    res_name = 'cmrs'
+    if intercept:
+        res_name += 'i'
+    if free_T:
+        res_name += 't'
+    res_name += f'_sem-{semantics}'
+    if semantics in ['context', 'split']:
+        res_name += f'_cue-{cuing}'
+    if disrupt_sublayers is not None:
+        res_name += '_dis'
+        for sublayer in disrupt_sublayers:
+            res_name += f'-{sublayer}'
+    if special_sublayers is not None:
+        res_name += '_sub'
+        if 'list' in special_sublayers:
+            res_name += '-list'
+        if 'block' in special_sublayers:
+            res_name += '-block'
+    return res_name
+
+
 def get_study_paths(study):
     """Get relevant paths based on environment."""
     study_dir = os.environ['STUDYDIR']
