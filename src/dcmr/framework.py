@@ -777,6 +777,9 @@ def compose_model_variant(
         fcf_features = ['loc']
         ff_features = ['cat', 'use']
         exp_only_sublayers = None
+        if disrupt_sublayers is not None:
+            if 'cat' in disrupt_sublayers or 'use' in disrupt_sublayers:
+                raise ValueError('Cannot disrupt non-existent sublayer.')
     elif semantics == 'split':
         fcf_features = ['loc', 'cat', 'use']
         ff_features = ['cat', 'use']
