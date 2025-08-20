@@ -747,7 +747,7 @@ def compose_model_variant(
     semantics,
     cuing,
     intercept,
-    free_T,
+    free_t,
     disrupt_sublayers,
     special_sublayers,
     **kwargs,
@@ -774,7 +774,7 @@ def compose_model_variant(
         If True, an intercept term will be added to Mff to adjust the
         overall item-item cue strength.
     
-    free_T : bool
+    free_t : bool
         If True, T will be free to vary instead of fixed at 0.1.
     
     disrupt_sublayers : tuple of str, None
@@ -866,7 +866,7 @@ def compose_model_name(
     semantics,
     cuing,
     intercept,
-    free_T,
+    free_t,
     disrupt_sublayers,
     special_sublayers,
 ):
@@ -874,7 +874,7 @@ def compose_model_name(
     res_name = 'cmrs'
     if intercept:
         res_name += 'i'
-    if free_T:
+    if free_t:
         res_name += 't'
     res_name += f'_sem-{semantics}'
     if semantics in ['context', 'split']:
