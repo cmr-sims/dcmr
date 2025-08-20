@@ -844,6 +844,9 @@ def compose_model_variant(
         block_disrupt_sublayers = None
         distraction = False
 
+    if special_sublayers is not None and 'block' in special_sublayers:
+        distraction = True
+
     param_def = model_variant(
         fcf_features, 
         ff_features, 
