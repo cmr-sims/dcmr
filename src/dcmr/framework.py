@@ -551,6 +551,8 @@ def model_variant(
     wp = WeightParameters()
     wp.set_options(distraction=distraction)
     wp.set_fixed(T=0.1)
+    if distraction:
+        wp.set_fixed(B_distract=0, B_retention=0)
     eps = 0.000001
     wp.set_free(
         Lfc=(0, 1 - eps),
