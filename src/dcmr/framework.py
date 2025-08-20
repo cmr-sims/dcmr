@@ -746,10 +746,10 @@ def model_variant(
 def compose_model_variant(
     semantics,
     cuing,
-    disruption,
     intercept,
-    special_sublayers,
     free_T,
+    disrupt_sublayers,
+    special_sublayers,
     **kwargs,
 ):
     """
@@ -790,11 +790,11 @@ def compose_model_variant(
             fixed_param.update({'B_rec_cat': 1, 'B_rec_use': 1})
 
     # disruption
-    if disruption is not None:
+    if disrupt_sublayers is not None:
         sublayer_param.append('B_distract')
         block_disrupt_sublayers = []
         for sublayer in fcf_features:
-            if sublayer in disruption:
+            if sublayer in disrupt_sublayers:
                 block_disrupt_sublayers.append(sublayer)
                 free_param[f'B_disrupt_{sublayer}'] = (0, 1)
             else:
