@@ -397,7 +397,10 @@ class WeightParameters(CMRParameters):
         # global value of that parameter
         for par in param_names:
             for weight in self.sublayers['c']:
-                if par not in self.sublayer_param['c'][weight]:
+                if (
+                    weight not in self.sublayer_param['c']
+                    or par not in self.sublayer_param['c'][weight]
+                ):
                     self.set_sublayer_param('c', weight, {par: par})
         
     def set_block_disrupt_sublayers(self, sublayers):
