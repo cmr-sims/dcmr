@@ -879,11 +879,11 @@ def compose_model_name(
     res_name += f'_sem-{semantics}'
     if semantics in ['context', 'split']:
         res_name += f'_cue-{cuing}'
-    if disrupt_sublayers is not None:
+    if disrupt_sublayers is not None and disrupt_sublayers:
         res_name += '_dis'
         for sublayer in disrupt_sublayers:
             res_name += f'-{sublayer}'
-    if special_sublayers is not None:
+    if special_sublayers is not None and special_sublayers:
         res_name += '_sub'
         if 'list' in special_sublayers:
             res_name += '-list'
