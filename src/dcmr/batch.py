@@ -1,5 +1,6 @@
 """Utilities for running commands in batches."""
 
+import sys
 import numpy as np
 import click
 from dcmr import cli
@@ -285,11 +286,12 @@ def plan_plot_fit(study, fit, models, **kwargs):
 @click.command()
 @click.argument("study")
 @click.argument("fit")
-@click.argument("model_name")
-@click.argument("flags")
-def plan_compose_fit(study, fit, model_name, flags):
+@cli.compose_options
+def plan_compose_fit(study, fit, **kwargs):
     study_dir, data_file, patterns_file = framework.get_study_paths(study)
+    model_name = framework.compose_model_name(**kwargs)
     fit_dir = study_dir / study / 'fits' / fit / model_name
+    flags = ' '.join(sys.argv[3:])
 
     if study == 'cfr':
         print(f'dcmr-fit-cfr-disrupt {data_file} {patterns_file} {fit_dir} {flags}')
