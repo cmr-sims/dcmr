@@ -801,7 +801,7 @@ def compose_model_variant(
     fixed_param = {}
 
     # free T parameter
-    if free_T:
+    if free_t:
         free_param['T'] = (0, 1)
 
     # semantics
