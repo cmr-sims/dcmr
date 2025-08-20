@@ -195,11 +195,12 @@ def model_options(f):
 def compose_options(f):
     """Set options for model composition."""
     @click.option("--semantics", default='context')
-    @click.option("--disruption", multiple=True)
+    @click.option("--cuing", default="integrative")
     @click.option("--intercept/--no-intercept", default=False)
-    @click.option("--list-context/--no-list-context", default=False)
-    @click.option("--block-context/--no-block-context", default=False)
     @click.option("--free-t/--no-free-t", default=False)
+    @click.option("--disrupt_sublayers", multiple=True)
+    @click.option("--special_sublayers", multiple=True)
+    
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         return f(*args, **kwargs)
@@ -385,11 +386,11 @@ def fit_cmr_cfr_disrupt(
     patterns_file,
     res_dir,
     semantics,
-    disruption,
+    cuing,
     intercept,
-    list_context,
-    block_context,
     free_t,
+    disrupt_sublayers,
+    special_sublayers,
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
@@ -419,11 +420,11 @@ def fit_cmr_cfr_disrupt(
     # compose a model variant from high-level options
     param_def = framework.compose_model_variant(
         semantics,
-        disruption,
+        cuing,
         intercept,
-        list_context,
-        block_context,
         free_t,
+        disrupt_sublayers,
+        special_sublayers,
     )
 
     # fit parameters, simulate using fitted parameters, and save results
