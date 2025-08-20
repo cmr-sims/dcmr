@@ -829,7 +829,7 @@ def compose_model_variant(
             fixed_param.update({'B_rec_cat': 1, 'B_rec_use': 1})
 
     # disruption
-    if disrupt_sublayers is not None:
+    if disrupt_sublayers is not None and disrupt_sublayers:
         sublayer_param.append('B_distract')
         block_disrupt_sublayers = []
         for sublayer in fcf_features:
