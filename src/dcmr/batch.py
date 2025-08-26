@@ -287,9 +287,29 @@ def plan_plot_fit(study, fit, models, **kwargs):
 @click.argument("study")
 @click.argument("fit")
 @cli.compose_options
-def plan_compose_fit(study, fit, **kwargs):
+@cli.fit_options
+@cli.sim_options
+@cli.filter_options
+def plan_compose_fit(
+    study,
+    fit,
+    semantics,
+    cuing,
+    intercept,
+    free_t,
+    disrupt_sublayers,
+    special_sublayers,
+    **_,
+):
     study_dir, data_file, patterns_file = framework.get_study_paths(study)
-    model_name = framework.compose_model_name(**kwargs)
+    model_name = framework.compose_model_name(
+        semantics,
+        cuing,
+        intercept,
+        free_t,
+        disrupt_sublayers,
+        special_sublayers,
+    )
     fit_dir = study_dir / study / 'fits' / fit / model_name
     flags = ' '.join(sys.argv[3:])
 
