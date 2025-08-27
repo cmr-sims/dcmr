@@ -1,6 +1,7 @@
 """Utilities for running commands in batches."""
 
 import sys
+import itertools
 import numpy as np
 import click
 from dcmr import cli
@@ -315,3 +316,93 @@ def plan_compose_fit(
 
     if study == 'cfr':
         print(f'dcmr-fit-cfr-disrupt {data_file} {patterns_file} {fit_dir} {flags}')
+
+
+def keywords_to_options(**kwargs):
+    """Convert keyword arguments to command line options."""
+    options = []
+    for name, value in kwargs.items():
+        if value is not None:
+            name = name.replace('_', '-')
+            if isinstance(value, bool):
+                if value:
+                    opt = f"--{name}"
+                else:
+                    opt = f"--no-{name}"
+                options.append(opt)
+            elif isinstance(value, tuple):
+                for val in value:
+                    options.append(f"--{name}={val}")
+            else:
+                options.append(f"--{name}={value}")
+    return options
+
+
+@click.command()
+@click.argument("study")
+@click.argument("fit")
+@click.argument("factors")
+@click.argument("flags")
+@cli.compose_options
+def plan_compose_switchboard(
+    study,
+    fit,
+    factors,
+    flags,
+    semantics,
+    cuing,
+    intercept,
+    free_t,
+    disrupt_sublayers,
+    special_sublayers,
+):
+    """Print command lines for switchboard model evaluation."""
+    expansions = {
+        "sem": "semantics",
+        "cue": "cuing",
+        "dis": "disrupt_sublayers",
+        "sub": "special_sublayers",
+    }
+    factors = [expansions[f] if f in expansions else f for f in factors.split("-")]
+    d = {
+        "intercept": [True, False],
+        "free_t": [True, False],
+        "semantics": ["context", "split", "item"],
+        "cuing": ["integrative", "focused"],
+        "disrupt_sublayers": [None, ("loc",), ("cat",), ("loc", "cat")],
+        "special_sublayers": [None, ("list",), ("block",), ("list", "block")],
+    }
+    defaults = dict(
+        semantics=semantics,
+        cuing=cuing,
+        intercept=intercept,
+        free_t=free_t,
+        disrupt_sublayers=disrupt_sublayers,
+        special_sublayers=special_sublayers,
+    )
+    study_dir, data_file, patterns_file = framework.get_study_paths(study)
+
+    levels = [d[key] for key in factors]
+    product = itertools.product(*levels)
+    for combination in product:
+        # compose this variant with current levels and defaults
+        features = dict(zip(factors, combination))
+        all_features = defaults.copy()
+        all_features.update(features)
+
+        # screen out invalid variants
+        if (
+            all_features["semantics"] == "item"
+            and all_features["disrupt_sublayers"] is not None
+            and "cat" in all_features["disrupt_sublayers"]
+        ):
+            continue
+
+        # construct the standard model name and output directory
+        model_name = framework.compose_model_name(**all_features)
+        fit_dir = study_dir / study / 'fits' / fit / model_name
+
+        # print the command
+        options = " ".join(keywords_to_options(**all_features))
+        if study == 'cfr':
+            print(f'dcmr-fit-cfr-disrupt {data_file} {patterns_file} {fit_dir} {flags} {options}')
