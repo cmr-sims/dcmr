@@ -377,6 +377,7 @@ def fit_cmr(
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("res_dir", type=click.Path())
+@click.option("--overwrite/--no-overwrite", default=False)
 @compose_options
 @fit_options
 @sim_options
@@ -385,6 +386,7 @@ def fit_cmr_cfr_disrupt(
     data_file,
     patterns_file,
     res_dir,
+    overwrite,
     semantics,
     cuing,
     intercept,
@@ -427,35 +429,39 @@ def fit_cmr_cfr_disrupt(
 
     # fit parameters, simulate using fitted parameters, and save results
     study_keys = ['block', 'block_pos']
-    framework.run_fit(
-        res_dir, 
-        data, 
-        param_def, 
-        patterns, 
-        n_jobs, 
-        n_reps, 
-        tol, 
-        init,
-        n_sim_reps, 
-        study_keys,
-    )
+    sim_file = os.path.join(res_dir, 'sim.csv')
+    if overwrite or not os.path.exists(sim_file):
+        framework.run_fit(
+            res_dir,
+            data,
+            param_def,
+            patterns,
+            n_jobs,
+            n_reps,
+            tol,
+            init,
+            n_sim_reps,
+            study_keys,
+        )
 
     # evaluate using cross-validation
     n_folds = None
     fold_key = "session"
-    framework.run_xval(
-        res_dir, 
-        data, 
-        param_def, 
-        patterns, 
-        n_folds, 
-        fold_key, 
-        n_reps, 
-        n_jobs, 
-        tol,
-        init,
-        study_keys,
-    )
+    xval_file = os.path.join(res_dir, 'xval.csv')
+    if overwrite or not os.path.exists(xval_file):
+        framework.run_xval(
+            res_dir,
+            data,
+            param_def,
+            patterns,
+            n_folds,
+            fold_key,
+            n_reps,
+            n_jobs,
+            tol,
+            init,
+            study_keys,
+        )
 
 
 @click.command()
