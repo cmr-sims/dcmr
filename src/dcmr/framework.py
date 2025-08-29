@@ -1399,19 +1399,22 @@ def run_fit(
     sim.to_csv(sim_file, index=False)
 
     # make a report of the fit
-    reports.plot_fit(
-        data, 
-        sim, 
-        {},
-        subj_param,
-        param_def,
-        patterns, 
-        best.reset_index(),
-        res_dir, 
-        study_keys=study_keys, 
-        category=category,
-        similarity=similarity,
-    )
+    try:
+        reports.plot_fit(
+            data,
+            sim,
+            {},
+            subj_param,
+            param_def,
+            patterns,
+            best.reset_index(),
+            res_dir,
+            study_keys=study_keys,
+            category=category,
+            similarity=similarity,
+        )
+    except Exception as e:
+        logging.exception(f'Plotting fit failed with error: {e}')
     return best
 
 
