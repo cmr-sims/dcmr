@@ -404,7 +404,7 @@ def fit_cmr_cfr_disrupt(
     log_file = os.path.join(res_dir, 'log_fit.txt')
     logging.basicConfig(
         filename=log_file,
-        filemode='w',
+        filemode='a',
         level=logging.INFO,
         format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
     )
