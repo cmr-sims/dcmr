@@ -562,8 +562,8 @@ def model_variant(
         B_enc=(0, 1),
         B_start=(0, 1),
         B_rec=(0, 1),
-        X1=(0, 1),
-        X2=(0, 5),
+        X1=(0, 0.1),
+        X2=(0, 1),
     )
     wp.set_dependent(Dfc='1 - Lfc', Dcf='1 - Lcf')
 
