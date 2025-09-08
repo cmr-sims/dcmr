@@ -733,7 +733,7 @@ def model_variant(
     if ff_features:
         scaling_param = wp.set_scaling_param('similarity', ff_features, eps, 1 - eps)
         wp.set_item_weights(scaling_param, 'Dff', intercept_param)
-        wp.set_free(Dff=(0, 10))
+        wp.set_free(Dff=(0, 1))
     elif intercept_param is not None:
         intercept = intercept_param['ff']
         expr = f'{intercept} * ones(loc.shape)'
@@ -807,7 +807,7 @@ def compose_model_variant(
 
     # free T parameter
     if free_t:
-        free_param['T'] = (0, 1)
+        free_param['T'] = (0.01, 1)
 
     # semantics
     if semantics == 'context':
