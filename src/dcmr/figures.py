@@ -223,7 +223,7 @@ def plot_fit(
     m = stat_index.groupby(_groups).mean()
     comp = m.unstack(level=0).reset_index()
     for var in check_var:
-        if comp[var].dtype == 'int64[pyarrow]':
+        if 'int' in comp[var].dtype and '[pyarrow]' in comp[var].dtype:
             comp[var] = comp[var].astype(int)
     g = sns.relplot(
         kind='scatter',
