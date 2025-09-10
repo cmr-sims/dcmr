@@ -1642,3 +1642,12 @@ def run_xval(
     search_file = os.path.join(res_dir, f'xval_search.csv')
     logging.info(f'Saving full search results to {search_file}.')
     search.to_csv(search_file)
+
+    # delete checkpoint files
+    for fold in folds:
+        search_file = os.path.join(res_dir, f'xval_search_fold-{fold}.csv')
+        fold_file = os.path.join(res_dir, f'xval_fold-{fold}.csv')
+        if os.path.exists(search_file):
+            os.remove(search_file)
+        if os.path.exists(fold_file):
+            os.remove(fold_file)
