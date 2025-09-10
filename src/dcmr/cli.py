@@ -801,6 +801,7 @@ def fit_cmr_incidental(
 @fit_options
 @filter_options
 @data_options
+@click.option("--overwrite/--no-overwrite", default=False)
 def xval_cmr(
     data_file,
     patterns_file,
@@ -823,6 +824,7 @@ def xval_cmr(
     include,
     study_keys,
     recall_keys,
+    overwrite,
 ):
     """
     Evaluate a model using cross-validation.
@@ -871,6 +873,7 @@ def xval_cmr(
         init,
         study_keys,
         recall_keys,
+        overwrite,
     )
 
 

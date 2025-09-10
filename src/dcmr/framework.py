@@ -1418,6 +1418,71 @@ def run_fit(
     return best
 
 
+def run_fold(
+    data,
+    fold_key,
+    fold,
+    list_fold,
+    model,
+    param_def,
+    patterns,
+    study_keys,
+    recall_keys,
+    **search_kwargs,
+):
+    # fit the training dataset
+    if fold_key is not None:
+        train_data = data[data[fold_key] != fold]
+    else:
+        train_data = (
+            data.groupby('subject')
+            .apply(apply_list_mask, list_fold != fold)
+            .droplevel('subject')
+        )
+    results = model.fit_indiv(
+        train_data,
+        param_def,
+        patterns=patterns,
+        study_keys=study_keys,
+        recall_keys=recall_keys,
+        **search_kwargs,
+    )
+
+    # evaluate on left-out fold
+    best = fit.get_best_results(results)
+    subj_param = best.T.to_dict()
+    if fold_key is not None:
+        test_data = data[data[fold_key] == fold]
+    else:
+        test_data = (
+            data.groupby('subject')
+            .apply(apply_list_mask, list_fold == fold)
+            .droplevel('subject')
+        )
+    stats = model.likelihood(
+        test_data,
+        {},
+        subj_param,
+        param_def,
+        patterns=patterns,
+        study_keys=study_keys,
+        recall_keys=recall_keys,
+    )
+    xval = best.copy()
+    xval['logl_train'] = xval['logl']
+    xval['logl_test'] = stats['logl']
+    xval['n_train'] = xval['n']
+    xval['n_test'] = stats['n']
+    m_train = train_data.groupby('subject')['list'].nunique()
+    m_test = test_data.groupby('subject')['list'].nunique()
+    xval['logl_train_list'] = xval['logl_train'] / m_train
+    xval['logl_test_list'] = xval['logl_test'] / m_test
+    xval['m_train'] = m_train
+    xval['m_test'] = m_test
+    xval.drop(columns=['logl', 'n'], inplace=True)
+    return results, xval
+
+
 def run_xval(
     res_dir,
     data,
@@ -1431,6 +1496,7 @@ def run_xval(
     init='latinhypercube',
     study_keys=None,
     recall_keys=None,
+    overwrite=False,
 ):
     """
     Evaluate a model using cross-validation.
@@ -1485,6 +1551,9 @@ def run_xval(
     recall_keys : list of str
         Columns of data to include in the recall data during 
         simulations.
+
+    overwrite : bool
+        If true, overwrite existing fold results.
     """
     if study_keys is not None:
         study_keys = list(study_keys)
@@ -1509,6 +1578,7 @@ def run_xval(
         if len(n_folds_all.unique()) != 1:
             raise ValueError('All subjects must have same number of folds.')
         folds = data[fold_key].unique()
+        list_fold = None
         logging.info(f'Running {len(folds)} cross-validation folds over {fold_key} for {n} participants.')
     else:
         # interleave folds over lists
@@ -1528,61 +1598,35 @@ def run_xval(
     search_list = []
     model = cmr.CMR()
     for fold in folds:
-        # fit the training dataset
-        if fold_key is not None:
-            train_data = data[data[fold_key] != fold]
+        search_file = os.path.join(res_dir, f'xval_search_fold-{fold}.csv')
+        fold_file = os.path.join(res_dir, f'xval_fold-{fold}.csv')
+        if os.path.exists(fold_file) and os.path.exists(search_file) and not overwrite:
+            logging.info(f'Loading cross-validation fold search from {search_file}.')
+            results = pd.read_csv(search_file).set_index(['subject', 'rep'])
+            logging.info(f'Loading cross-validation fold results from {fold_file}.')
+            xval = pd.read_csv(fold_file).set_index('subject')
         else:
-            train_data = (
-                data.groupby('subject')
-                .apply(apply_list_mask, list_fold != fold)
-                .droplevel('subject')
+            logging.info(f'Running cross-validation fold {fold}.')
+            results, xval = run_fold(
+                data,
+                fold_key,
+                fold,
+                list_fold,
+                model,
+                param_def,
+                patterns,
+                study_keys,
+                recall_keys,
+                n_jobs=n_jobs,
+                method=method,
+                n_rep=n_reps,
+                tol=tol,
+                init=init,
             )
-        results = model.fit_indiv(
-            train_data,
-            param_def,
-            patterns=patterns,
-            n_jobs=n_jobs,
-            method=method,
-            n_rep=n_reps,
-            tol=tol,
-            init=init,
-            study_keys=study_keys,
-            recall_keys=recall_keys,
-        )
-        search_list.append(results)
+            results.to_csv(search_file)
+            xval.to_csv(fold_file)
 
-        # evaluate on left-out fold
-        best = fit.get_best_results(results)
-        subj_param = best.T.to_dict()
-        if fold_key is not None:
-            test_data = data[data[fold_key] == fold]
-        else:
-            test_data = (
-                data.groupby('subject')
-                .apply(apply_list_mask, list_fold == fold)
-                .droplevel('subject')
-            )
-        stats = model.likelihood(
-            test_data, 
-            {}, 
-            subj_param, 
-            param_def, 
-            patterns=patterns, 
-            study_keys=study_keys, 
-            recall_keys=recall_keys,
-        )
-        xval = best.copy()
-        xval['logl_train'] = xval['logl']
-        xval['logl_test'] = stats['logl']
-        xval['n_train'] = xval['n']
-        xval['n_test'] = stats['n']
-        m_train = train_data.groupby('subject')['list'].nunique()
-        m_test = test_data.groupby('subject')['list'].nunique()
-        xval['logl_train_list'] = xval['logl_train'] / m_train
-        xval['logl_test_list'] = xval['logl_test'] / m_test
-        xval['m_train'] = m_train
-        xval['m_test'] = m_test
-        xval.drop(columns=['logl', 'n'], inplace=True)
+        search_list.append(results)
         xval_list.append(xval)
 
     # cross-validation summary
