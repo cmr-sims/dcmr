@@ -461,6 +461,7 @@ def fit_cmr_cfr_disrupt(
             tol,
             init,
             study_keys,
+            overwrite=overwrite,
         )
 
 
