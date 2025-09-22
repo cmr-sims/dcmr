@@ -469,6 +469,8 @@ def fit_cmr_cfr_disrupt(
 @click.argument("data_file", type=click.Path(exists=True))
 @click.argument("patterns_file", type=click.Path(exists=True))
 @click.argument("res_dir", type=click.Path())
+@click.option("--overwrite/--no-overwrite", default=False)
+@compose_options
 @fit_options
 @sim_options
 @filter_options
@@ -476,6 +478,13 @@ def fit_cmr_cdcatfr2(
     data_file,
     patterns_file,
     res_dir,
+    overwrite,
+    semantics,
+    cuing,
+    intercept,
+    free_t,
+    disrupt_sublayers,
+    special_sublayers,
     n_reps=1,
     n_jobs=1,
     tol=0.00001,
@@ -500,14 +509,16 @@ def fit_cmr_cdcatfr2(
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
 
-    param_def = framework.model_variant(
-        ['loc', 'cat', 'use'], 
-        sublayers=True,
+    # compose a model variant from high-level options
+    param_def = framework.compose_model_variant(
+        semantics,
+        cuing,
+        intercept,
+        free_t,
+        disrupt_sublayers,
+        special_sublayers,
         free_param={
-            'T': (0, 1),
-            'B_enc': (0, 1),
-            'B_distract_raw': (0, 0.4), 
-            'B_disrupt': (0, 1),
+            'B_distract_raw': (0, 0.4),
             'X10': (0, 1),
             'X11': (0, 1),
             'X12': (0, 1),
@@ -515,17 +526,10 @@ def fit_cmr_cdcatfr2(
             'X21': (0, 1),
             'X22': (0, 1),
         },
-        sublayer_param=[
-            'B_enc', 
-            'B_rec', 
-            'Lfc', 
-            'Lcf', 
-            'B_distract', 
-            'B_retention', 
-            'B_distract_raw', 
+        sublayer_param={
+            'B_distract_raw',
             'B_retention_raw',
-        ],
-        fixed_param={'B_rec_cat': 1, 'B_rec_use': 1},
+        },
         dependent_param={
             'B_retention_raw_loc': 'B_distract_raw_loc',
             'B_retention_raw_cat': 'B_distract_raw_cat',
@@ -545,31 +549,29 @@ def fit_cmr_cdcatfr2(
                 'B_distract_cat': 'clip(B_distract_raw_cat * distractor + where((block != 1) & (block_pos == 1), B_disrupt, 0), 0, 1)',
             }
         },
-        intercept=False,
-        distraction=True,
-        special_sublayers=['list'],
     )
-    del param_def.fixed['T']
     del param_def.free['X1']
     del param_def.free['X2']
-    param_def.set_free(w0=(0, 2))
-    param_def.set_dependent(wr_cat="2 - w0")
 
     # fit parameters, simulate using fitted parameters, and save results
     study_keys = ['distractor', 'block', 'block_pos']
-    fit = framework.run_fit(
-        res_dir, 
-        data, 
-        param_def, 
-        patterns, 
-        n_jobs, 
-        n_reps, 
-        tol, 
-        init,
-        n_sim_reps, 
-        study_keys,
-    )
-    subj_param = best.T.to_dict()
+    sim_file = os.path.join(res_dir, 'sim.csv')
+    if overwrite or not os.path.exists(sim_file):
+        best = framework.run_fit(
+            res_dir,
+            data,
+            param_def,
+            patterns,
+            n_jobs,
+            n_reps,
+            tol,
+            init,
+            n_sim_reps,
+            study_keys,
+        )
+        subj_param = best.T.to_dict()
+    else:
+        subj_param = framework.read_fit_param(os.path.join(res_dir, 'fit.csv'))
 
     # plot results by condition
     sim = pd.read_csv(os.path.join(res_dir, 'sim.csv'))
@@ -577,39 +579,43 @@ def fit_cmr_cdcatfr2(
     for distract in distract_list:
         report_name = f'distract{distract}'
         data_filter = f'distractor == {distract}'
-        reports.plot_fit(
-            data, 
-            sim, 
-            {},
-            subj_param,
-            param_def,
-            patterns, 
-            fit,
-            res_dir, 
-            report_name=report_name, 
-            ext='svg', 
-            study_keys=study_keys,
-            category=True,
-            similarity=True,
-            data_filter=data_filter,
-        )
+        try:
+            reports.plot_fit(
+                data,
+                sim,
+                {},
+                subj_param,
+                param_def,
+                patterns,
+                os.path.join(res_dir, report_name),
+                ext='svg',
+                study_keys=study_keys,
+                category=True,
+                similarity=True,
+                data_filter=data_filter,
+            )
+        except Exception as e:
+            logging.exception(f'Plotting fit failed with error: {e}')
 
     # evaluate using cross-validation
     n_folds = None
     fold_key = "session"
-    framework.run_xval(
-        res_dir, 
-        data, 
-        param_def, 
-        patterns, 
-        n_folds, 
-        fold_key, 
-        n_reps, 
-        n_jobs, 
-        tol,
-        init,
-        study_keys,
-    )
+    xval_file = os.path.join(res_dir, 'xval.csv')
+    if overwrite or not os.path.exists(xval_file):
+        framework.run_xval(
+            res_dir,
+            data,
+            param_def,
+            patterns,
+            n_folds,
+            fold_key,
+            n_reps,
+            n_jobs,
+            tol,
+            init,
+            study_keys,
+            overwrite=overwrite,
+        )
 
 
 @click.command()
