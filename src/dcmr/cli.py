@@ -527,6 +527,8 @@ def fit_cmr_cdcatfr2(
             'X22': (0, 1),
         },
         sublayer_param=[
+            'B_distract',
+            'B_retention',
             'B_distract_raw',
             'B_retention_raw',
         ],
