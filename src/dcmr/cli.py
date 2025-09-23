@@ -545,13 +545,15 @@ def fit_cmr_cdcatfr2(
                 'X1': 'where(distractor == 0, X10, where(distractor == 2.5, X11, X12))',
                 'X2': 'where(distractor == 0, X20, where(distractor == 2.5, X21, X22))',
             },
-            ('study', 'trial'): {
-                'B_distract_cat': 'clip(B_distract_raw_cat * distractor + where((block != 1) & (block_pos == 1), B_disrupt, 0), 0, 1)',
-            }
         },
     )
     del param_def.free['X1']
     del param_def.free['X2']
+    param_def.set_dynamic(
+        'study',
+        'trial',
+        B_distract_cat='clip(B_distract_raw_cat * distractor + where((block != 1) & (block_pos == 1), B_disrupt_cat, 0), 0, 1)',
+    )
 
     # fit parameters, simulate using fitted parameters, and save results
     study_keys = ['distractor', 'block', 'block_pos']
