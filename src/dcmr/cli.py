@@ -538,6 +538,7 @@ def fit_cmr_cdcatfr2(
         dynamic_param={
             ('study', 'list'): {
                 'B_distract_loc': 'clip(B_distract_raw_loc * distractor, 0, 1)',
+                'B_distract_cat': 'clip(B_distract_raw_cat * distractor, 0, 1)',
                 'B_distract_use': 'clip(B_distract_raw_use * distractor, 0, 1)',
                 'B_retention_loc': 'clip(B_retention_raw_loc * distractor, 0, 1)',
                 'B_retention_cat': 'clip(B_retention_raw_cat * distractor, 0, 1)',
@@ -549,11 +550,18 @@ def fit_cmr_cdcatfr2(
     )
     del param_def.free['X1']
     del param_def.free['X2']
-    param_def.set_dynamic(
-        'study',
-        'trial',
-        B_distract_cat='clip(B_distract_raw_cat * distractor + where((block != 1) & (block_pos == 1), B_disrupt_cat, 0), 0, 1)',
-    )
+    if disrupt_sublayers is not None:
+        for sublayer in disrupt_sublayers:
+            # fix disruption sublayers to also account for distraction
+            par_distract = f'B_distract_{sublayer}'
+            par_distract_raw = f'B_distract_raw_{sublayer}'
+            par_disrupt = f'B_disrupt_{sublayer}'
+            expr = f'clip({par_distract_raw} * distractor + where((block != 1) & (block_pos == 1), {par_disrupt}, 0), 0, 1)'
+            param_def.set_dynamic(
+                'study',
+                'trial',
+                {par_distract: expr}
+            )
 
     # fit parameters, simulate using fitted parameters, and save results
     study_keys = ['distractor', 'block', 'block_pos']
