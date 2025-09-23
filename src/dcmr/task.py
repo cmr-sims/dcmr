@@ -821,13 +821,30 @@ def prepare_cdcatfr2(data_file, patterns_file, out_data_file):
     raw = pl.read_csv(data_file, null_values="NaN")
     patterns = cmr.load_patterns(patterns_file)
     categories = {"0": "cel", "1": "loc", "2": "obj"}
+    session1 = pl.col("list").is_between(1, 18, "both")
+    session2 = pl.col("list").is_between(19, 36, "both")
+    session3 = pl.col("list").is_between(37, 54, "both")
     data = raw.with_columns(
+        pl.when(session1).then(1).when(session2).then(2).when(session3).then(3).alias("session"),
         pl.col("item").str.strip_chars(),
         pl.col("category").cast(pl.String).replace(categories),
         pl.col("distractor") / 1000,
     )
     data = data.with_columns(
         item_index=pl.Series(fr.pool_index(data['item'].to_pandas(), patterns['items'])),
+    )
+    data = data.select(
+        [
+            "subject",
+            "session",
+            "list",
+            "trial_type",
+            "position",
+            "item",
+            "category",
+            "distractor",
+            "item_index",
+        ]
     )
     data.write_csv(out_data_file)
 
