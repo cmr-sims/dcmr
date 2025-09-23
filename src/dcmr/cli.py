@@ -526,10 +526,10 @@ def fit_cmr_cdcatfr2(
             'X21': (0, 1),
             'X22': (0, 1),
         },
-        sublayer_param={
+        sublayer_param=[
             'B_distract_raw',
             'B_retention_raw',
-        },
+        ],
         dependent_param={
             'B_retention_raw_loc': 'B_distract_raw_loc',
             'B_retention_raw_cat': 'B_distract_raw_cat',
