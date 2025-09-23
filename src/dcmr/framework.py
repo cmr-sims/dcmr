@@ -954,11 +954,15 @@ def get_study_paths(study):
 
     data_file = study_dir / study / f'{study}_data.csv'
     if not data_file.exists():
-        raise IOError(f'Data file does not exist: {data_file}')
+        data_file = study_dir / study / f'data.csv'
+        if not data_file.exists():
+            raise IOError(f'Data file does not exist: {data_file}')
 
     patterns_file = study_dir / study / f'{study}_patterns.hdf5'
     if not patterns_file.exists():
-        raise IOError(f'Patterns file does not exist: {patterns_file}')
+        patterns_file = study_dir / study / f'patterns.hdf5'
+        if not patterns_file.exists():
+            raise IOError(f'Patterns file does not exist: {patterns_file}')
 
     return study_dir, data_file, patterns_file
 
