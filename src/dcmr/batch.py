@@ -316,7 +316,8 @@ def plan_compose_fit(
 
     if study == 'cfr':
         print(f'dcmr-fit-cfr-disrupt {data_file} {patterns_file} {fit_dir} {flags}')
-
+    elif study == 'cdcatfr2':
+        print(f'dcmr-fit-cdcatfr2 {data_file} {patterns_file} {fit_dir} {flags}')
 
 def keywords_to_options(**kwargs):
     """Convert keyword arguments to command line options."""
@@ -406,3 +407,5 @@ def plan_compose_switchboard(
         options = " ".join(keywords_to_options(**all_features))
         if study == 'cfr':
             print(f'dcmr-fit-cfr-disrupt {data_file} {patterns_file} {fit_dir} {flags} {options}')
+        elif study == 'cdcatfr2':
+            print(f'dcmr-fit-cdcatfr2 {data_file} {patterns_file} {fit_dir} {flags} {options}')
