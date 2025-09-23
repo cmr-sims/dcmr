@@ -569,7 +569,7 @@ def fit_cmr_cdcatfr2(
     study_keys = ['distractor', 'block', 'block_pos']
     sim_file = os.path.join(res_dir, 'sim.csv')
     if overwrite or not os.path.exists(sim_file):
-        best = framework.run_fit(
+        framework.run_fit(
             res_dir,
             data,
             param_def,
@@ -581,15 +581,15 @@ def fit_cmr_cdcatfr2(
             n_sim_reps,
             study_keys,
         )
-        subj_param = best.T.to_dict()
-    else:
-        subj_param = framework.read_fit_param(os.path.join(res_dir, 'fit.csv'))
+    fit_file = os.path.join(res_dir, 'fit.csv')
+    fit = pd.read_csv(fit_file)
+    subj_param = framework.read_fit_param(fit_file)
 
     # plot results by condition
     sim = task.read_study_recall(sim_file)
     distract_list = [0.0, 2.5, 7.5]
     for distract in distract_list:
-        report_name = f'distract{distract}'
+        report_dir = os.path.join(res_dir, f'distract{distract}')
         data_filter = f'distractor == {distract}'
         try:
             reports.plot_fit(
@@ -599,7 +599,8 @@ def fit_cmr_cdcatfr2(
                 subj_param,
                 param_def,
                 patterns,
-                os.path.join(res_dir, report_name),
+                fit,
+                report_dir,
                 ext='svg',
                 study_keys=study_keys,
                 category=True,
