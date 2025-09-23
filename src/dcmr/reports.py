@@ -556,7 +556,10 @@ def plot_fit(
         snapshots = None
     wd = os.getcwd()
     os.chdir(report_dir)
-    render_fit_html(fit, '.', curves, points, grids, snapshots)
+    try:
+        render_fit_html(fit, '.', curves, points, grids, snapshots)
+    except Exception as e:
+        print(f'Problem rendering report: {e}')
     os.chdir(wd)
 
 
