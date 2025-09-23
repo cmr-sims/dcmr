@@ -755,7 +755,11 @@ def compose_model_variant(
     free_t,
     disrupt_sublayers,
     special_sublayers,
-    **kwargs,
+    sublayer_param=None,
+    fixed_param=None,
+    free_param=None,
+    dependent_param=None,
+    dynamic_param=None,
 ):
     """
     Construct a model from high-level options.
@@ -792,6 +796,36 @@ def compose_model_variant(
         Special sublayers to include in the model. May include 'list'
         (fixed context with a primacy gradient) and 'block' (block-
         specific context with no primacy gradient).
+
+    sublayer_param : list of str
+        Names of parameters that will vary by sublayer. If Lfc and/or
+        Lcf are included, the dependent Dfc and Dcf parameters will
+        also be adjusted; for example, Lfc might be split into Lfc_loc
+        and Lfc_cat, Dfc_loc will be defined as 1 - Lfc_loc, and
+        Dcf_loc will be defined as 1 - Lcf_loc.
+
+    fixed_param : dict of (str: float)
+        Parameters to set to a specified fixed value. Any free
+        parameters of the same name will be removed from the free
+        parameter list.
+
+    free_param : dict of (str: (float, float))
+        Parameters to set as free parameters, with the corresponding
+        range of allowed values. Any fixed parameters of the same name
+        will be removed from the fixed parameter list.
+
+    dependent_param : dict of (str: str)
+        Parameters to set as dependent on other parameters, with an
+        expression defining how they should be evaluated. Expressions
+        may call NumPy functions.
+
+    dynamic_param : dict of ((str, str): str)
+        Parameters to set as dynamic values that depend on variables in
+        the data. Parameters are listed by trial type ("study" or
+        "recall") and scope ("trial" or "list"), with each dictionary
+        key being a (trial_type, scope) tuple. Values indicate
+        expressions to define the dynamic parameter, which may
+        reference other parameters, data columns, and NumPy functions.
     
     Returns
     -------
@@ -801,9 +835,16 @@ def compose_model_variant(
     # base
     sublayers = True
     scaling = True
-    free_param = {}
-    sublayer_param = []
-    fixed_param = {}
+    if free_param is None:
+        free_param = {}
+    if sublayer_param is None:
+        sublayer_param = []
+    if fixed_param is None:
+        fixed_param = {}
+    if dependent_param is None:
+        dependent_param = {}
+    if dynamic_param is None:
+        dynamic_param = {}
 
     # free T parameter
     if free_t:
@@ -865,7 +906,8 @@ def compose_model_variant(
         special_sublayers,
         fixed_param,
         free_param,
-        **kwargs,
+        dependent_param,
+        dynamic_param,
     )
     return param_def
 
