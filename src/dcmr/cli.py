@@ -586,7 +586,7 @@ def fit_cmr_cdcatfr2(
         subj_param = framework.read_fit_param(os.path.join(res_dir, 'fit.csv'))
 
     # plot results by condition
-    sim = pd.read_csv(os.path.join(res_dir, 'sim.csv'))
+    sim = task.read_study_recall(sim_file)
     distract_list = [0.0, 2.5, 7.5]
     for distract in distract_list:
         report_name = f'distract{distract}'
