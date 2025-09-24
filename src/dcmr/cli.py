@@ -535,17 +535,11 @@ def fit_cmr_cdcatfr2(
         ],
         dependent_param={
             'B_retention_raw_loc': 'B_distract_raw_loc',
-            'B_retention_raw_cat': 'B_distract_raw_cat',
-            'B_retention_raw_use': 'B_distract_raw_use',
         },
         dynamic_param={
             ('study', 'list'): {
                 'B_distract_loc': 'clip(B_distract_raw_loc * distractor, 0, 1)',
-                'B_distract_cat': 'clip(B_distract_raw_cat * distractor, 0, 1)',
-                'B_distract_use': 'clip(B_distract_raw_use * distractor, 0, 1)',
                 'B_retention_loc': 'clip(B_retention_raw_loc * distractor, 0, 1)',
-                'B_retention_cat': 'clip(B_retention_raw_cat * distractor, 0, 1)',
-                'B_retention_use': 'clip(B_retention_raw_use * distractor, 0, 1)',
                 'X1': 'where(distractor == 0, X10, where(distractor == 2.5, X11, X12))',
                 'X2': 'where(distractor == 0, X20, where(distractor == 2.5, X21, X22))',
             },
@@ -553,6 +547,23 @@ def fit_cmr_cdcatfr2(
     )
     del param_def.free['X1']
     del param_def.free['X2']
+    if semantics != 'item':
+        param_def.set_dependent(
+            {
+                'B_retention_raw_cat': 'B_distract_raw_cat',
+                'B_retention_raw_use': 'B_distract_raw_use',
+            }
+        )
+        param_def.set_dynamic(
+            'study',
+            'list',
+            {
+                'B_distract_cat': 'clip(B_distract_raw_cat * distractor, 0, 1)',
+                'B_distract_use': 'clip(B_distract_raw_use * distractor, 0, 1)',
+                'B_retention_cat': 'clip(B_retention_raw_cat * distractor, 0, 1)',
+                'B_retention_use': 'clip(B_retention_raw_use * distractor, 0, 1)',
+            }
+        )
     if disrupt_sublayers is not None:
         for sublayer in disrupt_sublayers:
             # fix disruption sublayers to also account for distraction
