@@ -517,6 +517,7 @@ def fit_cmr_cdcatfr2(
         free_t,
         disrupt_sublayers,
         special_sublayers,
+        distraction=True,
         free_param={
             'B_distract_raw': (0, 0.4),
             'X10': (0, 1),
