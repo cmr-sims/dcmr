@@ -693,6 +693,7 @@ def model_variant(
                     'B_rec': 'B_rec_block',  # context evolution at recall updates current block
                     'B_start': 0,  # no start list reinstatement at recall start
                     'B_distract': 'B_distract_block',  # distraction at start of block
+                    'B_retention': 0,  # no distraction before recall
                 }
 
                 if not distraction:
