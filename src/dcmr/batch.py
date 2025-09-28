@@ -373,6 +373,9 @@ def plan_compose_switchboard(
         "disrupt_sublayers": [None, ("loc",), ("cat",), ("loc", "cat")],
         "special_sublayers": [None, ("list",), ("block",), ("list", "block")],
     }
+    if study == 'peers':
+        d["disrupt_sublayers"] = [None]
+        d["special_sublayers"] = [None, ("list",)]
     defaults = dict(
         semantics=semantics,
         cuing=cuing,
@@ -405,7 +408,7 @@ def plan_compose_switchboard(
 
         # print the command
         options = " ".join(keywords_to_options(**all_features))
-        if study == 'cfr':
+        if study in ['cfr', 'peers']:
             print(f'dcmr-fit-cfr-disrupt {data_file} {patterns_file} {fit_dir} {flags} {options}')
         elif study == 'cdcatfr2':
             print(f'dcmr-fit-cdcatfr2 {data_file} {patterns_file} {fit_dir} {flags} {options}')
