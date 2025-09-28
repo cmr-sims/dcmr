@@ -428,7 +428,10 @@ def fit_cmr_cfr_disrupt(
     )
 
     # fit parameters, simulate using fitted parameters, and save results
-    study_keys = ['block', 'block_pos']
+    if 'block' in data.columns:
+        study_keys = ['block', 'block_pos']
+    else:
+        study_keys = None
     sim_file = os.path.join(res_dir, 'sim.csv')
     if overwrite or not os.path.exists(sim_file):
         framework.run_fit(
