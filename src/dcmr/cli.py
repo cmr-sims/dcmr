@@ -579,8 +579,8 @@ def fit_cmr_cdcatfr2(
 
     # fit parameters, simulate using fitted parameters, and save results
     study_keys = ['distractor', 'block', 'block_pos']
-    sim_file = os.path.join(res_dir, 'sim.csv')
-    if overwrite or not os.path.exists(sim_file):
+    fit_file = os.path.join(res_dir, 'fit.csv')
+    if overwrite or not os.path.exists(fit_file):
         framework.run_fit(
             res_dir,
             data,
@@ -593,34 +593,64 @@ def fit_cmr_cdcatfr2(
             n_sim_reps,
             study_keys,
         )
-    fit_file = os.path.join(res_dir, 'fit.csv')
     fit = pd.read_csv(fit_file)
     subj_param = framework.read_fit_param(fit_file)
 
-    # plot results by condition
+    sim_file = os.path.join(res_dir, 'sim.csv')
+    if overwrite or not os.path.exists(sim_file):
+        study_data = data.loc[(data['trial_type'] == 'study')]
+        model = cmr.CMR()
+        sim = model.generate(
+            study_data,
+            {},
+            subj_param,
+            param_def,
+            patterns,
+            n_rep=n_sim_reps,
+            study_keys=study_keys,
+        )
+        sim.to_csv(sim_file, index=False)
+
     sim = task.read_study_recall(sim_file)
+    if overwrite or not os.path.exists(os.path.join(res_dir, 'report.html')):
+        reports.plot_fit(
+            data,
+            sim,
+            {},
+            subj_param,
+            param_def,
+            patterns,
+            fit,
+            res_dir,
+            study_keys=study_keys,
+            category=True,
+            similarity=True,
+        )
+
+    # plot results by condition
     distract_list = [0.0, 2.5, 7.5]
     for distract in distract_list:
         report_dir = os.path.join(res_dir, f'distract{distract}')
         data_filter = f'distractor == {distract}'
-        try:
-            reports.plot_fit(
-                data,
-                sim,
-                {},
-                subj_param,
-                param_def,
-                patterns,
-                fit,
-                report_dir,
-                ext='svg',
-                study_keys=study_keys,
-                category=True,
-                similarity=True,
-                data_filter=data_filter,
-            )
-        except Exception as e:
-            logging.exception(f'Plotting fit failed with error: {e}')
+        if overwrite or not os.path.exists(os.path.join(report_dir, 'report.html')):
+            try:
+                reports.plot_fit(
+                    data,
+                    sim,
+                    {},
+                    subj_param,
+                    param_def,
+                    patterns,
+                    fit,
+                    report_dir,
+                    ext='svg',
+                    study_keys=study_keys,
+                    category=True,
+                    similarity=True,
+                    data_filter=data_filter,
+                )
+            except Exception as e:
+                logging.exception(f'Plotting fit failed with error: {e}')
 
     # evaluate using cross-validation
     n_folds = None
