@@ -420,6 +420,10 @@ def plan_compose_switchboard(
                 and "cat" in all_features["disrupt_sublayers"]
             ):
                 continue
+            if all_features["encoding"] == "integrative":
+                continue
+            if all_features["cuing"] == "integrative":
+                continue
         if (all_features["semantics"] == "split") and not semantic_features:
             continue
         if (all_features["encoding"] == "integrative") and not semantic_features:
