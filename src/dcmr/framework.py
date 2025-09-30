@@ -752,6 +752,7 @@ def model_variant(
 def compose_model_variant(
     features,
     semantics,
+    encoding,
     cuing,
     intercept,
     free_t,
@@ -779,7 +780,14 @@ def compose_model_variant(
         weights), 'item' (semantic weights in item-item associations 
         only), or 'split' (pre-experimental and experimental weights,
         but no readout or forward cuing).
-    
+
+    encoding : str
+        Form of dynamics during encoding. May be 'integrative'
+        (semantic context evolves during encoding) or 'focused'
+        (semantic context updates completely after each item). Only
+        applies to models with semantic context (semantics is 'context'
+        or 'split').
+
     cuing : str
         Form of semantic cuing. May be 'integrative' (semantic context
         cues evolve during recall) or 'focused' (semantic context cues
@@ -893,6 +901,9 @@ def compose_model_variant(
 
     if semantics in ['context', 'split']:
         sublayer_param.extend(['B_enc', 'B_rec', 'Lfc', 'Lcf'])
+        if encoding == 'focused':
+            for f in semantic_features:
+                fixed_param[f'B_enc_{f}'] = 1
         if cuing == 'focused':
             for f in semantic_features:
                 fixed_param[f'B_rec_{f}'] = 1
@@ -942,6 +953,7 @@ def compose_model_variant(
 def compose_model_name(
     features,
     semantics,
+    encoding,
     cuing,
     intercept,
     free_t,
@@ -957,8 +969,11 @@ def compose_model_name(
     if features is not None:
         res_name += f'_fea-{'-'.join(features)}'
     res_name += f'_sem-{semantics}'
-    if semantics in ['context', 'split'] and cuing is not None:
-        res_name += f'_cue-{cuing}'
+    if semantics in ['context', 'split']:
+        if encoding is not None:
+            res_name += f'_enc-{encoding}'
+        if cuing is not None:
+            res_name += f'_cue-{cuing}'
     if disrupt_sublayers is not None and disrupt_sublayers:
         res_name += '_dis'
         for sublayer in disrupt_sublayers:
