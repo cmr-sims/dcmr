@@ -957,7 +957,7 @@ def compose_model_name(
     if features is not None:
         res_name += f'_fea-{'-'.join(features)}'
     res_name += f'_sem-{semantics}'
-    if semantics in ['context', 'split']:
+    if semantics in ['context', 'split'] and cuing is not None:
         res_name += f'_cue-{cuing}'
     if disrupt_sublayers is not None and disrupt_sublayers:
         res_name += '_dis'
