@@ -353,6 +353,7 @@ def plan_compose_switchboard(
     flags,
     features,
     semantics,
+    encoding,
     cuing,
     intercept,
     free_t,
@@ -364,6 +365,7 @@ def plan_compose_switchboard(
     expansions = {
         "fea": "features",
         "sem": "semantics",
+        "enc": "encoding",
         "cue": "cuing",
         "dis": "disrupt_sublayers",
         "sub": "special_sublayers",
@@ -375,6 +377,7 @@ def plan_compose_switchboard(
         "free_t": [True, False],
         "features": [("loc",), ("cat",), ("use",), ("loc", "cat"), ("loc", "use"), ("cat", "use"), ("loc", "cat", "use")],
         "semantics": ["context", "split", "item"],
+        "encoding": ["integrative", "focused"],
         "cuing": ["integrative", "focused"],
         "disrupt_sublayers": [None, ("loc",), ("cat",), ("loc", "cat")],
         "special_sublayers": [None, ("list",), ("block",), ("list", "block")],
@@ -385,6 +388,7 @@ def plan_compose_switchboard(
     defaults = dict(
         features=features,
         semantics=semantics,
+        encoding=encoding,
         cuing=cuing,
         intercept=intercept,
         free_t=free_t,
@@ -418,10 +422,13 @@ def plan_compose_switchboard(
                 continue
         if (all_features["semantics"] == "split") and not semantic_features:
             continue
+        if (all_features["encoding"] == "integrative") and not semantic_features:
+            continue
         if (all_features["cuing"] == "integrative") and not semantic_features:
             continue
 
         if not semantic_features:
+            all_features["encoding"] = None
             all_features["cuing"] = None
         name_features = all_features.copy()
         if exclude:
