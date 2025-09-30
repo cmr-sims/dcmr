@@ -345,6 +345,7 @@ def keywords_to_options(**kwargs):
 @click.argument("factors")
 @click.argument("flags")
 @cli.compose_options
+@click.option("--exclude", multiple=True, help="Tags to exclude from model name.")
 def plan_compose_switchboard(
     study,
     fit,
@@ -357,6 +358,7 @@ def plan_compose_switchboard(
     free_t,
     disrupt_sublayers,
     special_sublayers,
+    exclude,
 ):
     """Print command lines for switchboard model evaluation."""
     expansions = {
@@ -367,6 +369,7 @@ def plan_compose_switchboard(
         "sub": "special_sublayers",
     }
     factors = [expansions[f] if f in expansions else f for f in factors.split("-")]
+    exclude = [expansions[f] if f in expansions else f for f in exclude]
     d = {
         "intercept": [True, False],
         "free_t": [True, False],
@@ -420,9 +423,13 @@ def plan_compose_switchboard(
 
         if not semantic_features:
             all_features["cuing"] = None
+        name_features = all_features.copy()
+        if exclude:
+            for tag in exclude:
+                name_features[tag] = None
 
         # construct the standard model name and output directory
-        model_name = framework.compose_model_name(**all_features)
+        model_name = framework.compose_model_name(**name_features)
         fit_dir = study_dir / study / 'fits' / fit / model_name
 
         # print the command
