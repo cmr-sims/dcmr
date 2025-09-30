@@ -431,7 +431,10 @@ def fit_cmr_cfr_disrupt(
     )
 
     # fit parameters, simulate using fitted parameters, and save results
-    study_keys = ['block', 'block_pos']
+    if 'block' in data.columns:
+        study_keys = ['block', 'block_pos']
+    else:
+        study_keys = None
     sim_file = os.path.join(res_dir, 'sim.csv')
     if overwrite or not os.path.exists(sim_file):
         framework.run_fit(
@@ -522,6 +525,7 @@ def fit_cmr_cdcatfr2(
         free_t,
         disrupt_sublayers,
         special_sublayers,
+        distraction=True,
         free_param={
             'B_distract_raw': (0, 0.4),
             'X10': (0, 1),
@@ -539,17 +543,11 @@ def fit_cmr_cdcatfr2(
         ],
         dependent_param={
             'B_retention_raw_loc': 'B_distract_raw_loc',
-            'B_retention_raw_cat': 'B_distract_raw_cat',
-            'B_retention_raw_use': 'B_distract_raw_use',
         },
         dynamic_param={
             ('study', 'list'): {
                 'B_distract_loc': 'clip(B_distract_raw_loc * distractor, 0, 1)',
-                'B_distract_cat': 'clip(B_distract_raw_cat * distractor, 0, 1)',
-                'B_distract_use': 'clip(B_distract_raw_use * distractor, 0, 1)',
                 'B_retention_loc': 'clip(B_retention_raw_loc * distractor, 0, 1)',
-                'B_retention_cat': 'clip(B_retention_raw_cat * distractor, 0, 1)',
-                'B_retention_use': 'clip(B_retention_raw_use * distractor, 0, 1)',
                 'X1': 'where(distractor == 0, X10, where(distractor == 2.5, X11, X12))',
                 'X2': 'where(distractor == 0, X20, where(distractor == 2.5, X21, X22))',
             },
@@ -557,6 +555,23 @@ def fit_cmr_cdcatfr2(
     )
     del param_def.free['X1']
     del param_def.free['X2']
+    if semantics != 'item':
+        param_def.set_dependent(
+            {
+                'B_retention_raw_cat': 'B_distract_raw_cat',
+                'B_retention_raw_use': 'B_distract_raw_use',
+            }
+        )
+        param_def.set_dynamic(
+            'study',
+            'list',
+            {
+                'B_distract_cat': 'clip(B_distract_raw_cat * distractor, 0, 1)',
+                'B_distract_use': 'clip(B_distract_raw_use * distractor, 0, 1)',
+                'B_retention_cat': 'clip(B_retention_raw_cat * distractor, 0, 1)',
+                'B_retention_use': 'clip(B_retention_raw_use * distractor, 0, 1)',
+            }
+        )
     if disrupt_sublayers is not None:
         for sublayer in disrupt_sublayers:
             # fix disruption sublayers to also account for distraction
@@ -572,8 +587,8 @@ def fit_cmr_cdcatfr2(
 
     # fit parameters, simulate using fitted parameters, and save results
     study_keys = ['distractor', 'block', 'block_pos']
-    sim_file = os.path.join(res_dir, 'sim.csv')
-    if overwrite or not os.path.exists(sim_file):
+    fit_file = os.path.join(res_dir, 'fit.csv')
+    if overwrite or not os.path.exists(fit_file):
         framework.run_fit(
             res_dir,
             data,
@@ -586,34 +601,64 @@ def fit_cmr_cdcatfr2(
             n_sim_reps,
             study_keys,
         )
-    fit_file = os.path.join(res_dir, 'fit.csv')
     fit = pd.read_csv(fit_file)
     subj_param = framework.read_fit_param(fit_file)
 
-    # plot results by condition
+    sim_file = os.path.join(res_dir, 'sim.csv')
+    if overwrite or not os.path.exists(sim_file):
+        study_data = data.loc[(data['trial_type'] == 'study')]
+        model = cmr.CMR()
+        sim = model.generate(
+            study_data,
+            {},
+            subj_param,
+            param_def,
+            patterns,
+            n_rep=n_sim_reps,
+            study_keys=study_keys,
+        )
+        sim.to_csv(sim_file, index=False)
+
     sim = task.read_study_recall(sim_file)
+    if overwrite or not os.path.exists(os.path.join(res_dir, 'report.html')):
+        reports.plot_fit(
+            data,
+            sim,
+            {},
+            subj_param,
+            param_def,
+            patterns,
+            fit,
+            res_dir,
+            study_keys=study_keys,
+            category=True,
+            similarity=True,
+        )
+
+    # plot results by condition
     distract_list = [0.0, 2.5, 7.5]
     for distract in distract_list:
         report_dir = os.path.join(res_dir, f'distract{distract}')
         data_filter = f'distractor == {distract}'
-        try:
-            reports.plot_fit(
-                data,
-                sim,
-                {},
-                subj_param,
-                param_def,
-                patterns,
-                fit,
-                report_dir,
-                ext='svg',
-                study_keys=study_keys,
-                category=True,
-                similarity=True,
-                data_filter=data_filter,
-            )
-        except Exception as e:
-            logging.exception(f'Plotting fit failed with error: {e}')
+        if overwrite or not os.path.exists(os.path.join(report_dir, 'report.html')):
+            try:
+                reports.plot_fit(
+                    data,
+                    sim,
+                    {},
+                    subj_param,
+                    param_def,
+                    patterns,
+                    fit,
+                    report_dir,
+                    ext='svg',
+                    study_keys=study_keys,
+                    category=True,
+                    similarity=True,
+                    data_filter=data_filter,
+                )
+            except Exception as e:
+                logging.exception(f'Plotting fit failed with error: {e}')
 
     # evaluate using cross-validation
     n_folds = None

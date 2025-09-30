@@ -693,6 +693,7 @@ def model_variant(
                     'B_rec': 'B_rec_block',  # context evolution at recall updates current block
                     'B_start': 0,  # no start list reinstatement at recall start
                     'B_distract': 'B_distract_block',  # distraction at start of block
+                    'B_retention': 0,  # no distraction before recall
                 }
 
                 if not distraction:
@@ -756,6 +757,7 @@ def compose_model_variant(
     free_t,
     disrupt_sublayers,
     special_sublayers,
+    distraction=None,
     sublayer_param=None,
     fixed_param=None,
     free_param=None,
@@ -801,6 +803,9 @@ def compose_model_variant(
         Special sublayers to include in the model. May include 'list'
         (fixed context with a primacy gradient) and 'block' (block-
         specific context with no primacy gradient).
+
+    distraction : bool
+        If True, distraction units will be included in all sublayers.
 
     sublayer_param : list of str
         Names of parameters that will vary by sublayer. If Lfc and/or
@@ -891,6 +896,11 @@ def compose_model_variant(
         if cuing == 'focused':
             fixed_param.update({'B_rec_cat': 1, 'B_rec_use': 1})
 
+    if distraction is None:
+        # if not specified, distraction is False unless it is needed
+        # for an optional model mechanism
+        distraction = False
+
     # disruption
     if disrupt_sublayers is not None and disrupt_sublayers:
         sublayer_param.append('B_distract')
@@ -905,7 +915,6 @@ def compose_model_variant(
         distraction = True
     else:
         block_disrupt_sublayers = None
-        distraction = False
 
     if special_sublayers is not None and 'block' in special_sublayers:
         distraction = True
