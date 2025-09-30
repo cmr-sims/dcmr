@@ -894,7 +894,8 @@ def compose_model_variant(
     if semantics in ['context', 'split']:
         sublayer_param.extend(['B_enc', 'B_rec', 'Lfc', 'Lcf'])
         if cuing == 'focused':
-            fixed_param.update({'B_rec_cat': 1, 'B_rec_use': 1})
+            for f in semantic_features:
+                fixed_param[f'B_rec_{f}'] = 1
 
     if distraction is None:
         # if not specified, distraction is False unless it is needed
