@@ -749,6 +749,7 @@ def model_variant(
 
 
 def compose_model_variant(
+    features,
     semantics,
     cuing,
     intercept,
@@ -766,6 +767,10 @@ def compose_model_variant(
 
     Parameters
     ----------
+    features : tuple of str
+        Feature sublayers to include in the model. May include 'loc',
+        'cat', and 'use'.
+
     semantics : str
         Form of semantic weights. May be 'context' (weights in context 
         only, including full pre-experimental and experimental 
@@ -851,21 +856,33 @@ def compose_model_variant(
         free_param['T'] = (0, 1)
 
     # semantics
+    features = list(features)
+    semantic_features = [f for f in features if f != 'loc']
     if semantics == 'context':
-        fcf_features = ['loc', 'cat', 'use']
+        # variant may have any combination of features
+        fcf_features = features
         ff_features = None
         exp_only_sublayers = None
     elif semantics == 'item':
+        # variant must have loc feature and at least one semantic feature
+        if 'loc' not in features:
+            raise ValueError('Item semantics requires a loc feature.')
         fcf_features = ['loc']
-        ff_features = ['cat', 'use']
+
+        # semantic features are all allocated to item-item associations
+        if not semantic_features:
+            raise ValueError('Item semantics requires features besides loc.')
+        ff_features = semantic_features
         exp_only_sublayers = None
+
+        # cannot disrupt semantic sublayers because they do not exist
         if disrupt_sublayers is not None:
             if 'cat' in disrupt_sublayers or 'use' in disrupt_sublayers:
                 raise ValueError('Cannot disrupt non-existent sublayer.')
     elif semantics == 'split':
-        fcf_features = ['loc', 'cat', 'use']
-        ff_features = ['cat', 'use']
-        exp_only_sublayers = ['cat', 'use']
+        fcf_features = features
+        ff_features = semantic_features
+        exp_only_sublayers = semantic_features
     else:
         raise ValueError(f'Invalid semantics version: {semantics}')
 
@@ -913,6 +930,7 @@ def compose_model_variant(
 
 
 def compose_model_name(
+    features,
     semantics,
     cuing,
     intercept,
@@ -926,6 +944,8 @@ def compose_model_name(
         res_name += 'i'
     if free_t:
         res_name += 't'
+    if features is not None:
+        res_name += f'_fea-{'-'.join(features)}'
     res_name += f'_sem-{semantics}'
     if semantics in ['context', 'split']:
         res_name += f'_cue-{cuing}'
