@@ -397,6 +397,10 @@ def plan_compose_switchboard(
         features = dict(zip(factors, combination))
         all_features = defaults.copy()
         all_features.update(features)
+        if ("cat" in all_features["features"]) or ("use" in all_features["features"]):
+            semantic_features = True
+        else:
+            semantic_features = False
 
         # screen out invalid variants
         if all_features["semantics"] == "item":
@@ -409,6 +413,13 @@ def plan_compose_switchboard(
                 and "cat" in all_features["disrupt_sublayers"]
             ):
                 continue
+        if (all_features["semantics"] == "split") and not semantic_features:
+            continue
+        if (all_features["cuing"] == "integrative") and not semantic_features:
+            continue
+
+        if not semantic_features:
+            all_features["cuing"] = None
 
         # construct the standard model name and output directory
         model_name = framework.compose_model_name(**all_features)
