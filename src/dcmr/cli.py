@@ -194,6 +194,7 @@ def model_options(f):
 
 def compose_options(f):
     """Set options for model composition."""
+    @click.option("-z", "--features", multiple=True, default=("loc", "cat", "use"))
     @click.option("--semantics", default='context')
     @click.option("--cuing", default="integrative")
     @click.option("--intercept/--no-intercept", default=False)
@@ -387,6 +388,7 @@ def fit_cmr_cfr_disrupt(
     patterns_file,
     res_dir,
     overwrite,
+    features,
     semantics,
     cuing,
     intercept,
@@ -419,6 +421,7 @@ def fit_cmr_cfr_disrupt(
 
     # compose a model variant from high-level options
     param_def = framework.compose_model_variant(
+        features,
         semantics,
         cuing,
         intercept,
@@ -479,6 +482,7 @@ def fit_cmr_cdcatfr2(
     patterns_file,
     res_dir,
     overwrite,
+    features,
     semantics,
     cuing,
     intercept,
@@ -511,6 +515,7 @@ def fit_cmr_cdcatfr2(
 
     # compose a model variant from high-level options
     param_def = framework.compose_model_variant(
+        features,
         semantics,
         cuing,
         intercept,
