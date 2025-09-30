@@ -431,7 +431,7 @@ def plan_compose_switchboard(
         if (all_features["cuing"] == "integrative") and not semantic_features:
             continue
 
-        if not semantic_features:
+        if not semantic_features or all_features["semantics"] == "item":
             all_features["encoding"] = None
             all_features["cuing"] = None
         name_features = all_features.copy()
