@@ -196,6 +196,7 @@ def compose_options(f):
     """Set options for model composition."""
     @click.option("-z", "--features", multiple=True, default=("loc", "cat", "use"))
     @click.option("--semantics", default='context')
+    @click.option("--encoding", default="integrative")
     @click.option("--cuing", default="integrative")
     @click.option("--intercept/--no-intercept", default=False)
     @click.option("--free-t/--no-free-t", default=False)
@@ -390,6 +391,7 @@ def fit_cmr_cfr_disrupt(
     overwrite,
     features,
     semantics,
+    encoding,
     cuing,
     intercept,
     free_t,
@@ -423,6 +425,7 @@ def fit_cmr_cfr_disrupt(
     param_def = framework.compose_model_variant(
         features,
         semantics,
+        encoding,
         cuing,
         intercept,
         free_t,
@@ -487,6 +490,7 @@ def fit_cmr_cdcatfr2(
     overwrite,
     features,
     semantics,
+    encoding,
     cuing,
     intercept,
     free_t,
@@ -520,6 +524,7 @@ def fit_cmr_cdcatfr2(
     param_def = framework.compose_model_variant(
         features,
         semantics,
+        encoding,
         cuing,
         intercept,
         free_t,
