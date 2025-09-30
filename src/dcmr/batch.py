@@ -350,6 +350,7 @@ def plan_compose_switchboard(
     fit,
     factors,
     flags,
+    features,
     semantics,
     cuing,
     intercept,
@@ -359,6 +360,7 @@ def plan_compose_switchboard(
 ):
     """Print command lines for switchboard model evaluation."""
     expansions = {
+        "fea": "features",
         "sem": "semantics",
         "cue": "cuing",
         "dis": "disrupt_sublayers",
@@ -368,12 +370,14 @@ def plan_compose_switchboard(
     d = {
         "intercept": [True, False],
         "free_t": [True, False],
+        "features": [("loc",), ("cat",), ("use",), ("loc", "cat"), ("loc", "use"), ("cat", "use"), ("loc", "cat", "use")],
         "semantics": ["context", "split", "item"],
         "cuing": ["integrative", "focused"],
         "disrupt_sublayers": [None, ("loc",), ("cat",), ("loc", "cat")],
         "special_sublayers": [None, ("list",), ("block",), ("list", "block")],
     }
     defaults = dict(
+        features=features,
         semantics=semantics,
         cuing=cuing,
         intercept=intercept,
@@ -392,12 +396,16 @@ def plan_compose_switchboard(
         all_features.update(features)
 
         # screen out invalid variants
-        if (
-            all_features["semantics"] == "item"
-            and all_features["disrupt_sublayers"] is not None
-            and "cat" in all_features["disrupt_sublayers"]
-        ):
-            continue
+        if all_features["semantics"] == "item":
+            if "loc" not in all_features["features"]:
+                continue
+            if len(all_features["features"]) == 1:
+                continue
+            if (
+                all_features["disrupt_sublayers"] is not None
+                and "cat" in all_features["disrupt_sublayers"]
+            ):
+                continue
 
         # construct the standard model name and output directory
         model_name = framework.compose_model_name(**all_features)
