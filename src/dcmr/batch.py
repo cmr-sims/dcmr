@@ -357,6 +357,7 @@ def plan_compose_switchboard(
     cuing,
     intercept,
     free_t,
+    free_b,
     disrupt_sublayers,
     special_sublayers,
     exclude,
@@ -375,6 +376,7 @@ def plan_compose_switchboard(
     d = {
         "intercept": [True, False],
         "free_t": [True, False],
+        "free_b": [True, False],
         "features": [("loc",), ("cat",), ("use",), ("loc", "cat"), ("loc", "use"), ("cat", "use"), ("loc", "cat", "use")],
         "semantics": ["context", "split", "item"],
         "encoding": ["integrative", "focused"],
@@ -392,6 +394,7 @@ def plan_compose_switchboard(
         cuing=cuing,
         intercept=intercept,
         free_t=free_t,
+        free_b=free_b,
         disrupt_sublayers=disrupt_sublayers,
         special_sublayers=special_sublayers,
     )
@@ -434,6 +437,8 @@ def plan_compose_switchboard(
         if not semantic_features or all_features["semantics"] == "item":
             all_features["encoding"] = None
             all_features["cuing"] = None
+            if all_features["free_b"]:
+                continue
         name_features = all_features.copy()
         if exclude:
             for tag in exclude:
