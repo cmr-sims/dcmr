@@ -200,6 +200,7 @@ def compose_options(f):
     @click.option("--cuing", default="integrative")
     @click.option("--intercept/--no-intercept", default=False)
     @click.option("--free-t/--no-free-t", default=False)
+    @click.option("--free-b/--no-free-b", default=None)
     @click.option("-x", "--disrupt-sublayers", multiple=True)
     @click.option("-y", "--special-sublayers", multiple=True)
     
@@ -395,6 +396,7 @@ def fit_cmr_cfr_disrupt(
     cuing,
     intercept,
     free_t,
+    free_b,
     disrupt_sublayers,
     special_sublayers,
     n_reps=1,
@@ -429,6 +431,7 @@ def fit_cmr_cfr_disrupt(
         cuing,
         intercept,
         free_t,
+        free_b,
         disrupt_sublayers,
         special_sublayers,
     )
@@ -494,6 +497,7 @@ def fit_cmr_cdcatfr2(
     cuing,
     intercept,
     free_t,
+    free_b,
     disrupt_sublayers,
     special_sublayers,
     n_reps=1,
@@ -528,6 +532,7 @@ def fit_cmr_cdcatfr2(
         cuing,
         intercept,
         free_t,
+        free_b,
         disrupt_sublayers,
         special_sublayers,
         distraction=True,
