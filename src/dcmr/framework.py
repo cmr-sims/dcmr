@@ -756,6 +756,7 @@ def compose_model_variant(
     cuing,
     intercept,
     free_t,
+    free_b,
     disrupt_sublayers,
     special_sublayers,
     distraction=None,
@@ -800,6 +801,9 @@ def compose_model_variant(
     
     free_t : bool
         If True, T will be free to vary instead of fixed at 0.1.
+
+    free_b : bool
+        If True, B_enc and B_rec will be free to vary by sublayer.
     
     disrupt_sublayers : tuple of str, None
         Sublayers that will be disrupted at the start of each block
@@ -867,6 +871,8 @@ def compose_model_variant(
     # free T parameter
     if free_t:
         free_param['T'] = (0, 1)
+    if free_b is None:
+        free_b = True
 
     # semantics
     features = list(features)
@@ -900,13 +906,17 @@ def compose_model_variant(
         raise ValueError(f'Invalid semantics version: {semantics}')
 
     if semantics in ['context', 'split']:
-        sublayer_param.extend(['B_enc', 'B_rec', 'Lfc', 'Lcf'])
+        sublayer_param.extend(['Lfc', 'Lcf'])
         if encoding == 'focused':
+            free_b = True
             for f in semantic_features:
                 fixed_param[f'B_enc_{f}'] = 1
         if cuing == 'focused':
+            free_b = True
             for f in semantic_features:
                 fixed_param[f'B_rec_{f}'] = 1
+        if free_b:
+            sublayer_param.extend(['B_enc', 'B_rec'])
 
     if distraction is None:
         # if not specified, distraction is False unless it is needed
@@ -957,6 +967,7 @@ def compose_model_name(
     cuing,
     intercept,
     free_t,
+    free_b,
     disrupt_sublayers,
     special_sublayers,
 ):
@@ -966,6 +977,8 @@ def compose_model_name(
         res_name += 'i'
     if free_t:
         res_name += 't'
+    if free_b is not None and free_b:
+        res_name += 'b'
     if features is not None:
         res_name += f'_fea-{'-'.join(features)}'
     res_name += f'_sem-{semantics}'
