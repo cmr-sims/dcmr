@@ -422,6 +422,8 @@ def fit_cmr_cfr_disrupt(
 
     logging.info(f'Loading network patterns from {patterns_file}.')
     patterns = cmr.load_patterns(patterns_file)
+    if 'item_index' not in data.columns:
+        data['item_index'] = fr.pool_index(data['item'], patterns['items'])
 
     # compose a model variant from high-level options
     param_def = framework.compose_model_variant(
