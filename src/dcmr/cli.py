@@ -196,8 +196,8 @@ def compose_options(f):
     """Set options for model composition."""
     @click.option("-z", "--features", multiple=True, default=("loc", "cat", "use"))
     @click.option("--semantics", default='context')
-    @click.option("--encoding", default="integrative")
-    @click.option("--cuing", default="integrative")
+    @click.option("--encoding", default=None)
+    @click.option("--cuing", default=None)
     @click.option("--intercept/--no-intercept", default=False)
     @click.option("--free-t/--no-free-t", default=False)
     @click.option("--free-b/--no-free-b", default=None)
