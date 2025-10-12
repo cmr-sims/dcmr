@@ -443,8 +443,8 @@ def fit_cmr_cfr_disrupt(
         study_keys = ['block', 'block_pos']
     else:
         study_keys = None
-    sim_file = os.path.join(res_dir, 'sim.csv')
-    if overwrite or not os.path.exists(sim_file):
+    fit_file = os.path.join(res_dir, 'fit.csv')
+    if overwrite or not os.path.exists(fit_file):
         framework.run_fit(
             res_dir,
             data,
@@ -456,6 +456,39 @@ def fit_cmr_cfr_disrupt(
             init,
             n_sim_reps,
             study_keys,
+        )
+    fit = pd.read_csv(fit_file)
+    subj_param = framework.read_fit_param(fit_file)
+
+    sim_file = os.path.join(res_dir, 'sim.csv')
+    if overwrite or not os.path.exists(sim_file):
+        study_data = data.loc[(data['trial_type'] == 'study')]
+        model = cmr.CMR()
+        sim = model.generate(
+            study_data,
+            {},
+            subj_param,
+            param_def,
+            patterns,
+            n_rep=n_sim_reps,
+            study_keys=study_keys,
+        )
+        sim.to_csv(sim_file, index=False)
+
+    sim = task.read_study_recall(sim_file)
+    if overwrite or not os.path.exists(os.path.join(res_dir, 'report.html')):
+        reports.plot_fit(
+            data,
+            sim,
+            {},
+            subj_param,
+            param_def,
+            patterns,
+            fit,
+            res_dir,
+            study_keys=study_keys,
+            category=True,
+            similarity=True,
         )
 
     # evaluate using cross-validation
