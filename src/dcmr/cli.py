@@ -443,6 +443,10 @@ def fit_cmr_cfr_disrupt(
         study_keys = ['block', 'block_pos']
     else:
         study_keys = None
+    if 'category' in data.columns:
+        category = True
+    else:
+        category = False
     fit_file = os.path.join(res_dir, 'fit.csv')
     if overwrite or not os.path.exists(fit_file):
         framework.run_fit(
@@ -487,7 +491,7 @@ def fit_cmr_cfr_disrupt(
             fit,
             res_dir,
             study_keys=study_keys,
-            category=True,
+            category=category,
             similarity=True,
         )
 
