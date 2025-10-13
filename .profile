@@ -10,8 +10,8 @@ if [[ $USER = morton || $USER = nmorton ]]; then
     export PEERS_FITS=$HOME/Dropbox/work/dcmr/peers/fits/v5
     export PEERS_FIGURES=$HOME/Dropbox/work/dcmr/peers/figs/v1
     export CDCFR_RESULTS=$HOME/Dropbox/work/dcmr/cdcatfr2
-    export CDCFR_FITS=$HOME/Dropbox/work/dcmr/cdcatfr2/fits
-    export CDCFR_FIGURES=$HOME/Dropbox/work/dcmr/cdcatfr2/figs/v1
+    export CDCFR_FITS=$HOME/Dropbox/work/dcmr/cdcatfr2/fits/v7
+    export CDCFR_FIGURES=$HOME/Dropbox/work/dcmr/cdcatfr2/figs/v2
 elif [[ $USER = mortonne ]]; then
     . /work/03206/mortonne/lonestar/venv/cfr/bin/activate
     unset PYTHONPATH
