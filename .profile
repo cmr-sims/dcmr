@@ -4,7 +4,7 @@ if [[ $USER = morton || $USER = nmorton ]]; then
     . .venv/bin/activate
     export STUDYDIR=$HOME/Dropbox/work/dcmr
     export CFR_RESULTS=$HOME/Dropbox/work/dcmr/cfr
-    export CFR_FITS=$HOME/Dropbox/work/dcmr/cfr/fits/v5
+    export CFR_FITS=$HOME/Dropbox/work/dcmr/cfr/fits/v7
     export CFR_FIGURES=$HOME/Dropbox/work/dcmr/cfr/figs/v3
     export PEERS_RESULTS=$HOME/Dropbox/work/dcmr/peers
     export PEERS_FITS=$HOME/Dropbox/work/dcmr/peers/fits/v5
