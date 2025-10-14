@@ -9,7 +9,6 @@ import pandas as pd
 import matplotlib
 import seaborn as sns
 
-matplotlib.use('Agg')
 from psifr import fr
 from dcmr import task
 from dcmr import framework
@@ -165,6 +164,10 @@ def plot_fit(
     data_filter=None,
 ):
     """Make a report with fit information."""
+    # comprehensive fit plotting is generally done asynchronously on a
+    # cluster, so use a non-interactive backend
+    matplotlib.use('Agg')
+
     # information about the data
     if category is None:
         asymfr = 'list_type' in data.columns and 'toronto' in data['list_type'].unique()
