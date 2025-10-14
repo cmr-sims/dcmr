@@ -9,6 +9,7 @@ import click
 import numpy as np
 from scipy import io
 from scipy import stats
+import sklearn.linear_model as lm
 import matplotlib.pyplot as plt
 from skimage import transform
 import pandas as pd
@@ -516,6 +517,56 @@ def block_lag_crp(df, block_key, n_block_key=None, **kwargs):
         )
     crp = crp.rename(columns={block_key: 'block'})
     return crp
+
+
+def category_crp_block_pos(data):
+    """
+    Category CRP as a function of block position and length.
+
+    To reduce effects of primacy and recency, the first and last blocks
+    are excluded.
+    """
+    # compose block length and block position into one field
+    data = data.copy()
+    data['block_info'] = (
+        data['block_len'].astype("Int64")
+        .astype(str)
+        .str.cat(data['block_pos'].astype("Int64").astype(str))
+    )
+
+    # exclude first and last blocks
+    middle_block = (data['block'] != 1) & (data['block'] < data['n_block'])
+    data.loc[~middle_block, 'block_info'] = ''
+
+    # for each combination, get category CRP from that position
+    block_len = data['block_len'].dropna().unique()
+    res_list = []
+    for i in block_len:
+        for j in range(1, i + 1):
+            info = f'{i}{j}'
+            crp = fr.category_crp(
+                data, 'category', test_key='block_info', test=lambda x, y: x == info
+            )
+            crp['block_len'] = i
+            crp['block_pos'] = j
+            crp['block_end'] = j - i - 1
+            res_list.append(crp)
+    crp = pd.concat(res_list, axis=0, ignore_index=True)
+    return crp
+
+
+def crp_regress_block_pos(crp):
+    """Regress CRP against block position."""
+    x = crp['block_pos'].to_numpy()[:, np.newaxis]
+    y = crp['prob'].to_numpy()
+    if np.any(np.isnan(y)):
+        b = np.nan
+        return b
+        
+    model = lm.LinearRegression()
+    model.fit(x, y)
+    b = model.coef_[0]
+    return b
 
 
 def label_clean_trials(data):
