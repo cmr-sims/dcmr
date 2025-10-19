@@ -26,7 +26,7 @@
     "DCMR-ICD": {
         "full": "cmrst_fea-loc-cat-use_sem-context",
         "set1": "ICD",
-        "set2": "DCMR-ICD"
+        "set2": "DCMR"
     },
     "DCMR-ICD-FE-FR": {
         "full": "cmrstb_fea-loc-cat-use_sem-context_cue-integrative",
