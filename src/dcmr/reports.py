@@ -588,11 +588,7 @@ def get_param_latex():
         'w0': 'w_1',
         'w1': 'w_2',
         's0': 's_1',
-        'k': 'k',
-        'logl': r'\mathrm{log}(L)',
-        'logl_test_list': r'\mathrm{log}(L)',
-        'aic': r'\mathrm{AIC}',
-        'waic': r'\mathrm{wAIC}',
+        'T': r'\tau',
         'B_disrupt': r'\beta_{\mathrm{disrupt}}',
         'B_start0': r'\beta_{\mathrm{start},\mathrm{0 s}}',
         'B_start1': r'\beta_{\mathrm{start},\mathrm{2.5 s}}',
@@ -612,6 +608,11 @@ def get_param_latex():
         'B_distract_raw_loc': r'\beta_{\mathrm{distract},I}',
         'B_distract_raw_cat': r'\beta_{\mathrm{distract},C}',
         'B_distract_raw_use': r'\beta_{\mathrm{distract},D}',
+        'k': 'k',
+        'logl': r'\mathrm{log}(L)',
+        'logl_test_list': r'\mathrm{log}(L)',
+        'aic': r'\mathrm{AIC}',
+        'waic': r'\mathrm{wAIC}',
     }
     math_format = {k: f'${v}$' for k, v in latex_names.items()}
     return math_format
