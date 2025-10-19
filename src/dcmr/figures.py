@@ -83,6 +83,78 @@ def plot_model_snapshots(
         plt.close(g.figure)
 
 
+def plot_spc_hue(recall, input_key='input', **facet_kws):
+    """Plot SPC in panels with varying hue."""
+    y = 'recall' if 'recall' in recall else 'prob'
+    g = sns.FacetGrid(dropna=False, **facet_kws, data=recall.reset_index())
+    g.map_dataframe(sns.lineplot, x=input_key, y=y)
+    g.set_xlabels('Serial position')
+    g.set_ylabels('Recall probability')
+    g.set(ylim=(0, 1))
+    return g
+
+
+def plot_lag_crp_hue(
+    recall,
+    max_lag=5,
+    lag_key='lag',
+    split=True,
+    **facet_kws,
+):
+    """Plot conditional response probability by lag with varying hue."""
+    if split:
+        if max_lag is not None:
+            filt_neg = f'{-max_lag} <= {lag_key} < 0'
+            filt_pos = f'0 < {lag_key} <= {max_lag}'
+        else:
+            filt_neg = f'{lag_key} < 0'
+            filt_pos = f'0 < {lag_key}'
+        g = sns.FacetGrid(dropna=True, **facet_kws, data=recall.reset_index())
+        g.map_dataframe(
+            lambda data, **kws: sns.lineplot(
+                data=data.query(filt_neg),
+                x=lag_key,
+                y='prob',
+                **kws,
+            )
+        )
+        g.map_dataframe(
+            lambda data, **kws: sns.lineplot(
+                data=data.query(filt_pos),
+                x=lag_key,
+                y='prob',
+                **kws,
+            )
+        )
+    else:
+        if max_lag is not None:
+            data = recall.query(f'{-max_lag} <= {lag_key} <= {max_lag}')
+        else:
+            data = recall
+        g = sns.FacetGrid(dropna=False, **facet_kws, data=data.reset_index())
+        g.map_dataframe(sns.lineplot, x=lag_key, y='prob')
+
+    g.set_xlabels('Lag')
+    g.set_ylabels('CRP')
+    g.set(ylim=(0, 1))
+    return g
+
+
+def plot_distance_crp_hue(crp, min_samples=None, **facet_kws):
+    """Plot response probability by distance bin with varying hue."""
+    crp = crp.reset_index()
+    if min_samples is not None:
+        min_n = crp.groupby('center')['possible'].min()
+        include = min_n.loc[min_n >= min_samples].index.to_numpy()
+        crp = crp.loc[crp['center'].isin(include)]
+    g = sns.FacetGrid(dropna=False, **facet_kws, data=crp.reset_index())
+    g.map_dataframe(sns.lineplot, x='center', y='prob')
+    g.set_xlabels('Distance')
+    g.set_ylabels('CRP')
+    g.set(ylim=(0, 1))
+    return g
+
+
 def plot_lag_crp_compound(crp, style=None, **kwargs):
     """Plot compound lag CRP curves."""
     binned = crp.reset_index()
