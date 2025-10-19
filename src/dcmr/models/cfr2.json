@@ -1,0 +1,46 @@
+{
+    "DCMR-I": {
+        "full": "cmrst_fea-loc_sem-context",
+        "set1": "I"
+    },
+    "DCMR-C": {
+        "full": "cmrst_fea-cat_sem-context",
+        "set1": "C"
+    },
+    "DCMR-D": {
+        "full": "cmrst_fea-use_sem-context",
+        "set1": "D"
+    },
+    "DCMR-IC": {
+        "full": "cmrst_fea-loc-cat_sem-context",
+        "set1": "IC"
+    },
+    "DCMR-ID": {
+        "full": "cmrst_fea-loc-use_sem-context",
+        "set1": "ID"
+    },
+    "DCMR-CD": {
+        "full": "cmrst_fea-cat-use_sem-context",
+        "set1": "CD"
+    },
+    "DCMR-ICD": {
+        "full": "cmrst_fea-loc-cat-use_sem-context",
+        "set1": "ICD",
+        "set2": "DCMR-ICD"
+    },
+    "DCMR-ICD-FE-FR": {
+        "full": "cmrstb_fea-loc-cat-use_sem-context_cue-integrative",
+        "set1": "UR",
+        "set2": "DCMR-Variable"
+    },
+    "DCMR-ICD-FE-FR-RC-RD": {
+        "full": "cmrstb_fea-loc-cat-use_sem-context_cue-focused",
+        "set1": "RC-RD",
+        "set2": "DCMR-Focused"
+    },
+    "DCMR-I-CD": {
+        "full": "cmrsitb_fea-loc-cat-use_sem-item",
+        "set1": "I-CD",
+        "set2": "CMR MP16"
+    }
+}
