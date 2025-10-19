@@ -569,9 +569,6 @@ def plot_fit(
 def get_param_latex():
     """Get the mapping from parameter names to LaTeX form."""
     latex_names = {
-        'Lfc': 'L_{FC}',
-        'Lcf': 'L_{CF}',
-        'Dff': 'D_{FF}',
         'P1': r'\phi_s',
         'P2': r'\phi_d',
         'B_enc': r'\beta_{\mathrm{enc}}',
@@ -599,12 +596,15 @@ def get_param_latex():
         'X20': r'\theta_{r,\mathrm{0 s}}',
         'X21': r'\theta_{r,\mathrm{2.5 s}}',
         'X22': r'\theta_{r,\mathrm{7.5 s}}',
+        'Lfc': 'L_{FC}',
         'Lfc_loc_raw': r'L_{FC,I}',
         'Lfc_cat_raw': r'L_{FC,C}',
         'Lfc_use_raw': r'L_{FC,D}',
+        'Lcf': 'L_{CF}',
         'Lcf_loc_raw': r'L_{CF,I}',
         'Lcf_cat_raw': r'L_{CF,C}',
         'Lcf_use_raw': r'L_{CF,D}',
+        'Dff': 'D_{FF}',
         'B_distract_raw_loc': r'\beta_{\mathrm{distract},I}',
         'B_distract_raw_cat': r'\beta_{\mathrm{distract},C}',
         'B_distract_raw_use': r'\beta_{\mathrm{distract},D}',
