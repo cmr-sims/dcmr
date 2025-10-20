@@ -1,17 +1,22 @@
 # Set up Bash environment for running project scripts.
 
 if [[ $USER = morton || $USER = nmorton ]]; then
-    . .venv/bin/activate
-    export STUDYDIR=$HOME/Dropbox/work/dcmr
-    export CFR_RESULTS=$HOME/Dropbox/work/dcmr/cfr
-    export CFR_FITS=$HOME/Dropbox/work/dcmr/cfr/fits/v7
-    export CFR_FIGURES=$HOME/Dropbox/work/dcmr/cfr/figs/v4
-    export PEERS_RESULTS=$HOME/Dropbox/work/dcmr/peers
-    export PEERS_FITS=$HOME/Dropbox/work/dcmr/peers/fits/v5
-    export PEERS_FIGURES=$HOME/Dropbox/work/dcmr/peers/figs/v1
-    export CDCFR_RESULTS=$HOME/Dropbox/work/dcmr/cdcatfr2
-    export CDCFR_FITS=$HOME/Dropbox/work/dcmr/cdcatfr2/fits/v7
-    export CDCFR_FIGURES=$HOME/Dropbox/work/dcmr/cdcatfr2/figs/v2
+    if [[ $(hostname) = submit.mortimer.hpc.uwm.edu ]]; then
+        conda activate $HOME/work/conda/dcmr
+        export STUDYDIR=$HOME/work/dcmr
+    else
+        . .venv/bin/activate
+        export STUDYDIR=$HOME/Dropbox/work/dcmr
+        export CFR_RESULTS=$HOME/Dropbox/work/dcmr/cfr
+        export CFR_FITS=$HOME/Dropbox/work/dcmr/cfr/fits/v7
+        export CFR_FIGURES=$HOME/Dropbox/work/dcmr/cfr/figs/v4
+        export PEERS_RESULTS=$HOME/Dropbox/work/dcmr/peers
+        export PEERS_FITS=$HOME/Dropbox/work/dcmr/peers/fits/v5
+        export PEERS_FIGURES=$HOME/Dropbox/work/dcmr/peers/figs/v1
+        export CDCFR_RESULTS=$HOME/Dropbox/work/dcmr/cdcatfr2
+        export CDCFR_FITS=$HOME/Dropbox/work/dcmr/cdcatfr2/fits/v7
+        export CDCFR_FIGURES=$HOME/Dropbox/work/dcmr/cdcatfr2/figs/v2
+    fi
 elif [[ $USER = mortonne ]]; then
     . /work/03206/mortonne/lonestar/venv/cfr/bin/activate
     unset PYTHONPATH
