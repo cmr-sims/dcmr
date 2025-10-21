@@ -38,9 +38,17 @@
         "set1": "RC-RD",
         "set2": "DCMR-Focused"
     },
+    "DCMR-ICD-FE-FR-RC-RD-SS-DC-LL": {
+        "full": "cmrsitb_fea-loc-cat-use_sem-split_cue-focused_dis-cat_sub-list",
+        "set2": "DCMR-Disrupt"
+    },
     "DCMR-I-CD": {
         "full": "cmrsitb_fea-loc-cat-use_sem-item",
         "set1": "I-CD",
         "set2": "CMR-MP16"
+    },
+    "DCMR-I-CD-LL": {
+        "full": "cmrsitb_fea-loc-cat-use_sem-item_sub-list",
+        "set2": "CMR-MP16-L"
     }
 }
