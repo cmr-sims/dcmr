@@ -1175,6 +1175,44 @@ def comp_version_variants(fit_dir, model_pattern="cmr*"):
     return res, stat
 
 
+def read_model_switchboard(fit_dir, model_pattern="cmr*"):
+    """Read switchboard results."""
+    res, stat = comp_version_variants(fit_dir, model_pattern)
+    mx = res.groupby('model')['logl_test_list'].mean()
+    models = res.groupby('model').first().index
+    model_names = models.to_list()
+    sem_list = []
+    cue_list = []
+    dis_list = []
+    sub_list = []
+    for m in model_names:
+        tags = m.split('_')[1:]
+        sem = None
+        cue = None
+        dis = 'none'
+        sub = 'none'
+        for tag in tags:
+            kind, *values = tag.split('-')
+            if kind == 'sem':
+                sem = values[0]
+            elif kind == 'cue':
+                cue = values[0]
+            elif kind == 'dis':
+                dis = '-'.join(values)
+            elif kind == 'sub':
+                sub = '-'.join(values)
+        sem_list.append(sem)
+        cue_list.append(cue)
+        dis_list.append(dis)
+        sub_list.append(sub)
+    labels = pd.DataFrame(
+        {'sem': sem_list, 'cue': cue_list, 'dis': dis_list, 'sub': sub_list},
+        index=model_names,
+    )
+    labels['logl'] = mx
+    return labels
+
+
 def read_model_sims(
     data_file, 
     fit_dir, 
