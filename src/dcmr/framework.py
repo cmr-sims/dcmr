@@ -1172,7 +1172,7 @@ def comp_version_variants(fit_dir, model_pattern="cmr*"):
         raise IOError(f'No cross-validation results found in: {fit_dir}')
     res = read_model_xvals(fit_dir, models, model_names)
     stat = res.groupby(['model'])['logl_test_list'].mean().sort_values()
-    return stat
+    return res, stat
 
 
 def read_model_sims(
