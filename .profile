@@ -11,8 +11,8 @@ if [[ $USER = morton || $USER = nmorton ]]; then
         export CFR_FITS=$HOME/Dropbox/work/dcmr/cfr/fits/v7
         export CFR_FIGURES=$HOME/Dropbox/work/dcmr/cfr/figs/v4
         export PEERS_RESULTS=$HOME/Dropbox/work/dcmr/peers
-        export PEERS_FITS=$HOME/Dropbox/work/dcmr/peers/fits/v5
-        export PEERS_FIGURES=$HOME/Dropbox/work/dcmr/peers/figs/v1
+        export PEERS_FITS=$HOME/Dropbox/work/dcmr/peers/fits/v7
+        export PEERS_FIGURES=$HOME/Dropbox/work/dcmr/peers/figs/v2
         export CDCFR_RESULTS=$HOME/Dropbox/work/dcmr/cdcatfr2
         export CDCFR_FITS=$HOME/Dropbox/work/dcmr/cdcatfr2/fits/v7
         export CDCFR_FIGURES=$HOME/Dropbox/work/dcmr/cdcatfr2/figs/v2
