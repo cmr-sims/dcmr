@@ -1,0 +1,27 @@
+{
+    "DCMR-ID-FE-FR": {
+        "full": "cmrsit_sem-split_enc-integrative_cue-integrative_sub-list",
+        "set1": "UR",
+        "set2": "DCMR-Variable"
+    },
+    "DCMR-ID-FE-FR-ED": {
+        "full": "cmrsit_sem-split_enc-focused_cue-integrative_sub-list",
+        "set1": "ED",
+        "set2": "DCMR-NonInteg"
+    },
+    "DCMR-ID-FE-FR-RD": {
+        "full": "cmrsit_sem-split_enc-integrative_cue-focused_sub-list",
+        "set1": "RD",
+        "set2": "DCMR-Focused"
+    },
+    "DCMR-ID-FE-FR-ED-RD": {
+        "full": "cmrsit_sem-split_enc-focused_cue-focused_sub-list",
+        "set1": "ED-RD",
+        "set2": "DCMR-NonInteg-Focused"
+    },
+    "DCMR-I-D": {
+        "full": "cmrsit_sem-item_sub-list",
+        "set1": "I-D",
+        "set2": "CMR-MP16-L"
+    }
+}
