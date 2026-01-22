@@ -7,7 +7,7 @@ authors = [
 ]
 description = "DCMR: Distributed Context Maintenance and Retrieval model"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.12"
 keywords = ["modeling", "memory", "EEG"]
 license = {text = "GPL-3.0-or-later"}
 classifiers = [
