@@ -362,7 +362,31 @@ def plan_compose_switchboard(
     special_sublayers,
     exclude,
 ):
-    """Print command lines for switchboard model evaluation."""
+    """
+    Print command lines for switchboard model evaluation.
+
+    Indicate OPTIONS to apply to all fits. Data from STUDY will be fit
+    and results will be saved to the FIT directory. A dash-separated
+    list of FACTORS will be factorially combined to generate model
+    variants of interest, with fit FLAGS specifying search options.
+
+    \b
+    Factors:
+      fea: features, including all combinations of loc, cat and use
+      sem: semantics, including context, split, and item
+      enc: encoding, including integrative and focused
+      cue: cuing, including integrative and focused
+      dis: disrupt_sublayers, including none, loc, cat, or loc-cat
+      sub: special_sublayers, including none, list, block, or list-block
+
+    \b
+    Flags:
+      -n, --n-reps: number of times to replicate the search
+      -j, --n-jobs: number of parallel jobs to use
+      -t, --tol: search tolerance
+      --init: search initialization method
+      -r, --n-sim-reps: number of experiment replications to simulate
+    """
     expansions = {
         "fea": "features",
         "sem": "semantics",
