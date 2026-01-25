@@ -646,6 +646,7 @@ def plot_mean_block_pos_evidence(mean_evidence):
         x='block_pos',
         y='evidence',
         hue='Category',
+        style='Category',
         palette=['C0', 'C1'],
         errorbar=None,
         ax=ax[1],
