@@ -902,6 +902,10 @@ def compose_model_variant(
         fcf_features = features
         ff_features = semantic_features
         exp_only_sublayers = semantic_features
+    elif semantics == 'encoding':
+        fcf_features = features
+        ff_features = None
+        exp_only_sublayers = semantic_features
     else:
         raise ValueError(f'Invalid semantics version: {semantics}')
 
