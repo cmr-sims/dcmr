@@ -909,7 +909,7 @@ def compose_model_variant(
     else:
         raise ValueError(f'Invalid semantics version: {semantics}')
 
-    if semantics in ['context', 'split']:
+    if semantics in ['context', 'split', 'encoding']:
         sublayer_param.extend(['Lfc', 'Lcf'])
         if encoding == 'focused':
             free_b = True
