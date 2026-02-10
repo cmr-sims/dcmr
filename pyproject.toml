@@ -38,6 +38,7 @@ dependencies = [
     "pyarrow",
     "jupyterlab",
     "swarmbar",
+    "protobuf>=6.33.5",
 ]
 
 [project.optional-dependencies]
