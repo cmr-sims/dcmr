@@ -39,6 +39,7 @@ dependencies = [
     "jupyterlab",
     "swarmbar",
     "protobuf>=6.33.5",
+    "nbconvert>=7.17.0",
 ]
 
 [project.optional-dependencies]
