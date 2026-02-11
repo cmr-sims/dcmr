@@ -40,6 +40,7 @@ dependencies = [
     "swarmbar",
     "protobuf>=6.33.5",
     "nbconvert>=7.17.0",
+    "pillow>=12.1.1",
 ]
 
 [project.optional-dependencies]
