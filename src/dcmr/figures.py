@@ -1,6 +1,7 @@
 """Figures for visualizing behavior and fits."""
 
 import os
+import gc
 from importlib import resources
 import numpy as np
 import matplotlib.pyplot as plt
@@ -336,6 +337,7 @@ def plot_fit(
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
     g.savefig(os.path.join(out_dir, f'{stat_name}_comp_subject.{ext}'))
     plt.close(g.fig)
+    gc.collect()
 
 
 def plot_fit_scatter(
@@ -384,6 +386,7 @@ def plot_fit_scatter(
     g.axes[0, 0].plot([0, 1], [0, 1], '-k')
     g.savefig(os.path.join(out_dir, f'{stat_name}_comp_subject.{ext}'))
     plt.close(g.fig)
+    gc.collect()
 
 
 def plot_swarm_bar(
